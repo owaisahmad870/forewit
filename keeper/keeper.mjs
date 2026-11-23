@@ -9,7 +9,7 @@
 //   status    --round <id>
 // Mainnet writes refuse to run unless LEDGER_MAINNET is set and KEEPER_CONFIRM_MAINNET=yes (Owais's per action yes).
 // Keys never print. Baseline salts are stored with agent/lib/secure_file.mjs before any commit transaction.
-import { createPublicClient, createWalletClient, http, keccak256, toHex, parseAbiItem } from 'viem';
+import { createPublicClient, createWalletClient, http, fallback, keccak256, toHex, parseAbiItem } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
@@ -24,7 +24,10 @@ const NET = {
 }[args.network || 'testnet'];
 if (!NET) throw new Error('--network must be testnet or mainnet');
 const isMainnet = NET.chain.id === 56;
-const pub = createPublicClient({ chain: NET.chain, transport: http(NET.rpc) });
+// two RPC endpoints: the configured one first, publicnode as fallback (the baseline has a 15 minute window)
+const SECOND_RPC = isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com';
+const transport = () => (NET.rpc === SECOND_RPC ? http(NET.rpc) : fallback([http(NET.rpc), http(SECOND_RPC)]));
+const pub = createPublicClient({ chain: NET.chain, transport: transport() });
 // event logs need an RPC that serves eth_getLogs ranges (the bnbchain dataseed endpoints refuse them); override with LOGS_RPC_URL
 const logsPub = createPublicClient({ chain: NET.chain, transport: http(process.env.LOGS_RPC_URL || (isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com')) });
 // committed ABI so the keeper host needs no Foundry; CI fails if it drifts from contracts/out
@@ -57,7 +60,7 @@ const read = async (fn, a = []) => pub.readContract({ address: await ledger(), a
 /** Simulate, send, wait; retry up to `tries` with backoff; never resend after a mined revert. */
 async function send(fn, a, { tries = 4 } = {}) {
   const account = keeperAccount();
-  const w = createWalletClient({ account, chain: NET.chain, transport: http(NET.rpc) });
+  const w = createWalletClient({ account, chain: NET.chain, transport: transport() });
   for (let i = 1; ; i++) {
     try {
       const { request } = await pub.simulateContract({ account, address: await ledger(), abi: ABI, functionName: fn, args: a });
