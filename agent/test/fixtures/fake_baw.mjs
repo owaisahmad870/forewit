@@ -1,7 +1,10 @@
 // Stand in for the baw CLI in tests. Logs every call to FAKE_BAW_LOG and answers by FAKE_BAW_SCENARIO.
-// Scenarios: happy, pending, expired, locked, busy, devoff, nodata, wrongto, wrongdata, value,
+// Scenarios: happy, pending, expired, locked, busy, devoff, nodata, wrongto, wrongdata, value, notcall,
 // preview351802, preview351803, preview351804, preview351805, execute351802, execute351803, execute351805, garbage.
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
+
+// Real mainnet preview replies (baw 1.12.0) are the base, so the tests follow the real field names.
+const real = (n) => JSON.parse(readFileSync(new URL(n, import.meta.url), 'utf8')).reply;
 
 const args = process.argv.slice(2);
 if (process.env.FAKE_BAW_LOG) appendFileSync(process.env.FAKE_BAW_LOG, JSON.stringify(args) + '\n');
@@ -22,26 +25,20 @@ if (key === 'wallet settings') {
 if (key === 'wallet tx-lock') out({ success: true, data: { status: s === 'locked' ? 'LOCKED' : 'UNLOCKED' } });
 if (key === 'wallet tx-history') out({ success: true, data: { transactions: s === 'busy' ? [{ txHash: '0x' + '01'.repeat(32), status: 'pending' }] : [], hasMore: false } });
 if (key === 'contract-call preview') {
+  if (s === 'preview351805') out(real('baw_preview_reverted.json'), 1);
   if (s.startsWith('preview')) fail(Number(s.slice(7)));
-  const data = flag('--inputData');
-  const parsedTx = {
-    transactionType: 'ContractCall',
-    amount: s === 'value' ? '1' : '0',
-    contractAddress: s === 'wrongto' ? '0x' + '99'.repeat(20) : flag('--to'),
-    inputData: s === 'wrongdata' ? data.slice(0, -2) + (data.endsWith('00') ? '01' : '00') : data,
-  };
-  if (s === 'nodata') delete parsedTx.inputData;
-  out({
-    success: true,
-    data: {
-      requestId: 'req_123',
-      parsedTx,
-      simulationResult: { simulationCode: '000000000', simulationErrorDetail: null, balanceChanges: [] },
-      risks: { riskDetails: [], addresses: {}, riskBehaviors: [] },
-      requireConfirmation: s === 'pending',
-      expiresAt: Date.now() + (s === 'expired' ? -1000 : 300000),
-    },
-  });
+  const selector = flag('--inputData').slice(0, 10);
+  const reply = real('baw_preview_contract_call.json');
+  const d = reply.data;
+  d.requestId = 'req_123';
+  d.parsedTx.contractAddress = s === 'wrongto' ? '0x' + '99'.repeat(20) : flag('--to');
+  d.parsedTx.action = s === 'wrongdata' ? '0xdeadbeef' : selector;
+  if (s === 'nodata') delete d.parsedTx.action;
+  if (s === 'notcall') d.parsedTx.transactionType = 'Send';
+  if (s === 'value') d.simulationResult.balanceChanges = [{ address: flag('--from'), amount: '-1' }];
+  d.requireConfirmation = s === 'pending';
+  d.expiresAt = Date.now() + (s === 'expired' ? -1000 : 300000);
+  out(reply);
 }
 if (key === 'contract-call execute') {
   if (s.startsWith('execute')) fail(Number(s.slice(7)));

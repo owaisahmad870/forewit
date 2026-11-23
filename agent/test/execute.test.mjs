@@ -8,12 +8,12 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const FAKE = fileURLToPath(new URL('./fixtures/fake_baw.mjs', import.meta.url));
-process.env.PRESCIENT_BAW_BIN = FAKE; // set before anything can run baw
-const dir = mkdtempSync(join(tmpdir(), 'prescient_exec_'));
+process.env.FOREWIT_BAW_BIN = FAKE; // set before anything can run baw
+const dir = mkdtempSync(join(tmpdir(), 'forewit_exec_'));
 process.env.FAKE_BAW_LOG = join(dir, 'calls.jsonl');
 
-const { sendWithConfirmation, bawCommand, parsedCall } = await import('../lib/baw.mjs');
-const { commitCalldata } = await import('../prescient.mjs');
+const { sendWithConfirmation, bawCommand, parsedCall, checkPreview } = await import('../lib/baw.mjs');
+const { commitCalldata } = await import('../forewit.mjs');
 
 const FROM = '0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5';
 const NET = Object.freeze({ name: 'mainnet', chainId: 56, ledger: '0x1111111111111111111111111111111111111111', explorer: 'https://bscscan.com' });
@@ -99,14 +99,15 @@ test('execute mode', async (t) => {
 
   for (const [scenario, re] of [
     ['wrongto', /target .* is not the pinned ledger/],
-    ['wrongdata', /calldata is missing or differs/],
-    ['nodata', /calldata is missing or differs/],
-    ['value', /value 1 is not 0/],
+    ['wrongdata', /function selector is missing or differs/],
+    ['nodata', /function selector is missing or differs/],
+    ['value', /balance, allowance or authority change, so value is not 0/],
+    ['notcall', /transaction type Send is not ContractInteraction/],
   ]) {
     await t.test(`a preview with ${scenario} is refused`, async () => {
       const r = await run(scenario);
       assert.match(r.error?.message ?? '', re);
-      assert.match(r.error.message, /parsedTx fields: transactionType, amount, contractAddress/);
+      assert.match(r.error.message, /parsedTx fields: transactionType, (action, )?contractAddress/);
       assert.ok(!executed(r));
       assert.equal(r.asked.length, 0);
     });
@@ -149,13 +150,20 @@ test('execute mode', async (t) => {
   });
 
   await t.test('parsedTx field mapping', () => {
-    assert.deepEqual(parsedCall({ contractAddress: '0xa', amount: 0, inputData: '0xb' }), { to: '0xa', value: 0, data: '0xb' });
-    assert.deepEqual(parsedCall(undefined), { to: undefined, value: undefined, data: undefined });
+    assert.deepEqual(parsedCall({ transactionType: 'ContractInteraction', contractAddress: '0xa', action: '0x12345678' }), { type: 'ContractInteraction', to: '0xa', selector: '0x12345678' });
+    assert.deepEqual(parsedCall(undefined), { type: undefined, to: undefined, selector: undefined });
+  });
+
+  await t.test('the real mainnet preview reply passes checkPreview unchanged', () => {
+    const { reply } = JSON.parse(readFileSync(new URL('./fixtures/baw_preview_contract_call.json', import.meta.url), 'utf8'));
+    const data = '0x70a08231' + '00'.repeat(12) + '4db416baf0127adca78e7571038b763868ff282c';
+    assert.doesNotThrow(() => checkPreview(reply.data, { ledger: '0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F', data }));
+    assert.throws(() => checkPreview(reply.data, { ledger: '0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F', data: '0xdeadbeef' }), /selector/);
   });
 
   await t.test('the CLI refuses a piped yes and a null mainnet ledger without running baw', () => {
     rmSync(process.env.FAKE_BAW_LOG, { force: true });
-    const cli = fileURLToPath(new URL('../prescient.mjs', import.meta.url));
+    const cli = fileURLToPath(new URL('../forewit.mjs', import.meta.url));
     const env = { ...process.env, HOME: dir, USERPROFILE: dir, FAKE_BAW_SCENARIO: 'happy' };
     // A piped yes is not a typed yes: the real CLI refuses a non TTY stdin before anything else.
     const t1 = spawnSync(process.execPath, [cli, 'commit', '--network', 'testnet', '--execute', '--from', FROM, '--p', '50'], { env, encoding: 'utf8', input: 'yes\n' });
@@ -165,6 +173,6 @@ test('execute mode', async (t) => {
     assert.equal(t2.status, 1);
     assert.match(t2.stderr, /mainnet ledger is not deployed/);
     assert.ok(!existsSync(process.env.FAKE_BAW_LOG), 'baw was never started');
-    assert.ok(!existsSync(join(dir, '.prescient')), 'no salt was made');
+    assert.ok(!existsSync(join(dir, '.forewit')), 'no salt was made');
   });
 });

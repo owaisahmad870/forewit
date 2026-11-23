@@ -1,0 +1,11 @@
+{
+  "_note": "Real baw 1.12.0 reply, 23 Nov 2026: contract-call preview on BSC mainnet to the Agent ID contract with calldata 0xdeadbeef (no such function, so the simulation reverts). Exit code 1. Never executed.",
+  "reply": {
+    "success": false,
+    "error": {
+      "code": 351805,
+      "name": "SERVICE_ERROR",
+      "message": "Transaction simulation failed: execution reverted"
+    }
+  }
+}
