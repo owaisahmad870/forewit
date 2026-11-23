@@ -1,8 +1,8 @@
 {
   "network": 97,
   "ledger": "0xfbba24635EbfaAeCd57fc199E4bC217C86fA80Bf",
-  "builtAt": "2026-11-23T17:29:38.051Z",
-  "headBlock": "144444966",
+  "builtAt": "2026-11-23T17:51:37.917Z",
+  "headBlock": "144447885",
   "metrics": {
     "distinctCommitters": 2,
     "rounds": 1,
@@ -11,6 +11,12 @@
         "commits": 2,
         "reveals": 1
       }
+    },
+    "windowMove": {
+      "rounds": 0,
+      "avgPts": null,
+      "thresholdPts": 0.5,
+      "active": false
     }
   },
   "rounds": [
@@ -76,6 +82,7 @@
       "revealDeadline": "1795454960",
       "resolutionWait": "86400",
       "createdBlock": "144443704",
+      "baselineAt": 1795454429,
       "crowd": {
         "method": "crowd v1: log odds pooling, equal weight below 3 resolved rounds, then 0.1 + skill/mean skill, no extremizing",
         "bps": [
@@ -90,6 +97,18 @@
         ]
       },
       "flags": [],
+      "commitTiming": {
+        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a": {
+          "at": 1795454416,
+          "afterBaseline": false,
+          "gapSec": -13
+        },
+        "0xdcde642b2da60be15048f14ecb801578098b2e5f": {
+          "at": 1795454419,
+          "afterBaseline": false,
+          "gapSec": -10
+        }
+      },
       "commitCount": 2,
       "revealRate": 0.5
     }

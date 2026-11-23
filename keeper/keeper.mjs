@@ -171,6 +171,19 @@ async function seal(rIn) {
   const round = await read('getRound', [r]);
   if (BigInt(Math.floor(Date.now() / 1000)) < round.commitDeadline) throw new Error('commit window still open');
   if (!round.isSealed) await send('sealRound', [r]);
+  // market at the deadline, to measure the move inside the baseline posting window (pre registered 23 Nov 2026)
+  const metaFile = `keeper/state/round_${NET.chain.id}_${r}.json`;
+  const dir = `keeper/archive/${args.network || 'testnet'}/round_${r}`;
+  if (existsSync(metaFile) && !existsSync(`${dir}/deadline_books.json`) && Date.now() - Number(round.commitDeadline) * 1000 < 5 * 60 * 1000) {
+    const { midBps } = await import('./lib/baseline.mjs');
+    const books = [];
+    for (const id of JSON.parse(readFileSync(metaFile, 'utf8')).marketIds) {
+      const b = (await apiGet(`/v1/markets/${id}/orderbook`).catch(() => null))?.data;
+      books.push({ marketId: String(id), ...(b ? midBps(b) : null), takenAt: Date.now() });
+    }
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(`${dir}/deadline_books.json`, JSON.stringify(books, big, 2));
+  }
   if (!round.baselineSet) await alert(`round ${r}: no baseline was set before the deadline; the round scores with skill 0`);
   log(`round ${r} sealed`);
 }

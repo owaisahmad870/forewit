@@ -51,6 +51,15 @@ describe('leaderboard eligibility', () => {
     leaderboard(snap(Array.from({ length: rounds }, (_, i) => goldRound(i + 1, { '0xA': s(qPer) })), { '0xa': { isPublic, name: 'A' } }));
   it('ranks at exactly 5 rounds and 20 baseline questions', () => expect(build(5, 4).rows[0].ranked).toBe(true));
   it('does not rank at 4 rounds', () => expect(build(4, 5).rows[0].ranked).toBe(false));
+  it('flags post baseline skill only when the pre registered window move rule is active', () => {
+    const r = goldRound(1, { '0xA': s(4) });
+    (r as any).commitTiming = { '0xa': { at: 2, afterBaseline: true, gapSec: 60 } };
+    const base = snap([r], { '0xa': { isPublic: true, name: 'A' } });
+    const off = leaderboard({ ...base, metrics: { ...base.metrics, windowMove: { rounds: 5, avgPts: 0.4, thresholdPts: 0.5, active: false } } }).rows[0];
+    const on = leaderboard({ ...base, metrics: { ...base.metrics, windowMove: { rounds: 5, avgPts: 0.7, thresholdPts: 0.5, active: true } } }).rows[0];
+    expect(off.postBaselineFlag).toBe(false);
+    expect(on.postBaselineFlag).toBe(true);
+  });
   it('never ranks an operator wallet (round manager, admin, pauser), even when public and eligible', () => {
     const snapOps = { ...snap(Array.from({ length: 5 }, (_, i) => goldRound(i + 1, { '0xA': s(4) })), { '0xa': { isPublic: true, name: 'A' } }), operators: ['0xA'] };
     expect(leaderboard(snapOps).rows[0]?.ranked ?? false).toBe(false);

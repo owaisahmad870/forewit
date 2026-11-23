@@ -21,6 +21,7 @@ export interface SnapRound {
   revealRate: number | null;
   // not produced by indexer/build.mjs yet (sample only): revealed packed forecasts and the crowd aggregate
   forecasts?: Record<string, string>;
+  commitTiming?: Record<string, { at: number; afterBaseline: boolean; gapSec: number | null }>;
   crowd?: { method: string; bps: (number | null)[] } | null;
 }
 
@@ -28,7 +29,7 @@ export interface Snapshot {
   network: number;
   ledger: string;
   builtAt: string;
-  metrics: { distinctCommitters: number; rounds: number; perDay: Record<string, { commits: number; reveals: number }> };
+  metrics: { distinctCommitters: number; rounds: number; perDay: Record<string, { commits: number; reveals: number }>; windowMove?: { rounds: number; avgPts: number | null; thresholdPts: number; active: boolean } };
   rounds: SnapRound[];
   profiles?: Record<string, { isPublic: boolean; name?: string }>;
   operators?: string[]; // round manager, admin and pauser wallets: never ranked (security review L1)
@@ -180,6 +181,7 @@ export const MIN_ROUNDS = 5;
 export const MIN_BASELINE_QUESTIONS = 20;
 
 export interface Row {
+  postBaselineFlag: boolean;
   addr: string;
   name: string | null;
   isPublic: boolean;
@@ -197,10 +199,10 @@ export interface Row {
 
 // Leaderboard per docs/SCORING.md. Every forecaster is computed (for aggregate counts); only opt in rows are shown.
 export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number; publicCount: number } {
-  const acc = new Map<string, { committed: number; revealed: number; rounds: number; q: number; bq: number; brier: bigint; skill: bigint; cal: { p: number; yes: boolean }[] }>();
+  const acc = new Map<string, { committed: number; revealed: number; rounds: number; q: number; bq: number; brier: bigint; skill: bigint; postSkill: bigint; cal: { p: number; yes: boolean }[] }>();
   const get = (a: string) => {
     const k = a.toLowerCase();
-    if (!acc.has(k)) acc.set(k, { committed: 0, revealed: 0, rounds: 0, q: 0, bq: 0, brier: 0n, skill: 0n, cal: [] });
+    if (!acc.has(k)) acc.set(k, { committed: 0, revealed: 0, rounds: 0, q: 0, bq: 0, brier: 0n, skill: 0n, postSkill: 0n, cal: [] });
     return acc.get(k)!;
   };
   const builtAt = Date.parse(snap.builtAt) / 1000;
@@ -216,6 +218,7 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
       x.q += Number(s.questions);
       x.brier += BigInt(s.brier);
       if (r.baseline) { x.bq += Number(s.questions); x.skill += BigInt(s.skill); }
+      if (r.baseline && r.commitTiming?.[a.toLowerCase()]?.afterBaseline) x.postSkill += BigInt(s.skill); // committed after seeing the baseline
     }
     for (const [a, packed] of Object.entries(r.forecasts ?? {})) {
       unpack(packed, n).forEach((p, i) => {
@@ -243,6 +246,8 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
       participation: x.committed ? x.revealed / x.committed : null,
       calibrationError: calibrationError(x.cal),
       ranked: isPublic && !ops.has(addr) && x.rounds >= MIN_ROUNDS && x.bq >= MIN_BASELINE_QUESTIONS,
+      // pre registered 23 Nov 2026: once the first 5 rounds show an average window move above 0.5 points, flag positive skill earned by post baseline commits
+      postBaselineFlag: !!snap.metrics.windowMove?.active && x.postSkill > 0n,
     };
   });
   const rows = all.filter((r) => r.isPublic).sort((a, b) => Number(b.ranked) - Number(a.ranked) || b.shrunkSkill - a.shrunkSkill);
