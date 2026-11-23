@@ -4,7 +4,7 @@
 * Probabilities are in basis points: p from 0 to 10000. The outcome o is 10000 for Yes and 0 for No.
 * Brier = (p minus o) squared, in bps squared: 0 is perfect, 1e8 (100,000,000) is the worst possible.
 * Void questions (a split payout, a resolution seen before the round was sealed, or a question still unresolved after the reveal deadline plus the round's resolution wait) are skipped by everyone.
-* Baseline Brier: the same formula applied to the market baseline: the order book mid price taken in the last 5 minutes before the commit deadline and committed before it (last trade price if one side of the book is empty, flagged in the archive).
+* Baseline Brier: the same formula applied to the market baseline: the order book mid prices posted in clear by the keeper in the last 15 minutes before the commit deadline (contract enforced; the keeper targets 5 minutes before), last trade price if a side is empty (flagged in the archive). A round without a baseline scores skill 0 for everyone and is flagged baseline_missing.
 * Skill = baseline Brier minus own Brier. Positive skill means the forecaster beat the market price on that question.
 * Forfeit (committed, never revealed): every non void question counts as Brier 1e8, and skill is computed against the baseline the same way. Revealing is never worse than forfeiting.
 

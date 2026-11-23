@@ -51,6 +51,10 @@ describe('leaderboard eligibility', () => {
     leaderboard(snap(Array.from({ length: rounds }, (_, i) => goldRound(i + 1, { '0xA': s(qPer) })), { '0xa': { isPublic, name: 'A' } }));
   it('ranks at exactly 5 rounds and 20 baseline questions', () => expect(build(5, 4).rows[0].ranked).toBe(true));
   it('does not rank at 4 rounds', () => expect(build(4, 5).rows[0].ranked).toBe(false));
+  it('never ranks an operator wallet (round manager, admin, pauser), even when public and eligible', () => {
+    const snapOps = { ...snap(Array.from({ length: 5 }, (_, i) => goldRound(i + 1, { '0xA': s(4) })), { '0xa': { isPublic: true, name: 'A' } }), operators: ['0xA'] };
+    expect(leaderboard(snapOps).rows[0]?.ranked ?? false).toBe(false);
+  });
   it('does not rank at 19 baseline questions', () => expect(build(5, 3.8).rows[0]?.ranked ?? false).toBe(false));
   it('never lists forecasters who did not opt in, but counts them', () => {
     const lb = build(6, 5, false);

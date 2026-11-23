@@ -1,18 +1,18 @@
 {
   "network": 97,
-  "ledger": "0x03274897dDb1121eBdF1aDf3b84E16d94A4c54bE",
-  "roundId": "2",
+  "ledger": "0xfbba24635EbfaAeCd57fc199E4bC217C86fA80Bf",
+  "roundId": "1",
   "kind": "daily",
   "rule": "e2e harness",
-  "commitDeadline": "2026-11-23T16:28:09.000Z",
-  "revealDeadline": "2026-11-23T16:34:09.000Z",
+  "commitDeadline": "2026-11-23T17:23:20.000Z",
+  "revealDeadline": "2026-11-23T17:29:20.000Z",
   "resolutionWaitSeconds": "86400",
   "questions": [
     {
       "index": 0,
       "marketId": "437",
-      "conditionId": "0x5ad4ad73cf5cc462186c6e85a264cdc022f4d1a2755600753e22e4371df3aabb",
-      "ctf": "0xc7645815a1a9b6ee8c1c17ec75714a6c94b1567f",
+      "conditionId": "0xfb64b5235894ee6efe7732cad5aae7f30cf413311a548856ccd288ec00ae243b",
+      "ctf": "0x34e842b038e636829704aeab8a7b65b762973530",
       "eventQuestion": "Testnet mock question 1 (resolved by the test harness, not a real market)",
       "label": "Mock outcome 1",
       "marketQuestion": null,
@@ -26,8 +26,8 @@
     {
       "index": 1,
       "marketId": "434",
-      "conditionId": "0x46c8fa97560766f59a150855d7d843111c186e193b858f2b22c2a1a21f79d03d",
-      "ctf": "0xc7645815a1a9b6ee8c1c17ec75714a6c94b1567f",
+      "conditionId": "0x7c16ffe8ccb9c855c7123345e6db1ae21fd7d4ed5615d6ec7a5de772448edc3a",
+      "ctf": "0x34e842b038e636829704aeab8a7b65b762973530",
       "eventQuestion": "Testnet mock question 2 (resolved by the test harness, not a real market)",
       "label": "Mock outcome 2",
       "marketQuestion": null,
@@ -41,8 +41,8 @@
     {
       "index": 2,
       "marketId": "433",
-      "conditionId": "0x00e52f85d77072a4fe771be279376c76030cc29ab8f653726d6d708e26144b3d",
-      "ctf": "0xc7645815a1a9b6ee8c1c17ec75714a6c94b1567f",
+      "conditionId": "0x040dc4752be83c5b8da0bad54ccb64e51aad0303aca85da2e8497a452296aa6e",
+      "ctf": "0x34e842b038e636829704aeab8a7b65b762973530",
       "eventQuestion": "Testnet mock question 3 (resolved by the test harness, not a real market)",
       "label": "Mock outcome 3",
       "marketQuestion": null,
@@ -54,6 +54,5 @@
       "marketPrice": 0.315
     }
   ],
-  "note": "Corrected 23 Nov 2026: this round was first published with the titles of the real testnet markets used only as price sources; the questions are mock conditions resolved by the test harness.",
-  "marketPriceAt": "2026-11-23T16:25:11.826Z"
+  "marketPriceAt": "2026-11-23T17:20:26.318Z"
 }

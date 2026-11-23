@@ -19,7 +19,7 @@ const ABI = parseAbi([
   'function reveal(uint256 roundId, uint256 packed, bytes32 salt)',
   'function revealFor(uint256 roundId, address forecaster, uint256 packed, bytes32 salt)',
   'function roundCount() view returns (uint256)',
-  'struct Round { uint64 commitDeadline; uint64 revealDeadline; uint64 createdAt; uint8 questionCount; uint16 outcomeYesMask; uint16 voidMask; uint16 resolvedMask; bool baselineRevealed; bool isSealed; uint256 baselinePacked; bytes32 baselineCommit; }',
+  'struct Round { uint64 commitDeadline; uint64 revealDeadline; uint64 createdAt; uint8 questionCount; uint16 outcomeYesMask; uint16 voidMask; uint16 resolvedMask; bool baselineSet; bool isSealed; uint256 baselinePacked; uint64 resolutionWait; }',
   'function getRound(uint256 roundId) view returns (Round)',
   'struct Question { bytes32 conditionId; address ctf; uint8 yesSlot; }',
   'function getQuestions(uint256 roundId) view returns (Question[])',
@@ -78,17 +78,17 @@ test('full calldata matches viem for commit, reveal and revealFor', () => {
 test('decoders match viem encoded results', () => {
   const round = {
     commitDeadline: 1795000000n, revealDeadline: 1795050000n, createdAt: 1794990000n, questionCount: 3,
-    outcomeYesMask: 1, voidMask: 4, resolvedMask: 7, baselineRevealed: true, isSealed: false,
-    baselinePacked: pack([6000, 5000, 5000]), baselineCommit: randB32(),
+    outcomeYesMask: 1, voidMask: 4, resolvedMask: 7, baselineSet: true, isSealed: false,
+    baselinePacked: pack([6000, 5000, 5000]), resolutionWait: 604800n,
   };
   const r = decodeRound(encodeFunctionResult({ abi: ABI, functionName: 'getRound', result: round }));
   assert.equal(r.commitDeadline, 1795000000);
   assert.equal(r.revealDeadline, 1795050000);
   assert.equal(r.questionCount, 3);
-  assert.equal(r.baselineRevealed, true);
+  assert.equal(r.baselineSet, true);
+  assert.equal(r.resolutionWait, 604800);
   assert.equal(r.isSealed, false);
   assert.equal(r.baselinePacked, round.baselinePacked);
-  assert.equal(r.baselineCommit, round.baselineCommit);
   assert.deepEqual([0, 1, 2].map((i) => outcomeOf(r, i)), ['yes', 'no', 'void']);
 
   const qs = [{ conditionId: randB32(), ctf: randAddr(), yesSlot: 0 }, { conditionId: randB32(), ctf: randAddr(), yesSlot: 1 }];
@@ -157,10 +157,10 @@ test('receipts: one file per commit, reveal picks the one matching the onchain c
 
 test('getRound decoding also accepts the v1.1 layout with resolutionWait', () => {
   const ABI2 = parseAbi([
-    'struct Round { uint64 commitDeadline; uint64 revealDeadline; uint64 createdAt; uint8 questionCount; uint16 outcomeYesMask; uint16 voidMask; uint16 resolvedMask; bool baselineRevealed; bool isSealed; uint256 baselinePacked; bytes32 baselineCommit; uint64 resolutionWait; }',
+    'struct Round { uint64 commitDeadline; uint64 revealDeadline; uint64 createdAt; uint8 questionCount; uint16 outcomeYesMask; uint16 voidMask; uint16 resolvedMask; bool baselineSet; bool isSealed; uint256 baselinePacked; bytes32 baselineCommit; uint64 resolutionWait; }',
     'function getRound(uint256 roundId) view returns (Round)',
   ]);
-  const round = { commitDeadline: 10n, revealDeadline: 20n, createdAt: 1n, questionCount: 3, outcomeYesMask: 0, voidMask: 0, resolvedMask: 0, baselineRevealed: false, isSealed: true, baselinePacked: 0n, baselineCommit: '0x' + '00'.repeat(32), resolutionWait: 604800n };
+  const round = { commitDeadline: 10n, revealDeadline: 20n, createdAt: 1n, questionCount: 3, outcomeYesMask: 0, voidMask: 0, resolvedMask: 0, baselineSet: false, isSealed: true, baselinePacked: 0n, baselineCommit: '0x' + 'ab'.repeat(32), resolutionWait: 604800n };
   const r = decodeRound(encodeFunctionResult({ abi: ABI2, functionName: 'getRound', result: round }));
   assert.equal(r.resolutionWait, 604800);
   assert.equal(r.isSealed, true);

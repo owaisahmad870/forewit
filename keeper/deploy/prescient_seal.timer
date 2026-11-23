@@ -1,0 +1,12 @@
+# Seal right after the 23:00 UTC commit deadline (review L5 and L6: the keeper seals first; anyone may also call sealRound).
+[Unit]
+Description=PRESCIENT seal at the commit deadline
+
+[Timer]
+OnCalendar=*-*-* 23:00:20 UTC
+AccuracySec=1s
+Persistent=false
+Unit=prescient@seal.service
+
+[Install]
+WantedBy=timers.target

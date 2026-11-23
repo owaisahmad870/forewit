@@ -227,77 +227,90 @@ contract ForecastLedgerTest is Base {
 
     // Baseline
 
-    function test_baseline_flow() public {
+    function test_baseline_set() public {
         (uint256 id,) = _createRound(2);
         uint256 packed = 6000 | (3000 << 16);
-        bytes32 h = ledger.computeCommitHash(id, ledger.BASELINE(), packed, SALT);
-
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                IAccessControl.AccessControlUnauthorizedAccount.selector, alice, ledger.ROUND_MANAGER_ROLE()
-            )
-        );
-        vm.prank(alice);
-        ledger.commitBaseline(id, h);
-
-        vm.startPrank(keeper);
-        vm.expectRevert(ForecastLedger.UnknownRound.selector);
-        ledger.commitBaseline(99, h);
-        vm.expectRevert(ForecastLedger.ZeroHash.selector);
-        ledger.commitBaseline(id, bytes32(0));
+        uint256 cd = ledger.getRound(id).commitDeadline;
+        vm.warp(cd - 15 minutes); // first second of the window
         vm.expectEmit(address(ledger));
-        emit ForecastLedger.BaselineCommitted(id, h);
-        ledger.commitBaseline(id, h);
-        vm.expectRevert(ForecastLedger.AlreadyCommitted.selector);
-        ledger.commitBaseline(id, h);
-
-        vm.expectRevert(ForecastLedger.RevealNotOpen.selector);
-        ledger.revealBaseline(id, packed, SALT);
-        _toReveal(id);
-        vm.expectRevert(ForecastLedger.HashMismatch.selector);
-        ledger.revealBaseline(id, packed, keccak256("wrong"));
-        vm.expectEmit(address(ledger));
-        emit ForecastLedger.BaselineRevealed(id, packed);
-        ledger.revealBaseline(id, packed, SALT);
-        vm.expectRevert(ForecastLedger.AlreadyRevealed.selector);
-        ledger.revealBaseline(id, packed, SALT);
-        vm.stopPrank();
-
+        emit ForecastLedger.BaselineSet(id, packed);
+        vm.prank(keeper);
+        ledger.setBaseline(id, packed);
         ForecastLedger.Round memory r = ledger.getRound(id);
-        assertTrue(r.baselineRevealed);
-        assertTrue(r.isSealed);
+        assertTrue(r.baselineSet);
         assertEq(r.baselinePacked, packed);
+        assertFalse(r.isSealed); // posting the baseline does not seal
     }
 
-    function test_baseline_reverts() public {
+    function test_baseline_beforeWindowReverts() public {
         (uint256 id,) = _createRound(2);
+        uint256 cd = ledger.getRound(id).commitDeadline;
+        vm.prank(keeper);
+        vm.expectRevert(ForecastLedger.BaselineWindow.selector);
+        ledger.setBaseline(id, 5000); // at round creation
+        vm.warp(cd - 15 minutes - 1);
+        vm.prank(keeper);
+        vm.expectRevert(ForecastLedger.BaselineWindow.selector);
+        ledger.setBaseline(id, 5000);
+    }
+
+    function test_baseline_atOrAfterDeadlineReverts() public {
+        (uint256 id,) = _createRound(2);
+        uint256 cd = ledger.getRound(id).commitDeadline;
+        vm.warp(cd);
+        vm.prank(keeper);
+        vm.expectRevert(ForecastLedger.BaselineWindow.selector);
+        ledger.setBaseline(id, 5000);
+        vm.warp(cd + 12 hours); // in the reveal window: no hindsight posting
+        vm.prank(keeper);
+        vm.expectRevert(ForecastLedger.BaselineWindow.selector);
+        ledger.setBaseline(id, 5000);
+    }
+
+    function test_baseline_twiceReverts() public {
+        (uint256 id,) = _createRound(2);
+        _setBaseline(id, 5000);
+        vm.prank(keeper);
+        vm.expectRevert(ForecastLedger.BaselineAlreadySet.selector);
+        ledger.setBaseline(id, 6000);
+        assertEq(ledger.getRound(id).baselinePacked, 5000);
+    }
+
+    function test_baseline_otherReverts() public {
+        (uint256 id,) = _createRound(2);
+        vm.warp(uint256(ledger.getRound(id).commitDeadline) - 5 minutes);
         vm.expectRevert(
             abi.encodeWithSelector(
                 IAccessControl.AccessControlUnauthorizedAccount.selector, alice, ledger.ROUND_MANAGER_ROLE()
             )
         );
         vm.prank(alice);
-        ledger.revealBaseline(id, 0, SALT);
-
-        _toReveal(id);
+        ledger.setBaseline(id, 5000);
         vm.startPrank(keeper);
-        vm.expectRevert(ForecastLedger.CommitClosed.selector);
-        ledger.commitBaseline(id, keccak256("h"));
-        vm.expectRevert(ForecastLedger.NoCommit.selector);
-        ledger.revealBaseline(id, 0, SALT);
-        vm.stopPrank();
-
-        (uint256 id2,) = _createRound(2);
-        uint256 bad = 10_001;
-        _commitBaseline(id2, bad, SALT);
-        _toReveal(id2);
-        vm.prank(keeper);
+        vm.expectRevert(ForecastLedger.UnknownRound.selector);
+        ledger.setBaseline(99, 5000);
         vm.expectRevert(ForecastLedger.NonCanonical.selector);
-        ledger.revealBaseline(id2, bad, SALT);
-        _toScoring(id2);
-        vm.prank(keeper);
-        vm.expectRevert(ForecastLedger.RevealNotOpen.selector);
-        ledger.revealBaseline(id2, bad, SALT);
+        ledger.setBaseline(id, 10_001);
+        vm.expectRevert(ForecastLedger.NonCanonical.selector);
+        ledger.setBaseline(id, 1 | (1 << 32)); // slot 2 in a 2 question round
+        vm.stopPrank();
+    }
+
+    function test_missingBaseline_scoresSkillZero() public {
+        (uint256 id, ForecastLedger.QuestionInput[] memory qs) = _createRound(1);
+        _commit(id, alice, 8000, SALT);
+        _toReveal(id);
+        vm.prank(alice);
+        ledger.reveal(id, 8000, SALT);
+        _resolve(qs[0], true);
+        ledger.finalizeQuestion(id, 0);
+        _toScoring(id);
+        ledger.score(id, alice);
+        ForecastLedger.Stats memory s = ledger.getStats(alice);
+        assertFalse(ledger.getRound(id).baselineSet);
+        assertEq(s.sumBrier, 2000 * 2000);
+        assertEq(s.sumSkill, 0);
+        assertEq(s.baselineQuestions, 0);
     }
 
     // Commit
@@ -331,11 +344,6 @@ contract ForecastLedgerTest is Base {
 
         vm.prank(nobody);
         vm.expectRevert(ForecastLedger.NoAgentID.selector);
-        ledger.commit(id, keccak256("h"));
-
-        address base = ledger.BASELINE();
-        vm.prank(base);
-        vm.expectRevert(ForecastLedger.ReservedAddress.selector);
         ledger.commit(id, keccak256("h"));
 
         vm.prank(admin);
@@ -698,12 +706,8 @@ contract ForecastLedgerTest is Base {
         _commit(id, alice, pa, SALT);
         _commit(id, bob, pb, SALT);
         _commit(id, carol, pa, keccak256("carol")); // never reveals
-        if (withBaseline) _commitBaseline(id, base, SALT);
+        if (withBaseline) _setBaseline(id, base);
         _toReveal(id);
-        if (withBaseline) {
-            vm.prank(keeper);
-            ledger.revealBaseline(id, base, SALT);
-        }
         vm.prank(alice);
         ledger.reveal(id, pa, SALT);
         vm.prank(bob);
@@ -887,6 +891,41 @@ contract ForecastLedgerTest is Base {
 
     // Admin
 
+    function test_adminTransfer_movesPauserRole() public {
+        address next = makeAddr("multisig");
+        vm.prank(admin);
+        ledger.beginDefaultAdminTransfer(next);
+        vm.warp(block.timestamp + 1 days + 1);
+        vm.prank(next);
+        ledger.acceptDefaultAdminTransfer();
+        assertTrue(ledger.hasRole(ledger.PAUSER_ROLE(), next));
+        assertFalse(ledger.hasRole(ledger.PAUSER_ROLE(), admin));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector, admin, ledger.PAUSER_ROLE()
+            )
+        );
+        vm.prank(admin);
+        ledger.pause(); // the old admin key can no longer pause
+        vm.prank(next);
+        ledger.pause();
+        assertTrue(ledger.paused());
+    }
+
+    function test_adminTransfer_leavesOtherPausersAlone() public {
+        address next = makeAddr("multisig");
+        vm.startPrank(admin);
+        ledger.grantRole(ledger.PAUSER_ROLE(), keeper);
+        ledger.revokeRole(ledger.PAUSER_ROLE(), admin); // admin gave the pause role away before the transfer
+        ledger.beginDefaultAdminTransfer(next);
+        vm.stopPrank();
+        vm.warp(block.timestamp + 1 days + 1);
+        vm.prank(next);
+        ledger.acceptDefaultAdminTransfer();
+        assertTrue(ledger.hasRole(ledger.PAUSER_ROLE(), keeper));
+        assertFalse(ledger.hasRole(ledger.PAUSER_ROLE(), next));
+    }
+
     function test_adminTwoStepTransfer() public {
         address next = makeAddr("multisig");
         vm.prank(admin);
@@ -913,9 +952,5 @@ contract ForecastLedgerTest is Base {
         ledger.voidStale(1, 0);
         vm.expectRevert(ForecastLedger.UnknownRound.selector);
         ledger.forfeit(1, alice);
-    }
-
-    function test_baselineAddressIsReserved() public view {
-        assertEq(ledger.BASELINE(), address(uint160(uint256(keccak256("PRESCIENT.BASELINE")))));
     }
 }

@@ -1,4 +1,4 @@
-// BSC TESTNET ONLY. End to end check of keeper.mjs on a fast v1.1 instance (120 s commit, 300 s reveal windows).
+// BSC TESTNET ONLY. End to end check of keeper.mjs on a fast v1.2 instance (120 s commit, 300 s reveal windows).
 // Questions are mock conditions we resolve ourselves, priced by real two sided testnet order books, because no
 // testnet market falls in the selection v2 window. Every keeper duty runs through the real keeper.mjs commands.
 // Run: LEDGER_TESTNET=<v1.1 ledger> node --env-file=.env keeper/e2e_testnet.mjs
@@ -69,7 +69,7 @@ keeperCmd('finalize', '--round', String(roundId));
 const round = await read(LEDGER, 'ForecastLedger', 'getRound', [roundId]);
 await sleepUntil(Number(round.revealDeadline) + 3);
 keeperCmd('score', '--round', String(roundId));
-const base = BigInt(JSON.parse(readFileSync(`keeper/state/baseline_97_${roundId}.json`, 'utf8')).packed);
+const base = BigInt((await read(LEDGER, 'ForecastLedger', 'getRound', [roundId])).baselinePacked); // v1.2: posted in clear
 let ok = true;
 // this round's own Scored and Forfeited events (stats accumulate across rounds), as published to the site by the keeper
 const snap = JSON.parse(readFileSync('web/public/data/snapshot.json', 'utf8')).rounds.find((r) => r.roundId === String(roundId));
@@ -80,5 +80,5 @@ for (const [name, a, forfeit] of [['deployer', deployer, false], ['keeper', keep
   ok &&= m;
   console.log(name, m ? 'MATCH' : 'MISMATCH', JSON.stringify(ev ?? 'missing from published snapshot'));
 }
-console.log(ok ? 'END TO END OK (keeper.mjs, ledger v1.1)' : 'END TO END FAILED');
+console.log(ok ? 'END TO END OK (keeper.mjs, ledger v1.2)' : 'END TO END FAILED');
 process.exit(ok ? 0 : 1);

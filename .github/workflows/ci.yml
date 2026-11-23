@@ -31,7 +31,7 @@ jobs:
           BSC_RPC_URL: ${{ secrets.BSC_RPC_URL }}
         run: forge test -vv
       - name: Keeper ABI matches the build
-        run: node -e "const a=JSON.stringify(require('./out/ForecastLedger.sol/ForecastLedger.json').abi),b=JSON.stringify(require('../keeper/abi/ForecastLedger_v1_1.json'));if(a!==b){console.error('keeper/abi/ForecastLedger_v1_1.json is stale');process.exit(1)}"
+        run: node -e "const a=JSON.stringify(require('./out/ForecastLedger.sol/ForecastLedger.json').abi),b=JSON.stringify(require('../keeper/abi/ForecastLedger_v1_2.json'));if(a!==b){console.error('keeper/abi/ForecastLedger_v1_2.json is stale');process.exit(1)}"
       - name: Coverage (must stay at 100% for ForecastLedger)
         run: |
           forge coverage --no-match-coverage "(test|mocks|script)" --no-match-contract Fork --report summary | tee cov.txt

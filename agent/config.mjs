@@ -12,7 +12,7 @@ export const NETWORKS = Object.freeze({
   testnet: Object.freeze({
     name: 'testnet',
     chainId: 97,
-    ledger: '0x73FFFB21A497d173f1C3581467Ca1F7385655fC3',
+    ledger: '0xfbba24635EbfaAeCd57fc199E4bC217C86fA80Bf',
     rpc: 'https://bsc-testnet-rpc.publicnode.com',
     explorer: 'https://testnet.bscscan.com',
   }),

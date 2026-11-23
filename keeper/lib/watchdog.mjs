@@ -5,7 +5,7 @@ export const DAY = 24 * 3600;
 
 /**
  * @param {object} o
- * @param {{commitDeadline:number, revealDeadline:number, questionCount:number, resolvedMask:number, baselineCommit:string, baselineRevealed:boolean, isSealed:boolean}} o.round
+ * @param {{commitDeadline:number, revealDeadline:number, questionCount:number, resolvedMask:number, baselineSet:boolean, isSealed:boolean}} o.round
  * @param {number} o.resolvedOnchainMask questions whose CTF payoutDenominator > 0
  * @param {number} o.unprocessed committers neither scored nor forfeited
  * @param {number} o.now
@@ -14,10 +14,8 @@ export const DAY = 24 * 3600;
 export function missedDuties({ round, resolvedOnchainMask, unprocessed, now, grace = GRACE }) {
   const out = [];
   const cd = Number(round.commitDeadline), rd = Number(round.revealDeadline);
-  const noBaseline = /^0x0{64}$/.test(round.baselineCommit ?? '0x' + '0'.repeat(64));
-  if (now >= cd && noBaseline) out.push('baseline: not committed before the commit deadline');
+  if (now >= cd && !round.baselineSet) out.push('baseline: not set before the commit deadline (round scores with skill 0)');
   if (now > cd + grace && !round.isSealed) out.push('seal: round not sealed 15 minutes after the commit deadline');
-  if (now > cd + grace && !noBaseline && !round.baselineRevealed) out.push('baseline reveal: not revealed 15 minutes after the commit deadline');
   const pending = resolvedOnchainMask & ~Number(round.resolvedMask);
   if (now > cd + grace && pending !== 0) out.push(`finalize: questions resolved onchain but not finalized (mask ${pending})`);
   const all = (1 << Number(round.questionCount)) - 1;
