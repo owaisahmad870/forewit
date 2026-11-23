@@ -148,7 +148,7 @@ export function App() {
       <a href="#/" onClick={(e) => { e.preventDefault(); document.getElementById('main')?.focus(); }} className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-10 focus:rounded focus:bg-surface focus:p-2">{translate(lang, 'ui.skip')}</a>
       <RiskBanner />
       <Header route={route} theme={theme} setTheme={setTheme} />
-      <main id="main" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-5">
+      <main id="main" tabIndex={-1} className="mx-auto min-h-svh max-w-5xl px-4 py-5">
         <Page route={route} data={data} error={error} />
       </main>
       <Footer data={data} />

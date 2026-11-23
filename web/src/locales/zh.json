@@ -93,6 +93,7 @@
     },
     "rule": "选题规则",
     "resolutionWait": "结算等待期",
+    "day": "{n} 天",
     "days": "{n} 天",
     "commits": "提交数",
     "reveals": "揭示进度",

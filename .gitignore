@@ -11,3 +11,4 @@ contracts/broadcast/**/dry-run/
 keeper/state/
 indexer/out/
 keeper/archive/
+screenshots/
