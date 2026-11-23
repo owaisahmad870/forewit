@@ -1,101 +1,59 @@
 {
- "network": 97,
- "ledger": "0x5a3e00000000000000000000000000000000beef",
- "roundId": "2",
- "kind": "daily",
- "rule": "QUESTION_SELECTION v3",
- "commitDeadline": "2026-11-12T23:00:00.000Z",
- "revealDeadline": "2026-11-13T23:00:00.000Z",
- "resolutionWaitSeconds": "604800",
- "questions": [
-  {
-   "index": 0,
-   "marketId": "4600200",
-   "conditionId": "0xe0fe12af00c042a71fcad5d79132298d1071d3d1708bb32c4f5228fae3d33b1a",
-   "ctf": "0x0d0e2a08B8eA739DD6053854837CA6E7cC271cC4",
-   "eventQuestion": "Bitcoin Up or Down on November 13?",
-   "label": "Bitcoin Up or Down on November 13?",
-   "marketQuestion": null,
-   "endsAt": "2026-11-13T17:00:00.000Z",
-   "tags": [
-    "Crypto",
-    "BTC",
-    "Up/Down",
-    "Daily"
-   ]
-  },
-  {
-   "index": 1,
-   "marketId": "4600201",
-   "conditionId": "0x9148e26bdf313e3ab2421b91166919b0eda8adbb9a8d4c01aba87054c06fc089",
-   "ctf": "0x0d0e2a08B8eA739DD6053854837CA6E7cC271cC4",
-   "eventQuestion": "Ethereum Up or Down on November 13?",
-   "label": "Ethereum Up or Down on November 13?",
-   "marketQuestion": null,
-   "endsAt": "2026-11-13T17:00:00.000Z",
-   "tags": [
-    "Crypto",
-    "ETH",
-    "Up/Down",
-    "Daily"
-   ]
-  },
-  {
-   "index": 2,
-   "marketId": "4600202",
-   "conditionId": "0xae7206220ae22b4a18d3ac8c0c8801ff7dc63a16f47e3886e02761c1db5b2c23",
-   "ctf": "0x0d0e2a08B8eA739DD6053854837CA6E7cC271cC4",
-   "eventQuestion": "BNB Up or Down on November 13?",
-   "label": "BNB Up or Down on November 13?",
-   "marketQuestion": null,
-   "endsAt": "2026-11-13T17:00:00.000Z",
-   "tags": [
-    "Crypto",
-    "Up/Down",
-    "Daily",
-    "BNB"
-   ]
-  },
-  {
-   "index": 3,
-   "marketId": "4600203",
-   "conditionId": "0x607037fe48370212166ef08ee67d8341e51277674052f1234058b4961719182a",
-   "ctf": "0x0d0e2a08B8eA739DD6053854837CA6E7cC271cC4",
-   "eventQuestion": "SSE Composite Index (上证指数) Up or Down on November 13, 2026?",
-   "label": "SSE Composite Index (上证指数) Up or Down on November 13, 2026?",
-   "marketQuestion": null,
-   "endsAt": "2026-11-13T07:00:00.000Z",
-   "tags": [
-    "Finance",
-    "Stocks",
-    "Daily Up/Down"
-   ]
-  },
-  {
-   "index": 4,
-   "marketId": "4600204",
-   "conditionId": "0xf4df0f861edab4bcaa34622d373ff1fcdf97c5edb5731c58fcb5a35157dfe16f",
-   "ctf": "0x0d0e2a08B8eA739DD6053854837CA6E7cC271cC4",
-   "eventQuestion": "Highest temperature in Shenzhen on November 13?",
-   "label": "24°C",
-   "marketQuestion": null,
-   "endsAt": "2026-11-13T12:00:00.000Z",
-   "tags": [
-    "Weather"
-   ]
-  },
-  {
-   "index": 5,
-   "marketId": "4600205",
-   "conditionId": "0xf8ab8271c27e321569256889796120056dab655e1eb8108c49b27079c81f5fdd",
-   "ctf": "0x0d0e2a08B8eA739DD6053854837CA6E7cC271cC4",
-   "eventQuestion": "Highest temperature in Shanghai on November 13?",
-   "label": "13°C",
-   "marketQuestion": null,
-   "endsAt": "2026-11-13T12:00:00.000Z",
-   "tags": [
-    "Weather"
-   ]
-  }
- ]
+  "network": 97,
+  "ledger": "0x03274897dDb1121eBdF1aDf3b84E16d94A4c54bE",
+  "roundId": "2",
+  "kind": "daily",
+  "rule": "e2e harness",
+  "commitDeadline": "2026-11-23T16:28:09.000Z",
+  "revealDeadline": "2026-11-23T16:34:09.000Z",
+  "resolutionWaitSeconds": "86400",
+  "questions": [
+    {
+      "index": 0,
+      "marketId": "437",
+      "conditionId": "0x5ad4ad73cf5cc462186c6e85a264cdc022f4d1a2755600753e22e4371df3aabb",
+      "ctf": "0xc7645815a1a9b6ee8c1c17ec75714a6c94b1567f",
+      "eventQuestion": "Testnet mock question 1 (resolved by the test harness, not a real market)",
+      "label": "Mock outcome 1",
+      "marketQuestion": null,
+      "endsAt": null,
+      "tags": [
+        "Testnet",
+        "Mock"
+      ],
+      "marketPrice": 0.35
+    },
+    {
+      "index": 1,
+      "marketId": "434",
+      "conditionId": "0x46c8fa97560766f59a150855d7d843111c186e193b858f2b22c2a1a21f79d03d",
+      "ctf": "0xc7645815a1a9b6ee8c1c17ec75714a6c94b1567f",
+      "eventQuestion": "Testnet mock question 2 (resolved by the test harness, not a real market)",
+      "label": "Mock outcome 2",
+      "marketQuestion": null,
+      "endsAt": null,
+      "tags": [
+        "Testnet",
+        "Mock"
+      ],
+      "marketPrice": 0.635
+    },
+    {
+      "index": 2,
+      "marketId": "433",
+      "conditionId": "0x00e52f85d77072a4fe771be279376c76030cc29ab8f653726d6d708e26144b3d",
+      "ctf": "0xc7645815a1a9b6ee8c1c17ec75714a6c94b1567f",
+      "eventQuestion": "Testnet mock question 3 (resolved by the test harness, not a real market)",
+      "label": "Mock outcome 3",
+      "marketQuestion": null,
+      "endsAt": null,
+      "tags": [
+        "Testnet",
+        "Mock"
+      ],
+      "marketPrice": 0.315
+    }
+  ],
+  "note": "Corrected 23 Nov 2026: this round was first published with the titles of the real testnet markets used only as price sources; the questions are mock conditions resolved by the test harness.",
+  "marketPriceAt": "2026-11-23T16:25:11.826Z"
 }

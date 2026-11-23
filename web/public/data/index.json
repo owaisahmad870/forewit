@@ -1,20 +1,11 @@
 {
- "sample": true,
- "note": "Sample data for layout and tests. Round 7 titles are a real Predict.fun selection from 23 Nov 2026; all forecasts, prices, outcomes and scores are invented.",
- "sampleOnlyFields": [
-  "rounds[].forecasts",
-  "rounds[].crowd",
-  "profiles",
-  "round file questions[].marketPrice",
-  "round file marketPriceAt"
- ],
- "snapshot": "snapshot.json",
- "rounds": [
-  "rounds/2.json",
-  "rounds/3.json",
-  "rounds/4.json",
-  "rounds/5.json",
-  "rounds/6.json",
-  "rounds/7.json"
- ]
+  "sample": false,
+  "network": 97,
+  "ledger": "0x03274897dDb1121eBdF1aDf3b84E16d94A4c54bE",
+  "publishedAt": "2026-11-23T16:35:02.390Z",
+  "note": "Real BSC testnet data (test forecasters and mock markets where noted), not mainnet.",
+  "snapshot": "snapshot.json",
+  "rounds": [
+    "rounds/2.json"
+  ]
 }

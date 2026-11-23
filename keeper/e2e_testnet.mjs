@@ -28,7 +28,7 @@ async function send(account, address, n, fn, args) {
   if (rc.status !== 'success') throw new Error(`${fn} reverted`);
   console.log(`  harness ${fn.padEnd(14)} ${rc.transactionHash}`);
 }
-const keeperCmd = (...a) => console.log(execFileSync(process.execPath, ['--env-file=.env', 'keeper/keeper.mjs', ...a, '--network', 'testnet'], { encoding: 'utf8', env: { ...process.env, LEDGER_TESTNET: LEDGER } }).trim().split('\n').map((l) => '  keeper ' + l).join('\n'));
+const keeperCmd = (...a) => console.log(execFileSync(process.execPath, ['--env-file=.env', 'keeper/keeper.mjs', ...a, '--network', 'testnet'], { encoding: 'utf8', env: { ...process.env, LEDGER_TESTNET: LEDGER, INDEXER_FROM_BLOCK_TESTNET: String(parseInt(run.receipts[0].blockNumber)) } }).trim().split('\n').map((l) => '  keeper ' + l).join('\n'));
 const sleepUntil = async (unixSec) => { const ms = unixSec * 1000 - Date.now(); if (ms > 0) await new Promise((r) => setTimeout(r, ms)); };
 
 // 1. three real testnet markets with two sided books (price source for the baseline)
@@ -47,7 +47,8 @@ for (const [a, label] of [[deployer, 'e2edeployer'], [keeper, 'e2ekeeper']]) if 
 const commitDeadline = Math.floor(Date.now() / 1000) + 200;
 mkdirSync('keeper/state', { recursive: true });
 const selFile = 'keeper/state/e2e_selection.json';
-writeFileSync(selFile, JSON.stringify({ rule: 'e2e harness', commitDeadline: new Date(commitDeadline * 1000).toISOString(), chosen: markets.map((m, i) => ({ marketId: m.id, conditionId: conds[i], ctf: CTF, title: m.title })) }, null, 2));
+writeFileSync(selFile, JSON.stringify({ rule: 'e2e harness', commitDeadline: new Date(commitDeadline * 1000).toISOString(), chosen: markets.map((m, i) => ({ marketId: m.id, conditionId: conds[i], ctf: CTF, title: m.title, // mock conditions resolved by this harness: never show a real market's title next to an invented outcome
+    eventQuestion: `Testnet mock question ${i + 1} (resolved by the test harness, not a real market)`, label: `Mock outcome ${i + 1}`, marketQuestion: null, endsAt: null, tags: ['Testnet', 'Mock'] })) }, null, 2));
 keeperCmd('open', '--selection', selFile, '--reveal-hours', '0.1', '--resolution-days', '1');
 const roundId = await read(LEDGER, 'ForecastLedger', 'roundCount');
 // 4. forecasters commit
@@ -70,13 +71,14 @@ await sleepUntil(Number(round.revealDeadline) + 3);
 keeperCmd('score', '--round', String(roundId));
 const base = BigInt(JSON.parse(readFileSync(`keeper/state/baseline_97_${roundId}.json`, 'utf8')).packed);
 let ok = true;
+// this round's own Scored and Forfeited events (stats accumulate across rounds), as published to the site by the keeper
+const snap = JSON.parse(readFileSync('web/public/data/snapshot.json', 'utf8')).rounds.find((r) => r.roundId === String(roundId));
 for (const [name, a, forfeit] of [['deployer', deployer, false], ['keeper', keeper, true]]) {
-  const st = await read(LEDGER, 'ForecastLedger', 'getStats', [a.address]);
+  const ev = snap?.[forfeit ? 'forfeited' : 'scored']?.[a.address.toLowerCase()];
   const e = scoreRound(f[name].packed, base, ['Y', 'N', 'V'], { forfeit });
-  // stats accumulate across rounds on this instance, so compare this round's Scored/Forfeited event sums instead when reused
-  const m = BigInt(st.questionsScored) === e.questions && st.sumBrier === e.brier && st.sumBaselineBrier === e.base && BigInt(st.sumSkill) === e.skill;
+  const m = Boolean(ev) && BigInt(ev.questions) === e.questions && BigInt(ev.brier) === e.brier && BigInt(ev.baseline) === e.base && BigInt(ev.skill) === e.skill;
   ok &&= m;
-  console.log(name, m ? 'MATCH' : 'MISMATCH', JSON.stringify({ brier: st.sumBrier, base: st.sumBaselineBrier, skill: st.sumSkill }, (_, v) => (typeof v === 'bigint' ? v.toString() : v)));
+  console.log(name, m ? 'MATCH' : 'MISMATCH', JSON.stringify(ev ?? 'missing from published snapshot'));
 }
 console.log(ok ? 'END TO END OK (keeper.mjs, ledger v1.1)' : 'END TO END FAILED');
 process.exit(ok ? 0 : 1);
