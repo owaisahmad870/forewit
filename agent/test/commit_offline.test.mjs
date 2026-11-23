@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { encodeFunctionResult, decodeFunctionData, parseAbi, keccak256, encodeAbiParameters } from 'viem';
-import { main, findReceipts, COMMIT_TYPEHASH, revealCalldata } from '../prescient.mjs';
+import { main, findReceipts, COMMIT_TYPEHASH, revealCalldata } from '../forewit.mjs';
 import { NETWORKS } from '../config.mjs';
 
 const ABI = parseAbi([
@@ -51,7 +51,7 @@ function fakeRpc(chain, bodies) {
 }
 
 test('commit saves the salt first, never sends it, and reveal finds it', async (t) => {
-  const home = mkdtempSync(join(tmpdir(), 'prescient_offline_'));
+  const home = mkdtempSync(join(tmpdir(), 'forewit_offline_'));
   const saved = { fetch: globalThis.fetch, log: console.log, HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
   const out = [];
   const bodies = [];
@@ -101,7 +101,7 @@ test('commit saves the salt first, never sends it, and reveal finds it', async (
 });
 
 test('round file titles: event question plus label, cross checked with the chain', async (t) => {
-  const home = mkdtempSync(join(tmpdir(), 'prescient_titles_'));
+  const home = mkdtempSync(join(tmpdir(), 'forewit_titles_'));
   const saved = { fetch: globalThis.fetch, log: console.log, HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
   const out = [];
   process.env.HOME = home;

@@ -1,18 +1,18 @@
 {
   "network": 97,
-  "ledger": "0xfbba24635EbfaAeCd57fc199E4bC217C86fA80Bf",
+  "ledger": "0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1",
   "roundId": "1",
   "kind": "daily",
   "rule": "e2e harness",
-  "commitDeadline": "2026-11-23T17:23:20.000Z",
-  "revealDeadline": "2026-11-23T17:29:20.000Z",
+  "commitDeadline": "2026-11-23T20:17:48.000Z",
+  "revealDeadline": "2026-11-23T20:23:48.000Z",
   "resolutionWaitSeconds": "86400",
   "questions": [
     {
       "index": 0,
       "marketId": "437",
-      "conditionId": "0xfb64b5235894ee6efe7732cad5aae7f30cf413311a548856ccd288ec00ae243b",
-      "ctf": "0x34e842b038e636829704aeab8a7b65b762973530",
+      "conditionId": "0x6bea497e7cf3c50376a0aefd2a6340fae2e51e0a0896753d128625f386e19941",
+      "ctf": "0x9a0283bb4e20789993c14ec6ce1db7a984b49a54",
       "eventQuestion": "Testnet mock question 1 (resolved by the test harness, not a real market)",
       "label": "Mock outcome 1",
       "marketQuestion": null,
@@ -26,8 +26,8 @@
     {
       "index": 1,
       "marketId": "434",
-      "conditionId": "0x7c16ffe8ccb9c855c7123345e6db1ae21fd7d4ed5615d6ec7a5de772448edc3a",
-      "ctf": "0x34e842b038e636829704aeab8a7b65b762973530",
+      "conditionId": "0x821c670ed24d05cfb259a03c9d937f0c34016389eb71a78eafa990d72bc03985",
+      "ctf": "0x9a0283bb4e20789993c14ec6ce1db7a984b49a54",
       "eventQuestion": "Testnet mock question 2 (resolved by the test harness, not a real market)",
       "label": "Mock outcome 2",
       "marketQuestion": null,
@@ -41,8 +41,8 @@
     {
       "index": 2,
       "marketId": "433",
-      "conditionId": "0x040dc4752be83c5b8da0bad54ccb64e51aad0303aca85da2e8497a452296aa6e",
-      "ctf": "0x34e842b038e636829704aeab8a7b65b762973530",
+      "conditionId": "0xa65c1bc8f7b571bd6d655df0df537d7a43e11de43f8341c07307c9c3867ae54b",
+      "ctf": "0x9a0283bb4e20789993c14ec6ce1db7a984b49a54",
       "eventQuestion": "Testnet mock question 3 (resolved by the test harness, not a real market)",
       "label": "Mock outcome 3",
       "marketQuestion": null,
@@ -54,5 +54,6 @@
       "marketPrice": 0.315
     }
   ],
-  "marketPriceAt": "2026-11-23T17:20:26.318Z"
+  "marketPriceAt": "2026-11-23T20:14:55.048Z",
+  "windowMovePts": 0
 }

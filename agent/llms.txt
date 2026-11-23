@@ -1,15 +1,15 @@
-# PRESCIENT
+# Forewit
 
 > Commit reveal forecasting on BNB Smart Chain for Agent ID holders. Forecasters commit a hidden hash of their probabilities for a few Predict.fun questions, reveal after the deadline, and build a public Brier score track record against the market.
 
-Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.
+Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.
 
-Every transaction has value 0 and only pays network gas. PRESCIENT never asks for funds and pays no returns.
+Every transaction has value 0 and only pays network gas. Forewit never asks for funds and pays no returns.
 
 ## How an agent plays
 
 * Read SKILL.md in this folder and follow its preflight, flow and hard rules exactly.
-* Use the zero dependency CLI: node agent/prescient.mjs round|forecast|commit|reveal|status|receipt
+* Use the zero dependency CLI: node agent/forewit.mjs round|forecast|commit|reveal|status|receipt
 * By default the CLI only prints Binance Agentic Wallet (baw) commands. Run baw contract-call preview, show parsedTx, simulationResult and risks, get an explicit yes, then baw contract-call execute with the requestId.
 * commit --execute and reveal --execute (BSC mainnet only) run preflight, preview and execute in the user's own interactive terminal, and send only after the user types yes. Agents never pipe or script that yes.
 * PENDING_CONFIRMATION: the user approves in the Binance App; never resend. 351803 is a risk block: stop, never bypass. 351802 or 351804: Developer Mode is off, expired or over its cap; the user turns it on in the Binance App (Agentic Wallet, Settings, Developer Mode; own daily limit, 7 days). 351805: simulation failed, stop.
@@ -20,17 +20,17 @@ Every transaction has value 0 and only pays network gas. PRESCIENT never asks fo
 
 ## Contract
 
-* ForecastLedger, BSC testnet (chain 97): 0xfbba24635EbfaAeCd57fc199E4bC217C86fA80Bf
+* ForecastLedger, BSC testnet (chain 97): 0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1
 * BSC mainnet (chain 56): not deployed yet. The CLI refuses mainnet until the address is pinned.
 * commit(uint256 roundId, bytes32 commitHash), before the commit deadline, caller must hold an Agent ID.
 * reveal(uint256 roundId, uint256 packed, bytes32 salt), from the commit deadline until the reveal deadline.
-* Commit hash: keccak256(abi.encode(COMMIT_TYPEHASH, chainId, ledger, roundId, forecaster, packed, salt)) with COMMIT_TYPEHASH = keccak256("PrescientCommit(uint256 chainId,address ledger,uint256 roundId,address forecaster,uint256 packed,bytes32 salt)").
+* Commit hash: keccak256(abi.encode(COMMIT_TYPEHASH, chainId, ledger, roundId, forecaster, packed, salt)) with COMMIT_TYPEHASH = keccak256("ForewitCommit(uint256 chainId,address ledger,uint256 roundId,address forecaster,uint256 packed,bytes32 salt)").
 * packed: probability i in basis points (0 to 10000) in bits 16i to 16i+15; unused slots zero; at most 16 questions. The CLI clamps to 100 to 9900.
 * Views: roundCount(), getRound(roundId), getQuestions(roundId), getCommit(roundId, forecaster), getReveal(roundId, forecaster), computeCommitHash(roundId, forecaster, packed, salt).
 
 ## Salts
 
-* The CLI saves each salt and reveal receipt in ~/.prescient/ with owner only access before printing anything.
+* The CLI saves each salt and reveal receipt in ~/.forewit/ with owner only access before printing anything.
 * A lost salt means no reveal, and an unrevealed commit counts as a forfeit (the worst score).
 * Never share a salt before the commit deadline.
 
@@ -38,7 +38,7 @@ Every transaction has value 0 and only pays network gas. PRESCIENT never asks fo
 
 * SKILL.md: Claude Code skill (preflight, flow, hard rules)
 * README.md: quickstart, salt storage, risk warning
-* prescient.mjs: the CLI
+* forewit.mjs: the CLI
 * lib/baw.mjs: execute mode (preflight, preview check, typed yes, execute)
 * lib/question.mjs: event question plus label display
 * config.mjs: pinned networks and addresses

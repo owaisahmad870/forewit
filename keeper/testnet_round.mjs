@@ -1,3 +1,4 @@
+// DEPRECATED: drives only the old instances A and B (old labels). Kept until round 2 on A settles (24 Nov 2026 04:14 UTC), then removed.
 // BSC TESTNET ONLY. End to end round driver for the deployed ForecastLedger (mocks plus real testnet CTFs).
 // Run from the repo root: node --env-file=.env keeper/testnet_round.mjs <command>   (ROUND_STATE=<name> selects the state file)
 // Commands: balances | fund <tBNB> | open | reveal | settle | status
@@ -54,14 +55,14 @@ if (cmd === 'balances') {
   if (existsSync(STATE)) throw new Error('state exists: a round is already open; delete keeper/state/testnet_round.json only if it is finished');
   const d = deployed();
   // Agent IDs (mock) for the two forecasters
-  for (const [acct, label] of [[deployer, 'prescientdeployer'], [keeper, 'prescientkeeper']]) {
+  for (const [acct, label] of [[deployer, 'forewitdeployer'], [keeper, 'forewitkeeper']]) {
     if ((await read(d.aid, 'MockAgentID', 'balanceOf', [acct.address])) === 0n) await send(acct, d.aid, 'MockAgentID', 'mint', [label]);
   }
   // 3 mock questions; outcomes are set at reveal time: Yes, No, split (Void)
   const now = BigInt(Math.floor(Date.now() / 1000));
   const conds = [];
   for (let i = 0; i < 3; i++) {
-    const c = keccak256(toHex(`prescient testnet round 1 q${i} ${now}`));
+    const c = keccak256(toHex(`forewit testnet round 1 q${i} ${now}`));
     await send(keeper, d.ctf, 'MockConditionalTokens', 'prepare', [c, 2n]);
     conds.push(c);
   }

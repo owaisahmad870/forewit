@@ -1,4 +1,4 @@
-# MASTER PROMPT: Agent ID Forecast Ledger (working name PRESCIENT)
+# MASTER PROMPT: Agent ID Forecast Ledger (name Forewit, Chinese display name 先见; locked 23 Nov 2026)
 
 You are the lead engineer, security auditor, product designer and launch manager for one project: an entry in the Binance Wallet x BNB Chain Agent ID Hackathon. Read this whole prompt before writing any code. Every fact below was researched on 23 Nov 2026. Anything marked VERIFY must be checked against the live chain or official docs before you rely on it, and the result must be logged.
 
@@ -7,7 +7,7 @@ House rule for every file you write in this repo: do not use the hyphen or dash 
 # 1. The goal and how we win
 
 ## 1.1 What we are building in one paragraph
-PRESCIENT is a forecasting track record that can't be faked, for AI agents and their owners. It is built on Binance Agent ID, which is non transferable and limited to one per Binance user. Every day the app publishes a round of real questions taken from Predict.fun prediction markets, the markets integrated into Binance Wallet. Each Agent ID holder's agent commits a hashed probability for every question before the deadline and reveals it afterward. The contract then scores each forecast against the real onchain resolution of the market (Gnosis Conditional Tokens on BSC) and against the market price at the deadline. The result is a public record of who is actually calibrated and who beats the market. Because each Agent ID belongs to one verified user and can't be transferred, nobody can fake a track record by spinning up thousands of wallets and keeping the lucky ones. For the same reason, a crowd forecast weighted by skill is resistant to fake accounts. That combined forecast, the "Agent ID Crowd", is the headline product.
+Forewit is a forecasting track record that can't be faked, for AI agents and their owners. It is built on Binance Agent ID, which is non transferable and limited to one per Binance user. Every day the app publishes a round of real questions taken from Predict.fun prediction markets, the markets integrated into Binance Wallet. Each Agent ID holder's agent commits a hashed probability for every question before the deadline and reveals it afterward. The contract then scores each forecast against the real onchain resolution of the market (Gnosis Conditional Tokens on BSC) and against the market price at the deadline. The result is a public record of who is actually calibrated and who beats the market. Because each Agent ID belongs to one verified user and can't be transferred, nobody can fake a track record by spinning up thousands of wallets and keeping the lucky ones. For the same reason, a crowd forecast weighted by skill is resistant to fake accounts. That combined forecast, the "Agent ID Crowd", is the headline product.
 
 ## 1.2 The hackathon (official rules, summarized)
 * Hosts: Binance Wallet and BNB Chain. Total pool 60,000 USDC.
@@ -47,6 +47,8 @@ PRESCIENT is a forecasting track record that can't be faked, for AI agents and t
   * Our difference: ERC8004 identities can be transferred and anyone can mint them, so a track record built on them can be bought or faked with many identities. Agent ID is non transferable and limited to one per Binance user, which makes both the track record and the crowd forecast resistant to fake accounts.
   * Other differences: we are consumer facing, native to Binance Wallet's own prediction markets, and built for both agents and humans.
   * Mention Foresight Arena openly in the README and the pitch.
+* BitPredict keeps a centralized, timestamped reputation for crypto predictions.
+  * Our difference: the record lives onchain, so nobody can fake or transfer it, and it is tied to a non transferable Agent ID.
 * Lessons we must apply:
   1. ForecastBench: most forecasters scored worse than the market price they were given, so all skill must be measured against the market baseline at the deadline.
   2. Good Judgment Open: its scoring rule was shown to be improper. Use only strictly proper scoring rules, Brier onchain and log score off chain.
@@ -136,10 +138,10 @@ Ask for these immediately, because some take days:
   * Score everyone, which is permissionless gas spent by us as a public service.
   * Build the indexer snapshots.
 * indexer/: reads our contract events with getLogs in safe block ranges and writes versioned JSON snapshots (rounds, forecasts, scores, aggregates) to static hosting. Everything is recomputable from chain data alone. Publish the recompute script.
-* agent/: the PRESCIENT agent toolkit.
+* agent/: the Forewit agent toolkit.
   * SKILL.md for Claude Code, Codex, OpenClaw and Binance AI Pro.
   * llms.txt.
-  * A zero dependency Node CLI named "prescient", which:
+  * A zero dependency Node CLI named "forewit", which:
     * builds calldata;
     * computes commit hashes locally;
     * stores salts locally with file mode 0600;
@@ -303,7 +305,7 @@ Ask for these immediately, because some take days:
 # 6. Agent toolkit (the main way users act)
 
 ## 6.1 SKILL.md requirements
-* Purpose: "Play PRESCIENT daily forecast rounds with your Binance Agentic Wallet and Agent ID."
+* Purpose: "Play Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID."
 * Preflight:
   1. Check that baw is installed and the wallet is signed in.
   2. Check that the wallet agent id status shows an Agent ID.
@@ -333,7 +335,7 @@ Ask for these immediately, because some take days:
   * Show the risk warning and the no returns statement.
 * Ship it as a GitHub installable skill plus llms.txt, plus a copy paste prompt for Binance AI Pro on every page of the site.
 
-## 6.2 The prescient CLI
+## 6.2 The forewit CLI
 * Zero dependency Node script (it may use viem if needed, pinned). Commands: round, forecast, commit, reveal, status and receipt.
 * Writes secrets only to the user's home directory with mode 0600, and never uploads a salt before the deadline.
 * Includes a dry run mode that prints the exact baw commands without executing them.
@@ -377,7 +379,7 @@ Ask for these immediately, because some take days:
 * Internationalization: English and Simplified Chinese at launch. Indonesian and Vietnamese if time allows, since many holders post in those languages. Every string goes in locale files. Dates are shown in UTC with the local time alongside.
 
 ## 7.3 Mandatory banners and text
-* Global footer and first visit banner: "Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region."
+* Global footer and first visit banner: "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region."
 * The How to play page explains Developer Mode, its limit, and that every transaction must be confirmed by the user.
 
 # 8. Agent ID Crowd aggregate (off chain, reproducible)

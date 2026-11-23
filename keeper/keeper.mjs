@@ -1,4 +1,4 @@
-// PRESCIENT keeper (milestone 2). One command per duty in docs/KEEPER.md.
+// Forewit keeper (milestone 2). One command per duty in docs/KEEPER.md.
 // Run from the repo root: node --env-file=.env keeper/keeper.mjs <command> --network testnet|mainnet [options]
 //   select    --commit-deadline <iso> [--kind daily|long]   apply docs/QUESTION_SELECTION.md v3, archive raw API data and output
 //   open      --selection <file> [--resolution-days 7] [--reveal-hours 24]   createRound only (no baseline yet)
@@ -39,8 +39,8 @@ const log = (...a) => console.log(new Date().toISOString(), ...a);
 async function alert(msg) {
   log('ALERT', msg);
   const { TELEGRAM_BOT_TOKEN: tg, TELEGRAM_CHAT_ID: chat } = process.env;
-  if (tg && chat) await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: chat, text: `PRESCIENT keeper (${args.network || 'testnet'}): ${msg}` }) }).catch(() => log('telegram alert failed'));
-  if (process.env.ALERT_WEBHOOK_URL) await fetch(process.env.ALERT_WEBHOOK_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: `PRESCIENT keeper: ${msg}` }) }).catch(() => log('alert webhook failed'));
+  if (tg && chat) await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: chat, text: `Forewit keeper (${args.network || 'testnet'}): ${msg}` }) }).catch(() => log('telegram alert failed'));
+  if (process.env.ALERT_WEBHOOK_URL) await fetch(process.env.ALERT_WEBHOOK_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: `Forewit keeper: ${msg}` }) }).catch(() => log('alert webhook failed'));
 }
 
 function keeperAccount() {
@@ -50,8 +50,12 @@ function keeperAccount() {
   return privateKeyToAccount(k);
 }
 
+// testnet instances A to D keep the pre rename labels; commits from the current CLI would not verify there
+const DEPRECATED_TESTNET = ['0x73fffb21a497d173f1c3581467ca1f7385655fc3', '0xb27e432b871bdae0f558b0f1b4c87d5acb2ed80d', '0x03274897ddb1121ebdf1adf3b84e16d94a4c54be', '0xfbba24635ebfaaecd57fc199e4bc217c86fa80bf'];
+
 async function ledger() {
   if (!NET.ledger) throw new Error(`ledger address missing: set LEDGER_${isMainnet ? 'MAINNET' : 'TESTNET'}`);
+  if (DEPRECATED_TESTNET.includes(NET.ledger.toLowerCase())) throw new Error('LEDGER_TESTNET is a deprecated instance (A to D, old labels); use instance E');
   if ((await pub.getChainId()) !== NET.chain.id) throw new Error('RPC chain id mismatch; refusing');
   return NET.ledger;
 }

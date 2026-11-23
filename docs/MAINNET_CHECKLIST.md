@@ -1,9 +1,10 @@
 # Mainnet checklist (ForecastLedger v1.2 on BSC, chain 56)
 
-Every onchain step needs Owais's explicit yes, given for that step, with the action, cost and addresses shown first. Nothing here runs automatically. Status 23 Nov 2026: steps 0 and 2 are blocked on the project name; step 2's fork dry run passed.
+Every onchain step needs Owais's explicit yes, given for that step, with the action, cost and addresses shown first. Nothing here runs automatically. Status 23 Nov 2026: the Forewit rename is done and its gates passed (below). Open: organizer answers, keyed RPC, fresh keys, the GitHub repository rename (proposed, waiting for Owais), then Owais's yes for step 3.
 
 ## 0. Blockers before any mainnet transaction
-* Final project name from Owais. Then in one change: rename (product name in docs, site, CLI, SKILL.md, and the COMMIT_TYPEHASH string "PrescientCommit(...)", which is baked into every commit hash), apply the three approved comment fixes in ForecastLedger.sol (lines 96, 380, 608), update the golden vectors (scripts/golden_vectors.mjs, test_goldenCommitHash, the agent CLI test) because the typehash changes the hash, rebuild once, rerun the full suite and CI, and run a short Fable delta check because the typehash is logic.
+* Done 23 Nov 2026: final name Forewit applied in one change: COMMIT_TYPEHASH label "ForewitCommit(...)", the three approved comment fixes (ForecastLedger.sol lines 96, 380, 608), CLI "forewit", keeper units forewit@.service and forewit_*.timer, site in EN and ZH (display name 先见), docs; golden commit hash regenerated (0x343e0813...d192b8). Delta check: compiled bytecode identical to the previous build once the typehash constant (2 sites) is swapped and the metadata trailer stripped; ABI, storage layout and selectors identical.
+* Proposed, not done: rename the GitHub repository owaisahmad870/prescient to owaisahmad870/forewit (stays private). Until then keeper/deploy/README.md and CLAUDE.md keep the current repository URL.
 * Organizer answers (notes/knowledge.md): Developer Mode as the expected path, whether a relayer revealFor counts as an interaction, how the 30 holder rule counts, and whether an Agent ID can be burned or reissued.
 * A keyed BSC RPC for the keeper (the .env RPC values are public endpoints).
 
@@ -17,6 +18,8 @@ Every onchain step needs Owais's explicit yes, given for that step, with the act
 * CI green: tests, golden vectors, web, Slither (no High or Medium), Aderyn (triaged categories only).
 * Deploy script dry run on a mainnet fork: `forge script script/DeployMainnet.s.sol --fork-url <BSC RPC>` with no --broadcast and a throwaway key. Done 23 Nov 2026 on v1.2: ForecastLedger deployed on the fork, 4,646,077 gas, about 0.00023 BNB; the guard refused 120 s and 300 s windows before broadcasting ("commit window below 2 hours").
 * Refresh the open conditions in test_fork_fullRound; a skipped fork test counts as a failure.
+* Renamed build, 23 Nov 2026: 79 Solidity tests including the 3 BSC fork tests, coverage 100% on ForecastLedger, 77 node, 40 web, golden 15 of 15; fork dry run again 4,646,077 gas and the guard still refuses 120 s and 300 s; testnet instance E (0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1, verified on BscScan testnet and Sourcify) END TO END OK through keeper.mjs. Testnet instances A to D are deprecated (old labels).
+* Human step: set LEDGER_TESTNET to instance E and INDEXER_FROM_BLOCK_TESTNET to its deploy block in .env; the keeper refuses the deprecated instances.
 
 ## 3. Deploy (Owais yes required)
 * On Owais's machine or the VPS, with MAINNET_DEPLOYER_PRIVATE_KEY, MAINNET_ADMIN and MAINNET_ROUND_MANAGER set only in that shell:
@@ -38,9 +41,9 @@ Every onchain step needs Owais's explicit yes, given for that step, with the act
 
 ## 6. Canary round (mainnet, real Agent ID, Owais's wallet)
 * Keeper (manual, Owais yes): `keeper.mjs select --kind daily` and `open` with at least 3 questions, commit deadline at least 2 h ahead.
-* Owais (Developer Mode on): `node agent/prescient.mjs commit --execute ...`. The first real baw preview may be refused if the parsedTx field names differ from our guess; the refusal lists the real names and parsedCall gets a one line fix. Confirm the typed yes prompt in PowerShell or Windows Terminal.
+* Owais (Developer Mode on): `node agent/forewit.mjs commit --execute ...`. The first real baw preview may be refused if the parsedTx field names differ from our guess; the refusal lists the real names and parsedCall gets a one line fix. Confirm the typed yes prompt in PowerShell or Windows Terminal.
 * Keeper: `baseline` at T minus 5, `seal` right after the deadline; watchdog shows all duties on schedule.
-* Owais: `node agent/prescient.mjs reveal --execute ...` inside the reveal window.
+* Owais: `node agent/forewit.mjs reveal --execute ...` inside the reveal window.
 * Keeper: `finalize` after the markets resolve (daily crypto about 18 h after the deadline), `score` after the reveal deadline.
 * Pass when: commit and reveal transactions are on BscScan from the Agent ID wallet, the scores match the JavaScript reference, the site shows the round with event questions, and no alert fired except expected ones.
 

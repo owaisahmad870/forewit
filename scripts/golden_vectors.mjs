@@ -24,7 +24,7 @@ export function scoreRound(packed, baseline, outcomes, { forfeit = false } = {})
 }
 
 export function commitHash(chainId, ledger, roundId, forecaster, packed, salt) {
-  const typehash = keccak256(toHex('PrescientCommit(uint256 chainId,address ledger,uint256 roundId,address forecaster,uint256 packed,bytes32 salt)'));
+  const typehash = keccak256(toHex('ForewitCommit(uint256 chainId,address ledger,uint256 roundId,address forecaster,uint256 packed,bytes32 salt)'));
   return keccak256(encodeAbiParameters(
     [{ type: 'bytes32' }, { type: 'uint256' }, { type: 'address' }, { type: 'uint256' }, { type: 'address' }, { type: 'uint256' }, { type: 'bytes32' }],
     [typehash, BigInt(chainId), ledger, BigInt(roundId), forecaster, packed, salt],
@@ -43,7 +43,7 @@ const checks = [
   ...Object.entries({ questions: 3n, brier: 25250000n, base: 50000000n, skill: 24750000n }).map(([k, v]) => ['reveal with baseline ' + k, scoreRound(p, b, outcomes)[k], v]),
   ...Object.entries({ questions: 3n, brier: 25250000n, base: 0n, skill: 0n }).map(([k, v]) => ['reveal no baseline ' + k, scoreRound(p, null, outcomes)[k], v]),
   ...Object.entries({ questions: 3n, brier: 300000000n, base: 50000000n, skill: -250000000n }).map(([k, v]) => ['forfeit ' + k, scoreRound(p, b, outcomes, { forfeit: true })[k], v]),
-  ['commit hash', commitHash(56, '0x1111111111111111111111111111111111111111', 7, '0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5', pack([9000, 2000, 10000]), keccak256(toHex('golden'))), '0xb0783bf99db452b430677be72e1ab49fbf4157465fa4d29e0b671e41d3fca1f7'],
+  ['commit hash', commitHash(56, '0x1111111111111111111111111111111111111111', 7, '0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5', pack([9000, 2000, 10000]), keccak256(toHex('golden'))), '0x343e0813665598bb9ba88edb81220fe30cefbae1b52416242dc72e11c1d192b8'],
 ];
 let bad = 0;
 for (const [name, got, want] of checks) if (got !== want) { bad++; console.error('MISMATCH', name, String(got), '!=', String(want)); }

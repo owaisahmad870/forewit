@@ -1,4 +1,4 @@
-# PRESCIENT: rank 1, Agent ID Hackathon Innovation Award
+# Forewit: rank 1, Agent ID Hackathon Innovation Award
 
 Goal: rank 1 in Track B (Agent Application Innovation Award). Secondary: top 10 in Track A (Pioneer), as a side effect of daily commit and reveal transactions.
 Metric: judges' rubric (Agent ID depth 30%, practicality 25%, completion 25%, innovation 20%) plus the hard gate of at least 30 distinct Agent ID holders calling our contracts during the submission period.
@@ -34,10 +34,10 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 * This file is the index loaded every turn; keep it under about 10 KB. Details go in notes/*.md, each opening with a summary.
 
 ## Now (update at every step)
-* **Base / best**: 23 Nov 2026. v1.1 testnet instance C 0x0327...54bE: END TO END OK via keeper.mjs. Repo private on GitHub (owaisahmad870/prescient). 74 Solidity, 45 node tests pass. Nothing on mainnet.
+* **Base / best**: 23 Nov 2026. Renamed to Forewit (forewit.xyz, X @forewitai, Chinese display name 先见). v1.2 Forewit build on testnet instance E 0xa497...12E1: END TO END OK via keeper.mjs; instances A to D deprecated. Repo private on GitHub (owaisahmad870/prescient; rename to owaisahmad870/forewit proposed, waiting for Owais). 79 Solidity, 77 node, 40 web tests pass. Nothing on mainnet.
 * **Gap to rank 1**: 0 of 30 holders, 0 of 7 rounds, no deploy, no site. Owais holds owaisahmad.ai (wallet 0x4Db4...282C); Developer Mode on (until about 30 Nov unless used).
 * **Running**: round 2 on instance A: settle job at 24 Nov 04:14 UTC (reveal job at 16:09 UTC). Rule v1 census and keeper select smoke test (background).
-* **Blocked on**: nothing for testnet. Mainnet needs fresh offline backed keys, the project name (baked into the typehash), and Developer Mode on.
+* **Blocked on**: mainnet needs Owais's yes, fresh offline backed keys, a keyed RPC and the organizer answers. .env LEDGER_TESTNET and INDEXER_FROM_BLOCK_TESTNET must move to instance E (Owais).
 * **Rules**: selection v3.1 (no sports, no politics; daily: all daily crypto plus liquid events, 6 to 72 h, cap 8 Dec, 3 to 8 questions, wait 7 days; long: allowlisted tags, liquid, 72 h to 100 days, wait 120 days); event question plus label everywhere; baseline in the last 5 min before the deadline. Pre registered 23 Nov.
 * **Next**: web MVP and agent execute mode (subagents running); security review (milestone 3); VPS setup by Owais (keeper/deploy/README.md). Contract frozen except review findings. Polish 6 to 7 Dec: screen reader pass and 4G load test.
 * **Human steps open**: organizer questions now include Agent ID burn or reissue (review L2, L3); keyed RPC (current .env RPCs are public); organizer questions; name, domain, X; GitHub repo for CI. Done: Agent ID claimed, wallet signed in, Predict key verified.

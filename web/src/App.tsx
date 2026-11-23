@@ -48,6 +48,7 @@ function Header({ route, theme, setTheme }: { route: string[]; theme: string; se
         <a href="#/" className="flex min-h-11 items-center gap-2 font-semibold tracking-wide">
           <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><line x1="2" y1="11" x2="20" y2="11" className="stroke-muted" strokeWidth="1.5" /><rect x="5" y="7" width="8" height="8" rx="1" transform="rotate(45 9 11)" className="fill-accent" /></svg>
           {t('brand')}
+          {t('brandLocal') && <span lang="zh-CN" className="font-normal text-muted">{t('brandLocal')}</span>}
         </a>
         <nav aria-label={t('nav.main')} className="hidden items-center md:flex">{links}</nav>
         <div className="flex items-center gap-2">
@@ -130,7 +131,7 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
-    document.title = translate(lang, 'brand');
+    document.title = [translate(lang, 'brand'), translate(lang, 'brandLocal')].filter(Boolean).join(' ');
   }, [lang]);
   useEffect(() => {
     if (theme === 'light') document.documentElement.dataset.theme = 'light';

@@ -1,5 +1,5 @@
 // Zero dependency Ethereum keccak256 (original Keccak padding 0x01, not NIST SHA3 0x06),
-// hex helpers, and the minimal ABI encoding and decoding the PRESCIENT CLI needs.
+// hex helpers, and the minimal ABI encoding and decoding the Forewit CLI needs.
 
 const MASK = (1n << 64n) - 1n;
 const RATE = 136; // bytes, for a 256 bit output

@@ -36,7 +36,7 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
     uint48 public constant ADMIN_TRANSFER_DELAY = 1 days;
 
     bytes32 public constant COMMIT_TYPEHASH = keccak256(
-        "PrescientCommit(uint256 chainId,address ledger,uint256 roundId,address forecaster,uint256 packed,bytes32 salt)"
+        "ForewitCommit(uint256 chainId,address ledger,uint256 roundId,address forecaster,uint256 packed,bytes32 salt)"
     );
     /// @notice The market baseline is posted in clear, once, only in the last BASELINE_WINDOW before the commit deadline
     /// (security review M1, L4: no hindsight veto, no early or stale baseline).
@@ -93,7 +93,7 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
         uint64 sumBaselineBrier;
         int64 sumSkill;
         uint64 lastRound;
-        uint32 baselineQuestions; // questions scored against a revealed baseline, the denominator for mean skill
+        uint32 baselineQuestions; // questions scored against a posted baseline, the denominator for mean skill
     }
 
     // Immutables and storage
@@ -377,7 +377,7 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
 
     /// @notice Seal a round once its commit deadline has passed: every question already resolved onchain at this
     /// moment becomes Void, so nobody can score on an answer that was public while commits were open.
-    /// Callable by anyone, once; the first reveal, baseline reveal or finalize after the deadline also seals.
+    /// Callable by anyone, once; the first reveal or finalize after the deadline also seals.
     function sealRound(uint256 roundId) external {
         Round storage r = _round(roundId);
         if (block.timestamp < r.commitDeadline) revert TooEarly();
@@ -605,7 +605,7 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
         emit QuestionFinalized(roundId, index, o, early, stale);
     }
 
-    /// @dev Scoring needs the reveal window closed (so the baseline status is final) and every question resolved.
+    /// @dev Scoring needs the reveal window closed and every question resolved. The baseline is final at the commit deadline.
     function _checkScorable(Round storage r) internal view {
         if (block.timestamp <= r.revealDeadline) revert TooEarly();
         if (r.resolvedMask != uint16((uint256(1) << r.questionCount) - 1)) revert RoundNotResolved();

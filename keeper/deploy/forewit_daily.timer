@@ -1,11 +1,11 @@
 # Select and open the daily round (commit deadline 23:00 UTC the same day).
 [Unit]
-Description=PRESCIENT daily round open
+Description=Forewit daily round open
 
 [Timer]
 OnCalendar=*-*-* 03:00:00 UTC
 Persistent=true
-Unit=prescient@daily.service
+Unit=forewit@daily.service
 
 [Install]
 WantedBy=timers.target
