@@ -34,12 +34,12 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 * This file is the index loaded every turn; keep it under about 10 KB. Details go in notes/*.md, each opening with a summary.
 
 ## Now (update at every step)
-* **Base / best**: 23 Nov 2026. Ledger v1.1 (per round resolution wait) in code: 74 Solidity (incl. 3 fork), 23 agent, 6 keeper tests pass, coverage 100%, Slither 0 High 0 Medium. Testnet instances A (v1, round 2 running) and B (v1, END TO END OK). Nothing on mainnet, nothing committed.
+* **Base / best**: 23 Nov 2026. v1.1 testnet instance C 0x0327...54bE: END TO END OK via keeper.mjs. Repo private on GitHub (owaisahmad870/prescient). 74 Solidity, 45 node tests pass. Nothing on mainnet.
 * **Gap to rank 1**: 0 of 30 holders, 0 of 7 rounds, no deploy, no site. Owais holds owaisahmad.ai (wallet 0x4Db4...282C); Developer Mode off.
 * **Running**: round 2 on instance A: settle job at 24 Nov 04:14 UTC (reveal job at 16:09 UTC). Rule v1 census and keeper select smoke test (background).
 * **Blocked on**: nothing for testnet. Mainnet needs fresh offline backed keys, the project name (baked into the typehash), and Developer Mode on.
-* **Rules**: selection v3 (no sports; daily: all daily crypto plus liquid events, 6 to 72 h, cap 8 Dec, 3 to 8 questions, wait 7 days; long: liquid events 72 h to 100 days, wait 120 days), baseline in the last 5 min before the deadline. Pre registered 23 Nov.
-* **Next**: testnet deploy of v1.1 and a fast end to end round with keeper.mjs (open, baseline, seal, finalize, score) instead of the test script; then the independent security review (milestone 3).
+* **Rules**: selection v3.1 (no sports, no politics; daily: all daily crypto plus liquid events, 6 to 72 h, cap 8 Dec, 3 to 8 questions, wait 7 days; long: allowlisted tags, liquid, 72 h to 100 days, wait 120 days); event question plus label everywhere; baseline in the last 5 min before the deadline. Pre registered 23 Nov.
+* **Next**: web MVP and agent execute mode (subagents running); security review (milestone 3); VPS setup by Owais (keeper/deploy/README.md). Contract frozen except review findings.
 * **Human steps open**: enable Developer Mode; keyed RPC (current .env RPCs are public); organizer questions; name, domain, X; GitHub repo for CI. Done: Agent ID claimed, wallet signed in, Predict key verified.
 * **Toolchain**: Foundry at ~/.foundry/bin, Slither in .venv, baw global, viem via npm ci. .env now holds private keys: for fork tests export only the RPC, e.g. BSC_RPC_URL="$(grep ^BSC_RPC_URL= ../.env | cut -d= -f2-)" forge test; never source the whole file; redact URLs and 64 hex values in output.
 
@@ -68,3 +68,4 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 * 23 Nov 2026: Aderyn local build on Windows gnu toolchain (dlltool missing). Use CI.
 * 23 Nov 2026: reading Slither severity from the INFO log prefix. Count by impact from --json.
 * 23 Nov 2026: sports questions, owner decision 23 Nov, image.
+* 23 Nov 2026: politics questions (both round kinds), image and daily neutrality review; a Politics tag next to Economy or Fed counts as macro.

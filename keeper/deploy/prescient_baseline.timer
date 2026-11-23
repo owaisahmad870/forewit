@@ -1,0 +1,12 @@
+# Baseline snapshot in the last 5 minutes before the 23:00 UTC commit deadline (the keeper refuses outside that window).
+[Unit]
+Description=PRESCIENT baseline snapshot
+
+[Timer]
+OnCalendar=*-*-* 22:57:00 UTC
+AccuracySec=1s
+Persistent=false
+Unit=prescient@baseline.service
+
+[Install]
+WantedBy=timers.target

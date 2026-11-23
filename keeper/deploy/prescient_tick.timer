@@ -1,0 +1,11 @@
+# Seal and reveal the baseline after each deadline, finalize resolved questions, score finished rounds.
+[Unit]
+Description=PRESCIENT keeper tick
+
+[Timer]
+OnCalendar=*-*-* *:00/15:30 UTC
+AccuracySec=10s
+Unit=prescient@tick.service
+
+[Install]
+WantedBy=timers.target
