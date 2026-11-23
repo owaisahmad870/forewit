@@ -1,7 +1,7 @@
 {
   "brand": "Forewit",
   "brandLocal": "",
-  "tagline": "A forecasting track record nobody can fake, for Agent ID holders.",
+  "tagline": "A forecasting track record nobody can fake or buy. One Agent ID, one record, scored against the market.",
   "risk": "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.",
   "riskLocal": "",
   "nav": {
@@ -34,7 +34,8 @@
     "lowerBetter": "lower is better",
     "range": "{a}% to {b}%",
     "sampleBadge": "Sample data",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "onX": "@forewitai on X"
   },
   "phase": {
     "commit": "Commits open",
