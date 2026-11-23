@@ -1,0 +1,74 @@
+{
+  "network": 97,
+  "ledger": "0xB27E432b871bDae0f558b0F1b4C87d5aCb2ED80d",
+  "builtAt": "2026-11-23T15:05:24.074Z",
+  "headBlock": "144425784",
+  "metrics": {
+    "distinctCommitters": 2,
+    "rounds": 1,
+    "perDay": {
+      "2026-11-23": {
+        "commits": 2,
+        "reveals": 1
+      }
+    }
+  },
+  "rounds": [
+    {
+      "roundId": "1",
+      "questions": [
+        {
+          "conditionId": "0x3175aad13d9f628bee2da075f5eb987e255e6931dcafd7a82d96c3a06a2ec7e2",
+          "ctf": "0x0d0e2a08B8eA739DD6053854837CA6E7cC271cC4",
+          "yesSlot": 0,
+          "marketId": "900000"
+        },
+        {
+          "conditionId": "0xbcff8a271fa0d14742d42986a805131997a59f510bdcbe4431b8fbfaaabbf2fc",
+          "ctf": "0x0d0e2a08B8eA739DD6053854837CA6E7cC271cC4",
+          "yesSlot": 0,
+          "marketId": "900001"
+        },
+        {
+          "conditionId": "0xa5f6ae145f3571abc2fc4d4a9aebddcbe3ebcf27d035079bac616a311b2b004d",
+          "ctf": "0x0d0e2a08B8eA739DD6053854837CA6E7cC271cC4",
+          "yesSlot": 0,
+          "marketId": "900002"
+        }
+      ],
+      "committers": [
+        "0x04ca5c9c38Ac62D48fdA6FE5328dB4a0edEE4b7A",
+        "0xdCdE642B2DA60be15048F14ecB801578098B2E5F"
+      ],
+      "revealed": [
+        "0x04ca5c9c38Ac62D48fdA6FE5328dB4a0edEE4b7A"
+      ],
+      "scored": {
+        "0x04ca5c9c38Ac62D48fdA6FE5328dB4a0edEE4b7A": {
+          "questions": "2",
+          "brier": "13000000",
+          "skill": "28000000"
+        }
+      },
+      "forfeited": {
+        "0xdCdE642B2DA60be15048F14ecB801578098B2E5F": {
+          "questions": "2",
+          "brier": "200000000",
+          "skill": "-159000000"
+        }
+      },
+      "outcomes": {
+        "0": "Yes",
+        "1": "No",
+        "2": "Void"
+      },
+      "baseline": "21475164166000",
+      "commitDeadline": "1795444060",
+      "revealDeadline": "1795444420",
+      "resolutionWait": null,
+      "createdBlock": "144420397",
+      "commitCount": 2,
+      "revealRate": 0.5
+    }
+  ]
+}
