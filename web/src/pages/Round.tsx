@@ -58,7 +58,7 @@ export function RoundPage({ data, id }: { data: Dataset; id: number }) {
             </dd>
           </div>
           <div><dt className="text-muted">{t('round.forfeits')}</dt><dd>{r.forfeitCount}</dd></div>
-          {r.resolutionWaitDays != null && <div><dt className="text-muted">{t('round.resolutionWait')}</dt><dd>{t('round.days', { n: r.resolutionWaitDays })}</dd></div>}
+          {r.resolutionWaitDays != null && <div><dt className="text-muted">{t('round.resolutionWait')}</dt><dd>{t(r.resolutionWaitDays === 1 ? 'round.day' : 'round.days', { n: r.resolutionWaitDays })}</dd></div>}
           <div><dt className="text-muted">{t('round.rule')}</dt><dd>{t(`round.kinds.${kind}`)}{r.rule && <span className="block text-muted">{r.rule}</span>}</dd></div>
         </dl>
         {r.crowdMethod && <p className="mt-3 text-sm text-muted">{t('round.crowdMethod', { m: r.crowdMethod })}</p>}
