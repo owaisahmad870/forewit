@@ -35,12 +35,12 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 
 ## Now (update at every step)
 * **Base / best**: 23 Nov 2026. v1.1 testnet instance C 0x0327...54bE: END TO END OK via keeper.mjs. Repo private on GitHub (owaisahmad870/prescient). 74 Solidity, 45 node tests pass. Nothing on mainnet.
-* **Gap to rank 1**: 0 of 30 holders, 0 of 7 rounds, no deploy, no site. Owais holds owaisahmad.ai (wallet 0x4Db4...282C); Developer Mode off.
+* **Gap to rank 1**: 0 of 30 holders, 0 of 7 rounds, no deploy, no site. Owais holds owaisahmad.ai (wallet 0x4Db4...282C); Developer Mode on (until about 30 Nov unless used).
 * **Running**: round 2 on instance A: settle job at 24 Nov 04:14 UTC (reveal job at 16:09 UTC). Rule v1 census and keeper select smoke test (background).
 * **Blocked on**: nothing for testnet. Mainnet needs fresh offline backed keys, the project name (baked into the typehash), and Developer Mode on.
 * **Rules**: selection v3.1 (no sports, no politics; daily: all daily crypto plus liquid events, 6 to 72 h, cap 8 Dec, 3 to 8 questions, wait 7 days; long: allowlisted tags, liquid, 72 h to 100 days, wait 120 days); event question plus label everywhere; baseline in the last 5 min before the deadline. Pre registered 23 Nov.
 * **Next**: web MVP and agent execute mode (subagents running); security review (milestone 3); VPS setup by Owais (keeper/deploy/README.md). Contract frozen except review findings.
-* **Human steps open**: enable Developer Mode; keyed RPC (current .env RPCs are public); organizer questions; name, domain, X; GitHub repo for CI. Done: Agent ID claimed, wallet signed in, Predict key verified.
+* **Human steps open**: keyed RPC (current .env RPCs are public); organizer questions; name, domain, X; GitHub repo for CI. Done: Agent ID claimed, wallet signed in, Predict key verified.
 * **Toolchain**: Foundry at ~/.foundry/bin, Slither in .venv, baw global, viem via npm ci. .env now holds private keys: for fork tests export only the RPC, e.g. BSC_RPC_URL="$(grep ^BSC_RPC_URL= ../.env | cut -d= -f2-)" forge test; never source the whole file; redact URLs and 64 hex values in output.
 
 ## Notes map (read the summary first)

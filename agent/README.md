@@ -8,7 +8,7 @@ Every transaction this toolkit prepares has value 0 and goes to one pinned contr
 
 This folder holds:
 
-* `prescient.mjs`: a zero dependency Node CLI (Node 26 or newer) that reads rounds from the chain, computes commits, stores salts safely and prints the exact `baw` commands.
+* `prescient.mjs`: a zero dependency Node CLI (Node 26 or newer) that reads rounds from the chain, computes commits, stores salts safely and prints the exact `baw` commands, or runs them for you after you type yes (`--execute`).
 * `SKILL.md`: a Claude Code skill with the preflight, the round flow and the hard rules for agents.
 * `llms.txt`: a short machine readable summary for any agent.
 * `config.mjs`: the pinned networks and ledger addresses. The CLI has no flag to change them.
@@ -20,8 +20,8 @@ You need Node 26, the Binance Agentic Wallet CLI (`baw`, npm package `@binance/a
 From the repository root:
 
 ```bash
-# 1. See the current round and its questions
-node agent/prescient.mjs round
+# 1. See the current round and its questions (the round file adds each event question and label)
+node agent/prescient.mjs round --round-file <path or https URL of the public round JSON>
 
 # 2. Check your probabilities (percentages, one per question, clamped to 1% to 99%)
 node agent/prescient.mjs forecast --p 72,15,50
@@ -42,9 +42,15 @@ node agent/prescient.mjs reveal --from 0xYourAgenticWallet
 node agent/prescient.mjs status --from 0xYourAgenticWallet
 ```
 
-Common flags: `--network mainnet|testnet` (testnet until the mainnet ledger is pinned) and `--round N` (default: the latest round).
+Common flags: `--network mainnet|testnet` (testnet until the mainnet ledger is pinned), `--round N` (default: the latest round, or the round in the round file) and `--round-file <path or https URL>`.
 
-The CLI is dry run only. It never runs `baw` and never sends a transaction. For each commit or reveal it prints a preview command of this form, which you run yourself:
+## Question titles
+
+Every question is shown as its parent event question plus the sub market label, for example `Highest temperature in Shenzhen on November 24? · 24°C`, never as a bare label. Titles come from the public round JSON that the keeper writes when it opens a round (`--round-file`, a local path or an https URL). The CLI checks the file's network, ledger, round, question count, order, conditionIds and CTF addresses against the chain and refuses on any mismatch. A question without its event question makes the command refuse. Titles are untrusted text from Predict.fun: the CLI strips control and direction override characters and shows them as plain text only. Without `--round-file` the CLI shows question numbers and conditionIds and no titles.
+
+## Dry run (default)
+
+By default the CLI never runs `baw` and never sends a transaction. For each commit or reveal it prints a preview command of this form, which you run yourself:
 
 ```bash
 baw contract-call preview --binanceChainId 56 --from <wallet> --to <pinned ledger> --value 0 --inputData <calldata> --json
@@ -53,6 +59,29 @@ baw contract-call preview --binanceChainId 56 --from <wallet> --to <pinned ledge
 Then read `parsedTx`, `simulationResult` and `risks`, and only if you agree run `baw contract-call execute --requestId <requestId> --json`. If the result is `PENDING_CONFIRMATION`, approve it in the Binance App and do not resend. A risk block (351803) is final: do not work around it.
 
 `baw` signs on BSC mainnet (chain 56) only. On testnet the CLI also prints the raw `to`, `value` and `data` so you can send the same call from any testnet wallet.
+
+## Execute mode (`--execute`)
+
+`commit --execute` and `reveal --execute` run the wallet steps for you, in your own terminal:
+
+1. Refuse unless stdin is an interactive terminal and the network is BSC mainnet (chain 56) with a pinned ledger. There is no flag to skip the question, and a piped or scripted yes is refused. On Windows use PowerShell or Windows Terminal: Git Bash (mintty) often does not report a terminal.
+2. For a commit, save the salt and reveal receipt first, exactly as in the dry run.
+3. Preflight, read only: `baw wallet status` must be CONNECTED, `baw wallet agent-id` must show a claimed Agent ID, `baw wallet settings` must show Developer Mode enabled and not expired, `baw wallet tx-lock` must be UNLOCKED and `baw wallet tx-history --type pending` must be empty. A pending transaction stops the run, so nothing is ever sent twice.
+4. Run `baw contract-call preview` with value 0, the pinned ledger and the calldata. No gas price and no gas limit are passed.
+5. Refuse unless the preview targets the pinned ledger, has value 0, carries exactly our calldata and its simulation passed.
+6. Print parsedTx, the simulation result and every risk, then ask you to type `yes`. Anything else aborts and nothing is sent.
+7. Run `baw contract-call execute --requestId <id>` once.
+
+Results:
+
+* `BROADCASTED`: the CLI prints the txHash and an explorer link.
+* `PENDING_CONFIRMATION`: approve it in the Binance App. Never run the command again for it; it completes once approved.
+* 351802 or 351804: Developer Mode is off, expired or over its cap. In the Binance App open Agentic Wallet, Settings (top right icon), turn on Developer Mode, confirm the risk warning and approve the signature request. It lasts 7 days, each use extends it, it has its own daily limit, and the wallet balance must be under its cap.
+* 351803: risk blocked. The CLI stops. PRESCIENT never works around a risk block.
+* 351805: the simulation failed (for example the commit window closed or the reveal window is not open). Run `status`.
+* Any other error, or an unreadable result: the state is unknown. Do not resend. Check `baw wallet tx-history --type pending --binanceChainId 56 --json` and `baw wallet tx-lock --binanceChainId 56 --json` first.
+
+Every transaction has value 0 and only pays network gas. PRESCIENT never asks for funds and pays no returns.
 
 ## How salts are stored and protected
 
@@ -77,7 +106,7 @@ Without the salt your commit cannot be revealed. A commit that is not revealed b
 node --test agent/test/
 ```
 
-The tests check keccak256 vectors, the golden commit hash vector, function selectors, full calldata and result decoding against viem (installed at the repository root as a dev dependency only), probability clamping, receipt matching, the CLI refusals, and that a secret file on this machine ends up readable by the current user only.
+The tests check keccak256 vectors, the golden commit hash vector, function selectors, full calldata and result decoding against viem (installed at the repository root as a dev dependency only), probability clamping, receipt matching, the CLI refusals, round file titles and their chain cross check, and that a secret file on this machine ends up readable by the current user only. Execute mode is tested against a fake `baw` script (`test/fixtures/fake_baw.mjs`, selected by the test only variable `PRESCIENT_BAW_BIN`): the happy path, PENDING_CONFIRMATION, each error code, previews with a wrong target, value or calldata, a non TTY stdin, and every answer other than yes.
 
 ## Risk warning
 
