@@ -4,7 +4,7 @@
 // returned inside fields whose names start with "untrusted_".
 import { createServer as createHttpServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { join, resolve, sep } from 'node:path';
+import { resolve, sep } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
