@@ -1,7 +1,8 @@
 {
-  "brand": "PRESCIENT",
+  "brand": "Forewit",
+  "brandLocal": "",
   "tagline": "A forecasting track record nobody can fake, for Agent ID holders.",
-  "risk": "Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.",
+  "risk": "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.",
   "riskLocal": "",
   "nav": {
     "home": "Home",
@@ -72,7 +73,7 @@
     "tabSkill": "Claude Code skill",
     "tabCli": "CLI",
     "aiProIntro": "Paste this into Binance AI Pro, or any agent that has the Binance Agentic Wallet skill.",
-    "aiProPrompt": "Use the PRESCIENT skill. Show me today's PRESCIENT round: every question with its event question, option and market price. Help me think through my own probability for each one. Then prepare a commit from my Agent ID wallet, show me the full preview with risks, and wait for my explicit yes before sending anything. Remind me to reveal after the commit deadline.",
+    "aiProPrompt": "Use the Forewit skill. Show me today's Forewit round: every question with its event question, option and market price. Help me think through my own probability for each one. Then prepare a commit from my Agent ID wallet, show me the full preview with risks, and wait for my explicit yes before sending anything. Remind me to reveal after the commit deadline.",
     "skillIntro": "The skill file agent/SKILL.md teaches Claude Code the preflight checks, the round flow and the hard rules. Install it in a clone of the repository, then ask Claude to play.",
     "cliIntro": "The zero dependency CLI (Node 26) never signs or sends anything. It prints the exact wallet commands, and you confirm each transaction yourself.",
     "repoPending": "The repository link is published at launch.",
@@ -181,11 +182,11 @@
       {
         "h": "You confirm every transaction"
       },
-      "Your agent prepares each commit or reveal and shows you a preview: the parsed transaction, the simulation result and every risk flag. Nothing is sent until you say yes. If the wallet asks for approval in the Binance App, approve it there. No PRESCIENT prompt or skill skips this step.",
+      "Your agent prepares each commit or reveal and shows you a preview: the parsed transaction, the simulation result and every risk flag. Nothing is sent until you say yes. If the wallet asks for approval in the Binance App, approve it there. No Forewit prompt or skill skips this step.",
       {
         "list": [
           "Every transaction has value 0 and goes only to the published ledger contract. The only cost is network gas.",
-          "PRESCIENT never asks for seed phrases, private keys, pairing codes or API secrets.",
+          "Forewit never asks for seed phrases, private keys, pairing codes or API secrets.",
           "Keep your salt (the reveal receipt) private until the commit deadline. Without it you cannot reveal, and the round counts as a forfeit."
         ]
       },
@@ -204,12 +205,12 @@
   },
   "docs": {
     "title": "Docs",
-    "intro": "How PRESCIENT works, how it scores, and what its owner can and cannot do.",
+    "intro": "How Forewit works, how it scores, and what its owner can and cannot do.",
     "pages": {
       "how": {
         "title": "How it works",
         "blocks": [
-          "PRESCIENT publishes one round of real questions each day. The questions come from Predict.fun prediction markets, the markets inside Binance Wallet.",
+          "Forewit publishes one round of real questions each day. The questions come from Predict.fun prediction markets, the markets inside Binance Wallet.",
           {
             "list": [
               "Before the commit deadline, your agent sends a hidden hash of your probabilities. Nobody, including us, can read them.",
@@ -332,7 +333,8 @@
         "blocks": [
           "Foresight Arena (arXiv 2605.00420, April 2026) is an onchain benchmark for AI forecasting agents. It runs commit reveal on Polygon over Polymarket questions, scores with Brier and the Murphy decomposition, and uses ERC8004 reputation. Our mechanism is close to theirs, and we say so openly.",
           "The difference is identity. ERC8004 identities can be transferred and anyone can mint them, so a track record built on them can be bought, or faked with many identities. Agent ID is non transferable and limited to one per Binance user, which makes both the track record and the crowd forecast resistant to fake accounts.",
-          "PRESCIENT is also built for people as well as agents, and uses the prediction markets already inside Binance Wallet.",
+          "BitPredict keeps a centralized, timestamped reputation for crypto predictions. Our difference: the record lives onchain, so nobody can fake or transfer it, and it is tied to a non transferable Agent ID.",
+          "Forewit is also built for people as well as agents, and uses the prediction markets already inside Binance Wallet.",
           {
             "h": "Lessons we apply"
           },
@@ -350,11 +352,11 @@
         "title": "Risk warning",
         "blocks": [
           {
-            "strong": "Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region."
+            "strong": "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region."
           },
           {
             "list": [
-              "PRESCIENT records forecasts and scores. It is not a betting product and pays nothing out.",
+              "Forewit records forecasts and scores. It is not a betting product and pays nothing out.",
               "Each commit and reveal costs network gas, paid by you.",
               "Market prices shown here are information, not a recommendation to trade.",
               "Check the rules where you live before using prediction markets."

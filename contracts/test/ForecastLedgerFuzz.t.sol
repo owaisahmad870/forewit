@@ -130,11 +130,11 @@ contract ForecastLedgerFuzzTest is Base {
         );
         vm.chainId(56);
         ForecastLedger g = ForecastLedger(target);
-        assertEq(g.COMMIT_TYPEHASH(), 0xfd344b77a9f52091b933e8a05b249c54e9bfc617acb8dac59de86f15f89440cc);
+        assertEq(g.COMMIT_TYPEHASH(), 0xd05256df5fe0aeb27c2c0e470434c7b5edc625923ab60448c2bd569c610d4371);
         uint256 packed = 9000 | (2000 << 16) | (10_000 << 32);
         assertEq(packed, 42_949_804_041_000);
         bytes32 h = g.computeCommitHash(7, 0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5, packed, keccak256("golden"));
-        assertEq(h, 0xb0783bf99db452b430677be72e1ab49fbf4157465fa4d29e0b671e41d3fca1f7);
+        assertEq(h, 0x343e0813665598bb9ba88edb81220fe30cefbae1b52416242dc72e11c1d192b8);
     }
 
     /// Golden scoring vectors from scripts/golden_vectors.mjs (plain JavaScript reference). Round of 4 questions,

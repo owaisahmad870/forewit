@@ -1,8 +1,8 @@
 {
   "network": 97,
-  "ledger": "0xfbba24635EbfaAeCd57fc199E4bC217C86fA80Bf",
-  "builtAt": "2026-11-23T17:51:37.917Z",
-  "headBlock": "144447885",
+  "ledger": "0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1",
+  "builtAt": "2026-11-23T20:24:05.683Z",
+  "headBlock": "144468174",
   "metrics": {
     "distinctCommitters": 2,
     "rounds": 1,
@@ -13,8 +13,8 @@
       }
     },
     "windowMove": {
-      "rounds": 0,
-      "avgPts": null,
+      "rounds": 1,
+      "avgPts": 0,
       "thresholdPts": 0.5,
       "active": false
     }
@@ -24,20 +24,20 @@
       "roundId": "1",
       "questions": [
         {
-          "conditionId": "0xfb64b5235894ee6efe7732cad5aae7f30cf413311a548856ccd288ec00ae243b",
-          "ctf": "0x34E842B038e636829704AEAb8a7B65b762973530",
+          "conditionId": "0x6bea497e7cf3c50376a0aefd2a6340fae2e51e0a0896753d128625f386e19941",
+          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
           "yesSlot": 0,
           "marketId": "437"
         },
         {
-          "conditionId": "0x7c16ffe8ccb9c855c7123345e6db1ae21fd7d4ed5615d6ec7a5de772448edc3a",
-          "ctf": "0x34E842B038e636829704AEAb8a7B65b762973530",
+          "conditionId": "0x821c670ed24d05cfb259a03c9d937f0c34016389eb71a78eafa990d72bc03985",
+          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
           "yesSlot": 0,
           "marketId": "434"
         },
         {
-          "conditionId": "0x040dc4752be83c5b8da0bad54ccb64e51aad0303aca85da2e8497a452296aa6e",
-          "ctf": "0x34E842B038e636829704AEAb8a7B65b762973530",
+          "conditionId": "0xa65c1bc8f7b571bd6d655df0df537d7a43e11de43f8341c07307c9c3867ae54b",
+          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
           "yesSlot": 0,
           "marketId": "433"
         }
@@ -59,7 +59,7 @@
           "baseline": "82572500",
           "skill": "69572500",
           "baselineUsed": true,
-          "at": 1795454971
+          "at": 1795465442
         }
       },
       "forfeited": {
@@ -69,7 +69,7 @@
           "baseline": "82572500",
           "skill": "-117427500",
           "baselineUsed": true,
-          "at": 1795454976
+          "at": 1795465444
         }
       },
       "outcomes": {
@@ -78,11 +78,11 @@
         "2": "Void"
       },
       "baseline": "13529563139500",
-      "commitDeadline": "1795454600",
-      "revealDeadline": "1795454960",
+      "commitDeadline": "1795465068",
+      "revealDeadline": "1795465428",
       "resolutionWait": "86400",
-      "createdBlock": "144443704",
-      "baselineAt": 1795454429,
+      "createdBlock": "144466921",
+      "baselineAt": 1795464898,
       "crowd": {
         "method": "crowd v1: log odds pooling, equal weight below 3 resolved rounds, then 0.1 + skill/mean skill, no extremizing",
         "bps": [
@@ -99,14 +99,14 @@
       "flags": [],
       "commitTiming": {
         "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a": {
-          "at": 1795454416,
+          "at": 1795464886,
           "afterBaseline": false,
-          "gapSec": -13
+          "gapSec": -12
         },
         "0xdcde642b2da60be15048f14ecb801578098b2e5f": {
-          "at": 1795454419,
+          "at": 1795464889,
           "afterBaseline": false,
-          "gapSec": -10
+          "gapSec": -9
         }
       },
       "commitCount": 2,

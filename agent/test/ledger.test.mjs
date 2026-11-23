@@ -10,7 +10,7 @@ import {
 import {
   SIG, COMMIT_TYPEHASH, pack, unpack, parseProbabilities, commitHash, commitCalldata, revealCalldata, revealForCalldata,
   decodeRound, decodeQuestions, decodeReveal, outcomeOf, phaseOf, bawPreview, prepareCommit, saveReceipt, findReceipts, matchReceipt,
-} from '../prescient.mjs';
+} from '../forewit.mjs';
 import { NETWORKS } from '../config.mjs';
 import { selector } from '../lib/keccak.mjs';
 
@@ -40,9 +40,9 @@ const randAddr = () => getAddress(toHex(randomBytes(20)));
 const randB32 = () => toHex(randomBytes(32));
 
 test('golden vector: packed and commit hash', () => {
-  assert.equal(COMMIT_TYPEHASH, '0xfd344b77a9f52091b933e8a05b249c54e9bfc617acb8dac59de86f15f89440cc');
+  assert.equal(COMMIT_TYPEHASH, '0xd05256df5fe0aeb27c2c0e470434c7b5edc625923ab60448c2bd569c610d4371');
   assert.equal(GOLDEN.packed, 42949804041000n);
-  assert.equal(commitHash(GOLDEN), '0xb0783bf99db452b430677be72e1ab49fbf4157465fa4d29e0b671e41d3fca1f7');
+  assert.equal(commitHash(GOLDEN), '0x343e0813665598bb9ba88edb81220fe30cefbae1b52416242dc72e11c1d192b8');
 });
 
 test('commit hash matches viem abi.encode on random inputs', () => {
@@ -131,7 +131,7 @@ test('baw preview command has the exact external sign format', () => {
 });
 
 test('receipts: one file per commit, reveal picks the one matching the onchain commit', () => {
-  const home = mkdtempSync(join(tmpdir(), 'prescient_receipts_'));
+  const home = mkdtempSync(join(tmpdir(), 'forewit_receipts_'));
   try {
     const net = NETWORKS.testnet;
     const from = randAddr();
@@ -141,7 +141,7 @@ test('receipts: one file per commit, reveal picks the one matching the onchain c
     assert.equal(a.commitHash, commitHash({ chainId: 97, ledger: net.ledger, roundId: 3, forecaster: from, packed: pack([7000, 2000]), salt: a.salt }));
     saveReceipt(a, home);
     saveReceipt(b, home);
-    writeFileSync(join(home, '.prescient', 'junk.json'), '{not json');
+    writeFileSync(join(home, '.forewit', 'junk.json'), '{not json');
     const found = findReceipts({ chainId: 97, ledger: net.ledger, roundId: 3, forecaster: from.toLowerCase() }, home);
     assert.equal(found.length, 2);
     assert.equal(matchReceipt(found, a.commitHash).salt, a.salt);

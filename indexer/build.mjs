@@ -1,4 +1,4 @@
-// PRESCIENT indexer v1: rebuilds rounds, revealed forecasts, scores, public profiles, the Agent ID Crowd (docs/CROWD.md)
+// Forewit indexer v1: rebuilds rounds, revealed forecasts, scores, public profiles, the Agent ID Crowd (docs/CROWD.md)
 // and daily metrics from ForecastLedger events only. Anyone can rerun it from chain data:
 //   node indexer/build.mjs --network testnet|mainnet --ledger <address> --from-block <n> [--abi <file>] [--rpc <url>]
 // Writes indexer/out/<network>/<ledger>/snapshot.json. Logs are cached per ledger so reruns only fetch new blocks.

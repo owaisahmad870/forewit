@@ -6,10 +6,10 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { prepareCommit, saveReceipt } from '../prescient.mjs';
+import { prepareCommit, saveReceipt } from '../forewit.mjs';
 import { NETWORKS, RISK_WARNING } from '../config.mjs';
 
-const CLI = fileURLToPath(new URL('../prescient.mjs', import.meta.url));
+const CLI = fileURLToPath(new URL('../forewit.mjs', import.meta.url));
 const FROM = '0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5';
 
 function cli(args, home) {
@@ -18,7 +18,7 @@ function cli(args, home) {
 }
 
 test('CLI', async (t) => {
-  const home = mkdtempSync(join(tmpdir(), 'prescient_cli_'));
+  const home = mkdtempSync(join(tmpdir(), 'forewit_cli_'));
   t.after(() => rmSync(home, { recursive: true, force: true }));
 
   await t.test('help', () => {

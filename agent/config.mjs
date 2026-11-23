@@ -12,7 +12,7 @@ export const NETWORKS = Object.freeze({
   testnet: Object.freeze({
     name: 'testnet',
     chainId: 97,
-    ledger: '0xfbba24635EbfaAeCd57fc199E4bC217C86fA80Bf',
+    ledger: '0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1', // instance E (Forewit build); A to D are deprecated,
     rpc: 'https://bsc-testnet-rpc.publicnode.com',
     explorer: 'https://testnet.bscscan.com',
   }),
@@ -30,4 +30,4 @@ export const MAX_QUESTIONS = 16;
 
 // Spec 7.3, verbatim.
 export const RISK_WARNING =
-  'Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.';
+  'Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.';

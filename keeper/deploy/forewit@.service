@@ -1,0 +1,29 @@
+# One keeper command per instance: forewit@tick, forewit@daily, forewit@baseline, forewit@watchdog.
+# Secrets come from an encrypted systemd credential (systemd-creds), decrypted only for this process.
+[Unit]
+Description=Forewit keeper %i (BSC mainnet)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=forewit
+Group=forewit
+WorkingDirectory=/opt/forewit/app
+LoadCredentialEncrypted=keeper.env:/etc/forewit/keeper.env.cred
+ExecStart=/bin/sh -c 'exec /opt/forewit/node/bin/node --env-file="$CREDENTIALS_DIRECTORY/keeper.env" keeper/keeper.mjs %i --network mainnet'
+TimeoutStartSec=50min
+# hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/forewit/app/keeper/state /opt/forewit/app/keeper/archive /opt/forewit/app/indexer/out /opt/forewit/app/web/public/data
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+# 0022 so published site data is readable by a web server; salts are written 0600 explicitly (agent/lib/secure_file.mjs)
+UMask=0022

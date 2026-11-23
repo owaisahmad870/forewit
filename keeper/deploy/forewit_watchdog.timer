@@ -1,10 +1,10 @@
 # Read only missed duty check from onchain state (GitHub Actions runs the same check as a second, independent watchdog).
 [Unit]
-Description=PRESCIENT watchdog
+Description=Forewit watchdog
 
 [Timer]
 OnCalendar=*-*-* *:10/30:00 UTC
-Unit=prescient@watchdog.service
+Unit=forewit@watchdog.service
 
 [Install]
 WantedBy=timers.target

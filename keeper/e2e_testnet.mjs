@@ -38,7 +38,7 @@ if (markets.length < 3) throw new Error('fewer than 3 two sided testnet books');
 // 2. mock conditions and forecaster Agent IDs
 const conds = [];
 for (let i = 0; i < 3; i++) {
-  const c = keccak256(toHex(`prescient e2e v1.1 q${i} ${Date.now()}`));
+  const c = keccak256(toHex(`forewit e2e v1.1 q${i} ${Date.now()}`));
   await send(keeper, CTF, 'MockConditionalTokens', 'prepare', [c, 2n]);
   conds.push(c);
 }

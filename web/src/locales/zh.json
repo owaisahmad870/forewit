@@ -1,8 +1,9 @@
 {
-  "brand": "PRESCIENT",
+  "brand": "Forewit",
+  "brandLocal": "先见",
   "tagline": "为 Agent ID 持有者打造、无法伪造的预测记录。",
-  "risk": "Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.",
-  "riskLocal": "仅为预测评分，不构成财务建议。PRESCIENT 不接受投注、不持有资金、不支付任何回报。预测市场和加密资产风险较高，在你所在的地区可能受到限制。",
+  "risk": "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.",
+  "riskLocal": "仅为预测评分，不构成财务建议。Forewit 不接受投注、不持有资金、不支付任何回报。预测市场和加密资产风险较高，在你所在的地区可能受到限制。",
   "nav": {
     "home": "首页",
     "rounds": "轮次",
@@ -72,7 +73,7 @@
     "tabSkill": "Claude Code 技能",
     "tabCli": "命令行",
     "aiProIntro": "将以下内容粘贴到 Binance AI Pro，或任何装有 Binance Agentic Wallet 技能的智能体中。",
-    "aiProPrompt": "使用 PRESCIENT 技能。展示今天的 PRESCIENT 轮次：每个问题的事件问题、选项和市场价格。帮我为每个问题形成我自己的概率判断。然后从我的 Agent ID 钱包准备一次提交，向我展示包含风险的完整预览，在发送任何交易之前等待我明确确认。提醒我在提交截止后进行揭示。",
+    "aiProPrompt": "使用 Forewit 技能。展示今天的 Forewit 轮次：每个问题的事件问题、选项和市场价格。帮我为每个问题形成我自己的概率判断。然后从我的 Agent ID 钱包准备一次提交，向我展示包含风险的完整预览，在发送任何交易之前等待我明确确认。提醒我在提交截止后进行揭示。",
     "skillIntro": "技能文件 agent/SKILL.md 教 Claude Code 完成预检、轮次流程和硬性规则。在仓库的本地副本中安装它，然后让 Claude 开始。",
     "cliIntro": "零依赖命令行工具（Node 26）从不签名或发送任何内容。它打印出确切的钱包命令，每笔交易都由你亲自确认。",
     "repoPending": "仓库链接将在发布时公开。",
@@ -181,11 +182,11 @@
       {
         "h": "每笔交易都由你确认"
       },
-      "你的智能体会准备每次提交或揭示，并向你展示预览：解析后的交易、模拟结果和所有风险标记。在你同意之前不会发送任何内容。如果钱包要求在 Binance App 中批准，请在那里批准。PRESCIENT 的任何提示词或技能都不会跳过这一步。",
+      "你的智能体会准备每次提交或揭示，并向你展示预览：解析后的交易、模拟结果和所有风险标记。在你同意之前不会发送任何内容。如果钱包要求在 Binance App 中批准，请在那里批准。Forewit 的任何提示词或技能都不会跳过这一步。",
       {
         "list": [
           "每笔交易的金额都是 0，且只发送到公开的账本合约。唯一的费用是网络 gas。",
-          "PRESCIENT 从不索要助记词、私钥、配对码或 API 密钥。",
+          "Forewit 从不索要助记词、私钥、配对码或 API 密钥。",
           "在提交截止前请妥善保管你的 salt（揭示凭证）。没有它就无法揭示，该轮将被记为弃权。"
         ]
       },
@@ -204,12 +205,12 @@
   },
   "docs": {
     "title": "文档",
-    "intro": "PRESCIENT 如何运作、如何评分，以及合约所有者能做和不能做的事。",
+    "intro": "Forewit 如何运作、如何评分，以及合约所有者能做和不能做的事。",
     "pages": {
       "how": {
         "title": "运作方式",
         "blocks": [
-          "PRESCIENT 每天发布一轮真实问题。问题来自 Predict.fun 预测市场，也就是 Binance Wallet 内置的市场。",
+          "Forewit 每天发布一轮真实问题。问题来自 Predict.fun 预测市场，也就是 Binance Wallet 内置的市场。",
           {
             "list": [
               "在提交截止前，你的智能体发送你概率的隐藏哈希。包括我们在内，没有人能读取。",
@@ -332,7 +333,8 @@
         "blocks": [
           "Foresight Arena（arXiv 2605.00420，2026 年 4 月）是一个面向 AI 预测智能体的链上基准。它在 Polygon 上针对 Polymarket 问题运行提交揭示机制，用 Brier 和 Murphy 分解评分，并使用 ERC8004 声誉。我们的机制与其接近，我们公开说明这一点。",
           "区别在于身份。ERC8004 身份可以转让，任何人都能铸造，因此基于它的记录可以被购买，或用大量身份伪造。Agent ID 不可转让，且每位 Binance 用户限一个，使记录和群体预测都能抵御虚假账户。",
-          "PRESCIENT 同时面向人和智能体，并使用 Binance Wallet 内已有的预测市场。",
+          "BitPredict 为加密货币预测维护中心化、带时间戳的声誉记录。我们的区别：记录在链上，任何人都无法伪造或转让，并且绑定不可转让的 Agent ID。",
+          "Forewit 同时面向人和智能体，并使用 Binance Wallet 内已有的预测市场。",
           {
             "h": "我们吸取的经验"
           },
@@ -350,12 +352,12 @@
         "title": "风险提示",
         "blocks": [
           {
-            "strong": "Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region."
+            "strong": "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region."
           },
-          "仅为预测评分，不构成财务建议。PRESCIENT 不接受投注、不持有资金、不支付任何回报。预测市场和加密资产风险较高，在你所在的地区可能受到限制。",
+          "仅为预测评分，不构成财务建议。Forewit 不接受投注、不持有资金、不支付任何回报。预测市场和加密资产风险较高，在你所在的地区可能受到限制。",
           {
             "list": [
-              "PRESCIENT 记录预测和分数。它不是投注产品，不支付任何款项。",
+              "Forewit 记录预测和分数。它不是投注产品，不支付任何款项。",
               "每次提交和揭示都需要由你支付网络 gas。",
               "此处显示的市场价格仅供参考，不是交易建议。",
               "使用预测市场前，请先了解你所在地区的规定。"

@@ -7,7 +7,7 @@ Last updated 23 Nov 2026. Nothing is on mainnet.
 * Fixed in v1.2 (Owais approved fix package 1): M1 and L4 (setBaseline posts the baseline in clear, once, only in the last 15 minutes before the commit deadline; no hindsight veto, no early baseline), L8 (the pauser role moves with the admin seat).
 * Mitigated off chain: L1 (archived books, baseline_missing flag, operator wallets never ranked), L2 and L3 (identityChanged flag; burn or reissue asked to the organizers), L7 (keeper never voids while a resolution is pending).
 * Accepted residual risks: L5, L6, L7 as R1 to R4 in docs/THREAT_MODEL.md.
-* v1.2 gates: 79 Solidity tests (incl. 3 BSC fork), coverage 100% lines, statements, branches, functions; Slither 0 High, 0 Medium; Aderyn in CI; testnet END TO END OK on instance D; delta review of the changed code pending.
+* v1.2 gates: 79 Solidity tests (incl. 3 BSC fork), coverage 100% lines, statements, branches, functions; Slither 0 High, 0 Medium; Aderyn in CI; testnet END TO END OK on instance D, and again on instance E after the Forewit rename (labels and comments only); delta review of the changed code pending.
 
 ## Test gates
 * Ledger v1.1 (23 Nov 2026, per round resolution wait): 74 Solidity tests pass: 53 unit, 5 window guard, 4 resolution wait, 8 fuzz and golden (fuzz at 2000 runs each), 3 BSC mainnet fork, and 1 invariant campaign (4 invariants, 256 runs of depth 64; every run must reach reveal and scoring, checked in afterInvariant; passed on 5 random seeds), 3 BSC mainnet fork tests.

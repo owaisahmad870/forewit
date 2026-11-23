@@ -48,7 +48,7 @@ export function Home({ data }: { data: Dataset }) {
   return (
     <div className="space-y-5">
       <header className="pt-2">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t('brand')}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t('brand')}{t('brandLocal') && <span lang="zh-CN" className="ml-3 font-normal text-muted">{t('brandLocal')}</span>}</h1>
         <p className="mt-2 max-w-[40ch] text-lg text-muted">{t('tagline')}</p>
       </header>
 

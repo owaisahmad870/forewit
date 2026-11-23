@@ -1,14 +1,14 @@
-# PRESCIENT agent toolkit
+# Forewit agent toolkit
 
-Play PRESCIENT daily forecast rounds with your Binance Agentic Wallet and Agent ID.
+Play Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID.
 
-> Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.
+> Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.
 
-Every transaction this toolkit prepares has value 0 and goes to one pinned contract. PRESCIENT never asks for funds and pays nothing out; the only cost is network gas.
+Every transaction this toolkit prepares has value 0 and goes to one pinned contract. Forewit never asks for funds and pays nothing out; the only cost is network gas.
 
 This folder holds:
 
-* `prescient.mjs`: a zero dependency Node CLI (Node 26 or newer) that reads rounds from the chain, computes commits, stores salts safely and prints the exact `baw` commands, or runs them for you after you type yes (`--execute`).
+* `forewit.mjs`: a zero dependency Node CLI (Node 26 or newer) that reads rounds from the chain, computes commits, stores salts safely and prints the exact `baw` commands, or runs them for you after you type yes (`--execute`).
 * `SKILL.md`: a Claude Code skill with the preflight, the round flow and the hard rules for agents.
 * `llms.txt`: a short machine readable summary for any agent.
 * `config.mjs`: the pinned networks and ledger addresses. The CLI has no flag to change them.
@@ -21,25 +21,25 @@ From the repository root:
 
 ```bash
 # 1. See the current round and its questions (the round file adds each event question and label)
-node agent/prescient.mjs round --round-file <path or https URL of the public round JSON>
+node agent/forewit.mjs round --round-file <path or https URL of the public round JSON>
 
 # 2. Check your probabilities (percentages, one per question, clamped to 1% to 99%)
-node agent/prescient.mjs forecast --p 72,15,50
+node agent/forewit.mjs forecast --p 72,15,50
 
 # 3. Your wallet address: the binanceChainId 56 entry
 baw wallet address --json
 
 # 4. Commit: saves your salt, then prints the baw preview and execute commands
-node agent/prescient.mjs commit --from 0xYourAgenticWallet --p 72,15,50
+node agent/forewit.mjs commit --from 0xYourAgenticWallet --p 72,15,50
 
 # 5. Back up the reveal receipt somewhere private
-node agent/prescient.mjs receipt --from 0xYourAgenticWallet
+node agent/forewit.mjs receipt --from 0xYourAgenticWallet
 
 # 6. After the commit deadline, before the reveal deadline
-node agent/prescient.mjs reveal --from 0xYourAgenticWallet
+node agent/forewit.mjs reveal --from 0xYourAgenticWallet
 
 # Any time
-node agent/prescient.mjs status --from 0xYourAgenticWallet
+node agent/forewit.mjs status --from 0xYourAgenticWallet
 ```
 
 Common flags: `--network mainnet|testnet` (testnet until the mainnet ledger is pinned), `--round N` (default: the latest round, or the round in the round file) and `--round-file <path or https URL>`.
@@ -77,28 +77,28 @@ Results:
 * `BROADCASTED`: the CLI prints the txHash and an explorer link.
 * `PENDING_CONFIRMATION`: approve it in the Binance App. Never run the command again for it; it completes once approved.
 * 351802 or 351804: Developer Mode is off, expired or over its cap. In the Binance App open Agentic Wallet, Settings (top right icon), turn on Developer Mode, confirm the risk warning and approve the signature request. It lasts 7 days, each use extends it, it has its own daily limit, and the wallet balance must be under its cap.
-* 351803: risk blocked. The CLI stops. PRESCIENT never works around a risk block.
+* 351803: risk blocked. The CLI stops. Forewit never works around a risk block.
 * 351805: the simulation failed (for example the commit window closed or the reveal window is not open). Run `status`.
 * Any other error, or an unreadable result: the state is unknown. Do not resend. Check `baw wallet tx-history --type pending --binanceChainId 56 --json` and `baw wallet tx-lock --binanceChainId 56 --json` first.
 
-Every transaction has value 0 and only pays network gas. PRESCIENT never asks for funds and pays no returns.
+Every transaction has value 0 and only pays network gas. Forewit never asks for funds and pays no returns.
 
 ## How salts are stored and protected
 
 A commit is a hash of your probabilities and a random 32 byte salt. The salt keeps your forecast hidden until the deadline, and you need it again to reveal.
 
-* `commit` makes the salt with `crypto.randomBytes(32)` and writes a reveal receipt (round, wallet, probabilities, packed value, salt, commit hash, deadlines) to `~/.prescient/` before it prints anything else. If saving fails, nothing is printed and you have nothing to send.
+* `commit` makes the salt with `crypto.randomBytes(32)` and writes a reveal receipt (round, wallet, probabilities, packed value, salt, commit hash, deadlines) to `~/.forewit/` before it prints anything else. If saving fails, nothing is printed and you have nothing to send.
 * Each commit gets its own file, named after the chain, ledger, round, wallet and commit hash. Committing again in the same round never overwrites an older salt, and `reveal` picks the receipt whose hash matches the commit that is actually onchain.
 * Writes are atomic: a temporary file in the same folder is written, flushed, locked and then renamed into place.
 * POSIX (Linux, macOS): the folder is mode 0700 and each file 0600, checked after writing.
 * Windows: the CLI runs `icacls` from `System32` (no shell) to remove inherited permissions and every other entry on the folder and the file, granting full control only to the account reported by `whoami`. It then reads the permissions back and fails closed (deletes the file and stops) if any other principal remains, including SYSTEM, Administrators, Users, Authenticated Users or Everyone.
 * The CLI never uploads a salt or your forecast before you send the commit. It checks its hash encoding against the contract's `computeCommitHash` using a separate throwaway salt and dummy forecast. Do not share your salt before the commit deadline: anyone holding it can learn your forecast.
 
-A restored receipt copied back into `~/.prescient/` by hand keeps whatever permissions the copy got, so keep backups somewhere private (a password manager or an offline note).
+A restored receipt copied back into `~/.forewit/` by hand keeps whatever permissions the copy got, so keep backups somewhere private (a password manager or an offline note).
 
 ## Lost salt means forfeit
 
-Without the salt your commit cannot be revealed. A commit that is not revealed by the reveal deadline is scored as a forfeit: every non void question counts with the worst possible Brier score. Back up each receipt with `node agent/prescient.mjs receipt`, and come back during the reveal window.
+Without the salt your commit cannot be revealed. A commit that is not revealed by the reveal deadline is scored as a forfeit: every non void question counts with the worst possible Brier score. Back up each receipt with `node agent/forewit.mjs receipt`, and come back during the reveal window.
 
 ## Tests
 
@@ -106,8 +106,8 @@ Without the salt your commit cannot be revealed. A commit that is not revealed b
 node --test agent/test/
 ```
 
-The tests check keccak256 vectors, the golden commit hash vector, function selectors, full calldata and result decoding against viem (installed at the repository root as a dev dependency only), probability clamping, receipt matching, the CLI refusals, round file titles and their chain cross check, and that a secret file on this machine ends up readable by the current user only. Execute mode is tested against a fake `baw` script (`test/fixtures/fake_baw.mjs`, selected by the test only variable `PRESCIENT_BAW_BIN`): the happy path, PENDING_CONFIRMATION, each error code, previews with a wrong target, value or calldata, a non TTY stdin, and every answer other than yes.
+The tests check keccak256 vectors, the golden commit hash vector, function selectors, full calldata and result decoding against viem (installed at the repository root as a dev dependency only), probability clamping, receipt matching, the CLI refusals, round file titles and their chain cross check, and that a secret file on this machine ends up readable by the current user only. Execute mode is tested against a fake `baw` script (`test/fixtures/fake_baw.mjs`, selected by the test only variable `FOREWIT_BAW_BIN`): the happy path, PENDING_CONFIRMATION, each error code, previews with a wrong target, value or calldata, a non TTY stdin, and every answer other than yes.
 
 ## Risk warning
 
-Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.
+Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.

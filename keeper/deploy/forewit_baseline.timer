@@ -1,12 +1,12 @@
 # Baseline posted in clear about 5 minutes before the 23:00 UTC deadline; the contract accepts it only in the last 15 minutes.
 [Unit]
-Description=PRESCIENT baseline snapshot
+Description=Forewit baseline snapshot
 
 [Timer]
 OnCalendar=*-*-* 22:55:00 UTC
 AccuracySec=1s
 Persistent=false
-Unit=prescient@baseline.service
+Unit=forewit@baseline.service
 
 [Install]
 WantedBy=timers.target

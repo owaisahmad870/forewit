@@ -26,4 +26,4 @@
   * reveal with baseline: 3 questions, Brier 25,250,000, baseline Brier 50,000,000, skill 24,750,000;
   * reveal without baseline: 3 questions, Brier 25,250,000, skill 0;
   * forfeit with baseline: 3 questions, Brier 300,000,000, baseline Brier 50,000,000, skill minus 250,000,000.
-* Commit hash for chain 56, ledger 0x1111111111111111111111111111111111111111, round 7, forecaster 0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5, forecast [9000, 2000, 10000], salt keccak256("golden"): 0xb0783bf99db452b430677be72e1ab49fbf4157465fa4d29e0b671e41d3fca1f7.
+* Commit hash for chain 56, ledger 0x1111111111111111111111111111111111111111, round 7, forecaster 0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5, forecast [9000, 2000, 10000], salt keccak256("golden"): 0x343e0813665598bb9ba88edb81220fe30cefbae1b52416242dc72e11c1d192b8.
