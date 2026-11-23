@@ -46,7 +46,8 @@ function Header({ route, theme, setTheme }: { route: string[]; theme: string; se
     <header className="border-b border-line">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-2">
         <a href="#/" className="flex min-h-11 items-center gap-2 font-semibold tracking-wide">
-          <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><line x1="2" y1="11" x2="20" y2="11" className="stroke-muted" strokeWidth="1.5" /><rect x="5" y="7" width="8" height="8" rx="1" transform="rotate(45 9 11)" className="fill-accent" /></svg>
+          {/* Same mark as public/favicon.svg: a forecast on the 0 to 1 probability scale. */}
+          <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16h24M4 12.5v7M28 12.5v7" className="stroke-muted" strokeWidth="2" strokeLinecap="round" fill="none" /><path d="M13 9.5l6.5 6.5-6.5 6.5-6.5-6.5z" className="fill-accent" /></svg>
           {t('brand')}
           {t('brandLocal') && <span lang="zh-CN" className="font-normal text-muted">{t('brandLocal')}</span>}
         </a>
@@ -99,6 +100,8 @@ function Footer({ data }: { data: Dataset | null }) {
           <a href="#/docs/risk" className="inline-flex min-h-11 items-center text-accent">{t('docs.pages.risk.title')}</a>
           <a href="#/docs/owner" className="inline-flex min-h-11 items-center text-accent">{t('docs.pages.owner.title')}</a>
           <a href="#/profile" className="inline-flex min-h-11 items-center text-accent">{t('profile.title')}</a>
+          <a href="https://forewit.xyz/" className="inline-flex min-h-11 items-center text-accent">forewit.xyz</a>
+          <a href="https://x.com/forewitai" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-accent">{t('ui.onX')}</a>
         </p>
       </div>
     </footer>

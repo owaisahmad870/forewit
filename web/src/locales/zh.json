@@ -1,7 +1,7 @@
 {
   "brand": "Forewit",
   "brandLocal": "先见",
-  "tagline": "为 Agent ID 持有者打造、无法伪造的预测记录。",
+  "tagline": "无法伪造、无法买卖的预测记录。一个 Agent ID，一份记录，与市场价格对比评分。",
   "risk": "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.",
   "riskLocal": "仅为预测评分，不构成财务建议。Forewit 不接受投注、不持有资金、不支付任何回报。预测市场和加密资产风险较高，在你所在的地区可能受到限制。",
   "nav": {
@@ -34,7 +34,8 @@
     "lowerBetter": "越低越好",
     "range": "{a}% 至 {b}%",
     "sampleBadge": "示例数据",
-    "skip": "跳到正文"
+    "skip": "跳到正文",
+    "onX": "X 上的 @forewitai"
   },
   "phase": {
     "commit": "提交中",
