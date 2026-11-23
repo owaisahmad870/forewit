@@ -1,7 +1,7 @@
 // Runs `commit` and `reveal` in process against a stubbed RPC, and proves the real salt and forecast never leave the machine.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { encodeFunctionResult, decodeFunctionData, parseAbi, keccak256, encodeAbiParameters } from 'viem';
@@ -98,4 +98,59 @@ test('commit saves the salt first, never sends it, and reveal finds it', async (
   // After the reveal deadline the window is closed.
   chain.now = 2001;
   await assert.rejects(main(['reveal', '--network', 'testnet', '--from', FROM]), /closed/);
+});
+
+test('round file titles: event question plus label, cross checked with the chain', async (t) => {
+  const home = mkdtempSync(join(tmpdir(), 'prescient_titles_'));
+  const saved = { fetch: globalThis.fetch, log: console.log, HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
+  const out = [];
+  process.env.HOME = home;
+  process.env.USERPROFILE = home;
+  globalThis.fetch = fakeRpc({ now: 500, commit: ZERO32 }, []);
+  console.log = (...a) => out.push(a.join(' '));
+  t.after(() => {
+    Object.assign(globalThis, { fetch: saved.fetch });
+    console.log = saved.log;
+    for (const k of ['HOME', 'USERPROFILE']) if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k];
+    rmSync(home, { recursive: true, force: true });
+  });
+  const questions = () => [
+    { index: 0, marketId: '1', conditionId: '0x' + '11'.repeat(32), ctf: FROM, eventQuestion: 'Highest temperature in Shenzhen on November 24?', label: '24°C', marketQuestion: null, endsAt: null, tags: [] },
+    { index: 1, marketId: '2', conditionId: '0x' + '22'.repeat(32), ctf: FROM.toLowerCase(), eventQuestion: 'Bitcoin Up or Down on November 24?', label: 'Bitcoin Up or Down on November 24?', marketQuestion: null, endsAt: null, tags: [] },
+  ];
+  const roundFile = (name, mutate = (f) => f) => {
+    const f = mutate({ network: 97, ledger: net.ledger.toLowerCase(), roundId: '1', kind: 'daily', rule: 'v3', commitDeadline: '2026-11-24T00:00:00.000Z', revealDeadline: '2026-11-25T00:00:00.000Z', resolutionWaitSeconds: '604800', questions: questions() });
+    const p = join(home, name);
+    writeFileSync(p, JSON.stringify(f));
+    return p;
+  };
+
+  await main(['round', '--network', 'testnet', '--round-file', roundFile('good.json')]);
+  let printed = out.join('\n');
+  assert.ok(printed.includes('1. Highest temperature in Shenzhen on November 24? · 24°C'), printed);
+  assert.ok(printed.includes('2. Bitcoin Up or Down on November 24?\n'), 'same event and label is shown once');
+
+  out.length = 0;
+  await main(['commit', '--network', 'testnet', '--from', FROM, '--p', '70,40', '--round-file', roundFile('good2.json')]);
+  assert.ok(out.join('\n').includes('question 1: 70.00%  Highest temperature in Shenzhen on November 24? · 24°C'));
+
+  // A question without its event question refuses the whole command and prints nothing, not even the bare label.
+  for (const cmd of [['round'], ['commit', '--from', FROM, '--p', '70,40'], ['status', '--from', FROM]]) {
+    out.length = 0;
+    const p = roundFile('bare.json', (f) => { delete f.questions[0].eventQuestion; return f; });
+    await assert.rejects(main([...cmd, '--network', 'testnet', '--round-file', p]), /no event question/);
+    assert.ok(!out.join('\n').includes('24°C'), `${cmd[0]} printed a bare label`);
+  }
+
+  // Any mismatch with the chain refuses.
+  for (const [name, mutate] of [
+    ['cond.json', (f) => { f.questions[1].conditionId = '0x' + '33'.repeat(32); return f; }],
+    ['ledger.json', (f) => { f.ledger = FROM; return f; }],
+    ['net.json', (f) => { f.network = 56; return f; }],
+    ['count.json', (f) => { f.questions.pop(); return f; }],
+    ['index.json', (f) => { f.questions.reverse(); return f; }],
+  ]) {
+    await assert.rejects(main(['round', '--network', 'testnet', '--round-file', roundFile(name, mutate)]), /does not match the chain/, name);
+  }
+  await assert.rejects(main(['round', '--network', 'testnet', '--round-file', 'http://example.com/1.json']), /https/);
 });
