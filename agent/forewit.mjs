@@ -219,9 +219,9 @@ async function rpc(net, method, params) {
   return body.result;
 }
 
-const ethCall = (net, data) => rpc(net, 'eth_call', [{ to: net.ledger, data }, 'latest']);
+export const ethCall = (net, data) => rpc(net, 'eth_call', [{ to: net.ledger, data }, 'latest']);
 
-async function chainNow(net) {
+export async function chainNow(net) {
   const id = await rpc(net, 'eth_chainId', []);
   if (Number(id) !== net.chainId) throw new Error(`RPC reports chain ${clean(id)}, expected ${net.chainId}; refusing`);
   const block = await rpc(net, 'eth_getBlockByNumber', ['latest', false]);
@@ -229,7 +229,7 @@ async function chainNow(net) {
   return Number(block.timestamp);
 }
 
-async function loadRound(net, roundArg) {
+export async function loadRound(net, roundArg) {
   const now = await chainNow(net);
   const [count] = decodeWords(await ethCall(net, encodeCall(SIG.roundCount, [])));
   if (count === 0n) throw new Error('no rounds exist on this ledger yet');
@@ -347,7 +347,7 @@ function printWalletSteps(net, from, data, what) {
 
 // Commands
 
-function network(name) {
+export function network(name) {
   const net = NETWORKS[name ?? DEFAULT_NETWORK];
   if (!net) throw new Error(`unknown network "${clean(name)}"; use mainnet or testnet`);
   if (!net.ledger) throw new Error(`the ${net.name} ledger is not deployed yet, so the CLI refuses to read or write it. Use --network testnet.`);
@@ -408,15 +408,14 @@ function cmdForecast(o) {
   footer();
 }
 
-async function cmdCommit(o) {
-  const net = network(o.network);
-  const from = needFrom(o.from);
-  const { bps, clamped } = parseProbabilities(o.p);
-  if (o.execute) assertCanExecute(net, ttyIo);
-  const { id, now, round, titles } = await loadRoundTitled(net, o);
+/**
+ * Chain checks plus the saved receipt for one commit. Prints nothing; shared by the CLI and the MCP server.
+ * The salt is written to disk before this returns, so nothing can be sent for a commit whose salt is not saved.
+ */
+export async function commitPlan({ net, from, bps, home, loaded }) {
+  const { id, now, round } = loaded;
   if (now >= round.commitDeadline) throw new Error(`commits for round ${id} closed at ${fmtTime(round.commitDeadline)}`);
   if (bps.length !== round.questionCount) throw new Error(`round ${id} has ${round.questionCount} questions, you gave ${bps.length} probabilities`);
-
   const receipt = prepareCommit({ net, roundId: id, from, bps, salt: bytesToHex(randomBytes(32)), round });
   // Cross check the encoding against the deployed computeCommitHash with throwaway inputs: the real salt never leaves this machine.
   const probe = { chainId: net.chainId, ledger: net.ledger, roundId: id, forecaster: from, packed: pack([5000]), salt: bytesToHex(randomBytes(32)) };
@@ -424,7 +423,17 @@ async function cmdCommit(o) {
     [wordUint(id), wordAddress(from), wordUint(probe.packed), wordBytes32(probe.salt)])));
   if (wordToBytes32(onchainHash) !== commitHash(probe)) throw new Error('local commit hash encoding differs from the ledger computeCommitHash; refusing');
   const [existing] = decodeWords(await ethCall(net, encodeCall(SIG.getCommit, [wordUint(id), wordAddress(from)])));
-  const file = saveReceipt(receipt, o.home); // the salt is on disk before anything is printed
+  const file = saveReceipt(receipt, home);
+  return { receipt, file, existing: existing !== 0n, data: commitCalldata(id, receipt.commitHash) };
+}
+
+async function cmdCommit(o) {
+  const net = network(o.network);
+  const from = needFrom(o.from);
+  const { bps, clamped } = parseProbabilities(o.p);
+  if (o.execute) assertCanExecute(net, ttyIo);
+  const { id, now, round, titles } = await loadRoundTitled(net, o);
+  const { receipt, file, existing, data: commitData } = await commitPlan({ net, from, bps, home: o.home, loaded: { id, now, round } });
 
   say(
     `Saved reveal receipt (salt included, owner only access): ${file}`,
@@ -435,8 +444,7 @@ async function cmdCommit(o) {
   bps.forEach((b, i) => say(forecastLine(titles, i, b) + (clamped.includes(i) ? '  (clamped to the 1% to 99% range)' : '')));
   if (!titles) say(NO_TITLES);
   say(`packed: ${receipt.packed}`, `commit hash: ${receipt.commitHash} (encoding checked against the ledger computeCommitHash with a throwaway salt)`);
-  if (existing !== 0n) say('', 'NOTE: this wallet already committed in this round. Sending this commit replaces it; the older receipt is kept in case this one never lands.');
-  const commitData = commitCalldata(id, receipt.commitHash);
+  if (existing) say('', 'NOTE: this wallet already committed in this round. Sending this commit replaces it; the older receipt is kept in case this one never lands.');
   if (o.execute) await sendWithConfirmation({ net, from, data: commitData, what: `commit for round ${id}`, io: ttyIo });
   else printWalletSteps(net, from, commitData, `commit for round ${id}`);
   say(
@@ -448,36 +456,47 @@ async function cmdCommit(o) {
   footer();
 }
 
+/**
+ * Chain checks plus the matching local receipt for one reveal. Prints nothing; shared by the CLI and the MCP server.
+ * Refuses before the commit deadline (chain time), so the salt in the reveal calldata is never exposed while commits are open.
+ * Returns { alreadyRevealed: true } when there is nothing to do.
+ */
+export async function revealPlan({ net, from, home, loaded }) {
+  const { id, now, round } = loaded;
+  if (now < round.commitDeadline) throw new Error(`reveal for round ${id} opens at ${fmtTime(round.commitDeadline)} (${fmtIn(round.commitDeadline - now)}); revealing early is refused`);
+  if (now > round.revealDeadline) throw new Error(`the reveal window for round ${id} closed at ${fmtTime(round.revealDeadline)}; an unrevealed commit counts as a forfeit`);
+  const { status } = decodeReveal(await ethCall(net, encodeCall(SIG.getReveal, [wordUint(id), wordAddress(from)])));
+  if (status & STATUS.revealed) return { alreadyRevealed: true };
+  const [c] = decodeWords(await ethCall(net, encodeCall(SIG.getCommit, [wordUint(id), wordAddress(from)])));
+  if (c === 0n) throw new Error(`no commit onchain for ${from} in round ${id}. If a commit is pending, check: baw wallet tx-history --type pending --binanceChainId 56 --json`);
+  const onchain = wordToBytes32(c);
+  const receipts = findReceipts({ chainId: net.chainId, ledger: net.ledger, roundId: id, forecaster: from }, home);
+  const r = matchReceipt(receipts, onchain);
+  if (!r) {
+    throw new Error(`no local receipt matches the onchain commit ${onchain} (found ${receipts.length} receipt(s) for this round in ${receiptDir(home)}). ` +
+      'Restore your backup receipt into that folder. Without the salt the reveal is impossible and the round counts as a forfeit.');
+  }
+  const bps = unpack(BigInt(r.packed), MAX_QUESTIONS);
+  if (bps.slice(round.questionCount).some((x) => x !== 0) || bps.some((x) => x > BPS)) throw new Error('receipt packed value is not canonical for this round; refusing');
+  return { alreadyRevealed: false, receipt: r, onchain, bps: bps.slice(0, round.questionCount), data: revealCalldata(id, BigInt(r.packed), r.salt) };
+}
+
 async function cmdReveal(o) {
   const net = network(o.network);
   const from = needFrom(o.from);
   if (o.execute) assertCanExecute(net, ttyIo);
   const { id, now, round, titles } = await loadRoundTitled(net, o);
-  if (now < round.commitDeadline) throw new Error(`reveal for round ${id} opens at ${fmtTime(round.commitDeadline)} (${fmtIn(round.commitDeadline - now)}); revealing early is refused`);
-  if (now > round.revealDeadline) throw new Error(`the reveal window for round ${id} closed at ${fmtTime(round.revealDeadline)}; an unrevealed commit counts as a forfeit`);
-  const { status } = decodeReveal(await ethCall(net, encodeCall(SIG.getReveal, [wordUint(id), wordAddress(from)])));
-  if (status & STATUS.revealed) {
+  const plan = await revealPlan({ net, from, home: o.home, loaded: { id, now, round } });
+  if (plan.alreadyRevealed) {
     say(`Round ${id}: ${from} has already revealed. Nothing to do.`);
     return footer();
   }
-  const [c] = decodeWords(await ethCall(net, encodeCall(SIG.getCommit, [wordUint(id), wordAddress(from)])));
-  if (c === 0n) throw new Error(`no commit onchain for ${from} in round ${id}. If a commit is pending, check: baw wallet tx-history --type pending --binanceChainId 56 --json`);
-  const onchain = wordToBytes32(c);
-  const receipts = findReceipts({ chainId: net.chainId, ledger: net.ledger, roundId: id, forecaster: from }, o.home);
-  const r = matchReceipt(receipts, onchain);
-  if (!r) {
-    throw new Error(`no local receipt matches the onchain commit ${onchain} (found ${receipts.length} receipt(s) for this round in ${receiptDir(o.home)}). ` +
-      'Restore your backup receipt into that folder. Without the salt the reveal is impossible and the round counts as a forfeit.');
-  }
-  const bps = unpack(BigInt(r.packed), MAX_QUESTIONS);
-  if (bps.slice(round.questionCount).some((x) => x !== 0) || bps.some((x) => x > BPS)) throw new Error('receipt packed value is not canonical for this round; refusing');
-  say(`Round ${id} reveal for ${from}, using receipt ${r.file}`);
-  bps.slice(0, round.questionCount).forEach((b, i) => say(forecastLine(titles, i, b)));
+  say(`Round ${id} reveal for ${from}, using receipt ${plan.receipt.file}`);
+  plan.bps.forEach((b, i) => say(forecastLine(titles, i, b)));
   if (!titles) say(NO_TITLES);
-  say(`commit hash: ${onchain} (matches the receipt)`);
-  const revealData = revealCalldata(id, BigInt(r.packed), r.salt);
-  if (o.execute) await sendWithConfirmation({ net, from, data: revealData, what: `reveal for round ${id}`, io: ttyIo });
-  else printWalletSteps(net, from, revealData, `reveal for round ${id}`);
+  say(`commit hash: ${plan.onchain} (matches the receipt)`);
+  if (o.execute) await sendWithConfirmation({ net, from, data: plan.data, what: `reveal for round ${id}`, io: ttyIo });
+  else printWalletSteps(net, from, plan.data, `reveal for round ${id}`);
   footer();
 }
 

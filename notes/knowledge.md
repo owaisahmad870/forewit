@@ -98,6 +98,8 @@
 * OpenZeppelin decision (Owais): 5.7.0 from the GitHub tag, pinned. npm still lists it under the "dev" dist tag.
 * baw facts from the skill (verified in its references, 23 Nov 2026): sign in is auth signin then auth verify (pairing code plus QR, about 5 min expiry); contract calls are contract-call preview then contract-call execute with requestId; check devMode with wallet settings; Developer Mode lasts 7 days and each use extends it; Agent ID status with wallet agent-id. Full syntax: ~/.claude/skills/binance-agentic-wallet/references/external-sign.md.
 
+* MCP SDK (24 Nov 2026): @modelcontextprotocol/sdk 1.32.2 is latest on npm; the split @modelcontextprotocol/server 2.4.0 also exists. Both have LATEST_PROTOCOL_VERSION 2025-11-25 and answer an initialize for 2026-07-28 with 2025-11-25 (checked by sending initialize to each). The 2.4.0 core only mentions 2026-07-28 in doc comments. The mcp/ package uses 1.32.2; its remote test asserts the fallback, so an SDK that adds 2026-07-28 shows up as a test change. In 1.32.2 input validation failures come back as isError tool results, not protocol errors. npm name "forewit" was free on 24 Nov 2026.
+
 ## Rules and facts (sourced, dated)
 * Hackathon rules: MASTER_PROMPT 1.2, researched 23 Nov 2026. Submission window 18 Nov 2026 08:00 UTC to 9 Dec 2026 08:00 UTC.
 * Organizer answers (section 2 item 7): pending.

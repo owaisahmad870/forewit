@@ -1,0 +1,37 @@
+{
+  "name": "forewit",
+  "version": "0.1.0",
+  "description": "Forewit MCP servers: a read only remote server for rounds, baselines, the crowd and the leaderboard, and a local stdio server that prepares commit, reveal and profile calldata without ever signing.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/owaisahmad870/forewit.git",
+    "directory": "mcp"
+  },
+  "homepage": "https://forewit.xyz/#/docs/agents",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "forewit": "bin/forewit.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "vendor",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/build.mjs && node --test test/",
+    "prepack": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "viem": "2.58.4"
+  }
+}
