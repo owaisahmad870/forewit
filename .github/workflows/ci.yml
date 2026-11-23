@@ -70,11 +70,12 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cargo/bin/aderyn
-          key: aderyn-v0.6.8-${{ runner.os }}
+          key: aderyn-v0.6.8-nightly-2025-09-20-${{ runner.os }}
       - name: Aderyn 0.6.8 (built from the release tag; the release has no Linux binary attached)
         working-directory: contracts
         run: |
-          command -v aderyn || cargo install --git https://github.com/Cyfrin/aderyn --tag aderyn-v0.6.8 --locked aderyn
+          # 0.6.8 uses unstable features: build with the nightly its repo pins (rust-toolchain.toml)
+          command -v aderyn || { rustup toolchain install nightly-2025-09-20 --profile minimal && cargo +nightly-2025-09-20 install --git https://github.com/Cyfrin/aderyn --tag aderyn-v0.6.8 --locked aderyn; }
           aderyn . --output ../aderyn-report.md
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
