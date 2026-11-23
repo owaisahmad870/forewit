@@ -38,8 +38,9 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
     bytes32 public constant COMMIT_TYPEHASH = keccak256(
         "PrescientCommit(uint256 chainId,address ledger,uint256 roundId,address forecaster,uint256 packed,bytes32 salt)"
     );
-    /// @notice Reserved forecaster identity for the market baseline. No key exists for it.
-    address public constant BASELINE = address(uint160(uint256(keccak256("PRESCIENT.BASELINE"))));
+    /// @notice The market baseline is posted in clear, once, only in the last BASELINE_WINDOW before the commit deadline
+    /// (security review M1, L4: no hindsight veto, no early or stale baseline).
+    uint256 public constant BASELINE_WINDOW = 15 minutes;
 
     uint8 internal constant FLAG_REVEALED = 1;
     uint8 internal constant FLAG_SCORED = 2;
@@ -62,10 +63,9 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
         uint16 outcomeYesMask;
         uint16 voidMask;
         uint16 resolvedMask;
-        bool baselineRevealed;
+        bool baselineSet;
         bool isSealed;
         uint256 baselinePacked;
-        bytes32 baselineCommit;
         uint64 resolutionWait; // after the reveal deadline, unresolved questions may be voided; fixed at creation
     }
 
@@ -128,8 +128,7 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
     );
     event Committed(uint256 indexed roundId, address indexed forecaster, bytes32 commitHash);
     event Revealed(uint256 indexed roundId, address indexed forecaster, uint256 packed, address caller);
-    event BaselineCommitted(uint256 indexed roundId, bytes32 commitHash);
-    event BaselineRevealed(uint256 indexed roundId, uint256 packed);
+    event BaselineSet(uint256 indexed roundId, uint256 packed);
     event QuestionFinalized(uint256 indexed roundId, uint256 indexed index, Outcome outcome, bool early, bool stale);
     event Scored(
         uint256 indexed roundId,
@@ -171,8 +170,8 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
     error RevealNotOpen();
     error ZeroHash();
     error NoAgentID();
-    error ReservedAddress();
-    error AlreadyCommitted();
+    error BaselineWindow();
+    error BaselineAlreadySet();
     error NoCommit();
     error AlreadyRevealed();
     error HashMismatch();
@@ -276,29 +275,19 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
         emit RoundCreated(roundId, commitDeadline, revealDeadline, resolutionWait, questions);
     }
 
-    /// @notice Commit the hash of the market baseline vector. Round manager only, once, before the commit deadline.
-    function commitBaseline(uint256 roundId, bytes32 commitHash) external onlyRole(ROUND_MANAGER_ROLE) {
+    /// @notice Post the market baseline (order book mid prices in bps) in clear. Round manager only, once, and only in the
+    /// last BASELINE_WINDOW before the commit deadline: before any reveal or outcome exists, so it cannot be withheld or
+    /// chosen with hindsight. A round without a baseline is scored with skill 0 for everyone (decided blind, flagged off chain).
+    function setBaseline(uint256 roundId, uint256 packed) external onlyRole(ROUND_MANAGER_ROLE) {
         Round storage r = _round(roundId);
-        if (block.timestamp >= r.commitDeadline) revert CommitClosed();
-        if (commitHash == bytes32(0)) revert ZeroHash();
-        if (r.baselineCommit != bytes32(0)) revert AlreadyCommitted();
-        r.baselineCommit = commitHash;
-        emit BaselineCommitted(roundId, commitHash);
-    }
-
-    /// @notice Reveal the market baseline. Round manager only, inside the reveal window.
-    /// @dev Same hash scheme as forecasters, with BASELINE as the forecaster field.
-    function revealBaseline(uint256 roundId, uint256 packed, bytes32 salt) external onlyRole(ROUND_MANAGER_ROLE) {
-        Round storage r = _round(roundId);
-        _checkRevealWindow(r);
-        _seal(r, roundId);
-        if (r.baselineCommit == bytes32(0)) revert NoCommit();
-        if (r.baselineRevealed) revert AlreadyRevealed();
-        if (computeCommitHash(roundId, BASELINE, packed, salt) != r.baselineCommit) revert HashMismatch();
+        if (block.timestamp >= r.commitDeadline || block.timestamp + BASELINE_WINDOW < r.commitDeadline) {
+            revert BaselineWindow();
+        }
+        if (r.baselineSet) revert BaselineAlreadySet();
         _checkCanonical(packed, r.questionCount);
-        r.baselineRevealed = true;
+        r.baselineSet = true;
         r.baselinePacked = packed;
-        emit BaselineRevealed(roundId, packed);
+        emit BaselineSet(roundId, packed);
     }
 
     /// @notice Pause new rounds and new commits. Never blocks reveal, finalize, score or forfeit.
@@ -319,7 +308,6 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
         Round storage r = _round(roundId);
         if (block.timestamp >= r.commitDeadline) revert CommitClosed();
         if (commitHash == bytes32(0)) revert ZeroHash();
-        if (msg.sender == BASELINE) revert ReservedAddress();
         // slither-disable-next-line incorrect-equality
         if (AGENT_ID.balanceOf(msg.sender) == 0) revert NoAgentID(); // any balance above zero passes
         if (commits[roundId][msg.sender] == bytes32(0)) {
@@ -527,6 +515,16 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
         return (packed >> (16 * index)) & 0xffff;
     }
 
+    /// @dev The admin's PAUSER_ROLE moves with the admin seat on a completed two step transfer (security review L8).
+    function _acceptDefaultAdminTransfer() internal override {
+        address previous = defaultAdmin();
+        super._acceptDefaultAdminTransfer();
+        if (hasRole(PAUSER_ROLE, previous)) {
+            _revokeRole(PAUSER_ROLE, previous);
+            _grantRole(PAUSER_ROLE, defaultAdmin());
+        }
+    }
+
     // Internal
 
     function _round(uint256 roundId) internal view returns (Round storage r) {
@@ -618,7 +616,7 @@ contract ForecastLedger is AccessControlDefaultAdminRules, Pausable {
     function _applyScore(Round storage r, uint256 roundId, address forecaster, bool isForfeit) internal {
         uint256 n = r.questionCount;
         uint256 packed = reveals[roundId][forecaster];
-        bool useBaseline = r.baselineRevealed;
+        bool useBaseline = r.baselineSet;
         uint256 questions = 0;
         uint256 brierSum = 0;
         uint256 baseSum = 0;

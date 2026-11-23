@@ -31,6 +31,7 @@ export interface Snapshot {
   metrics: { distinctCommitters: number; rounds: number; perDay: Record<string, { commits: number; reveals: number }> };
   rounds: SnapRound[];
   profiles?: Record<string, { isPublic: boolean; name?: string }>;
+  operators?: string[]; // round manager, admin and pauser wallets: never ranked (security review L1)
 }
 
 export interface RoundFile {
@@ -224,6 +225,7 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
     }
   }
   const profiles = Object.fromEntries(Object.entries(snap.profiles ?? {}).map(([a, p]) => [a.toLowerCase(), p]));
+  const ops = new Set((snap.operators ?? []).map((a) => a.toLowerCase()));
   const all: Row[] = [...acc.entries()].map(([addr, x]) => {
     const prof = profiles[addr];
     const isPublic = !!prof?.isPublic;
@@ -240,7 +242,7 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
       shrunkSkill: Number(x.skill) / (x.bq + K) / BRIER_MAX,
       participation: x.committed ? x.revealed / x.committed : null,
       calibrationError: calibrationError(x.cal),
-      ranked: isPublic && x.rounds >= MIN_ROUNDS && x.bq >= MIN_BASELINE_QUESTIONS,
+      ranked: isPublic && !ops.has(addr) && x.rounds >= MIN_ROUNDS && x.bq >= MIN_BASELINE_QUESTIONS,
     };
   });
   const rows = all.filter((r) => r.isPublic).sort((a, b) => Number(b.ranked) - Number(a.ranked) || b.shrunkSkill - a.shrunkSkill);

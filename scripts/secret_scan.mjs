@@ -5,7 +5,8 @@ import { existsSync, readFileSync } from 'node:fs';
 
 const git = (...a) => execFileSync('git', a, { encoding: 'buffer', maxBuffer: 64 << 20 });
 // --raw -z gives ":oldmode newmode oldsha newsha status\0path\0"; gitlinks (mode 160000, submodules) have no blob to scan.
-const raw = git('diff', '--cached', '--raw', '-z', '--diff-filter=ACMR').toString().split('\0');
+// --no-renames: a rename would carry two paths per entry; as delete plus add, the added file is still scanned
+const raw = git('diff', '--cached', '--raw', '-z', '--no-renames', '--diff-filter=ACM').toString().split('\0');
 const staged = [];
 for (let i = 0; i + 1 < raw.length; i += 2) {
   if (!raw[i].startsWith(':')) break;

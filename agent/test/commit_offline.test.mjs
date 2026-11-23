@@ -10,7 +10,7 @@ import { NETWORKS } from '../config.mjs';
 
 const ABI = parseAbi([
   'function roundCount() view returns (uint256)',
-  'struct Round { uint64 commitDeadline; uint64 revealDeadline; uint64 createdAt; uint8 questionCount; uint16 outcomeYesMask; uint16 voidMask; uint16 resolvedMask; bool baselineRevealed; bool isSealed; uint256 baselinePacked; bytes32 baselineCommit; }',
+  'struct Round { uint64 commitDeadline; uint64 revealDeadline; uint64 createdAt; uint8 questionCount; uint16 outcomeYesMask; uint16 voidMask; uint16 resolvedMask; bool baselineSet; bool isSealed; uint256 baselinePacked; uint64 resolutionWait; }',
   'function getRound(uint256 roundId) view returns (Round)',
   'struct Question { bytes32 conditionId; address ctf; uint8 yesSlot; }',
   'function getQuestions(uint256 roundId) view returns (Question[])',
@@ -36,7 +36,7 @@ function fakeRpc(chain, bodies) {
       const { functionName, args } = decodeFunctionData({ abi: ABI, data: params[0].data });
       const r = {
         roundCount: () => 1n,
-        getRound: () => ({ commitDeadline: 1000n, revealDeadline: 2000n, createdAt: 1n, questionCount: 2, outcomeYesMask: 0, voidMask: 0, resolvedMask: 0, baselineRevealed: false, isSealed: false, baselinePacked: 0n, baselineCommit: ZERO32 }),
+        getRound: () => ({ commitDeadline: 1000n, revealDeadline: 2000n, createdAt: 1n, questionCount: 2, outcomeYesMask: 0, voidMask: 0, resolvedMask: 0, baselineSet: false, isSealed: false, baselinePacked: 0n, resolutionWait: 604800n}),
         getQuestions: () => [{ conditionId: '0x' + '11'.repeat(32), ctf: FROM, yesSlot: 0 }, { conditionId: '0x' + '22'.repeat(32), ctf: FROM, yesSlot: 1 }],
         getCommit: () => chain.commit,
         getReveal: () => [0n, 0],

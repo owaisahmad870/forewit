@@ -40,7 +40,7 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 * **Blocked on**: nothing for testnet. Mainnet needs fresh offline backed keys, the project name (baked into the typehash), and Developer Mode on.
 * **Rules**: selection v3.1 (no sports, no politics; daily: all daily crypto plus liquid events, 6 to 72 h, cap 8 Dec, 3 to 8 questions, wait 7 days; long: allowlisted tags, liquid, 72 h to 100 days, wait 120 days); event question plus label everywhere; baseline in the last 5 min before the deadline. Pre registered 23 Nov.
 * **Next**: web MVP and agent execute mode (subagents running); security review (milestone 3); VPS setup by Owais (keeper/deploy/README.md). Contract frozen except review findings. Polish 6 to 7 Dec: screen reader pass and 4G load test.
-* **Human steps open**: keyed RPC (current .env RPCs are public); organizer questions; name, domain, X; GitHub repo for CI. Done: Agent ID claimed, wallet signed in, Predict key verified.
+* **Human steps open**: organizer questions now include Agent ID burn or reissue (review L2, L3); keyed RPC (current .env RPCs are public); organizer questions; name, domain, X; GitHub repo for CI. Done: Agent ID claimed, wallet signed in, Predict key verified.
 * **Toolchain**: Foundry at ~/.foundry/bin, Slither in .venv, baw global, viem via npm ci. .env now holds private keys: for fork tests export only the RPC, e.g. BSC_RPC_URL="$(grep ^BSC_RPC_URL= ../.env | cut -d= -f2-)" forge test; never source the whole file; redact URLs and 64 hex values in output.
 
 ## Notes map (read the summary first)

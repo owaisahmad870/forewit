@@ -8,6 +8,7 @@
 * Toolchain pinned 23 Nov 2026 (native Windows, see Toolchain). Aderyn could not be built locally; run it in CI.
 * Etherscan API V2 key (23 Nov 2026, read only checks): valid (chain 1 account balance OK). Account endpoints on chain 56 and 97 answer "Free API access is not supported for this chain". The contract module works on chain 56 (getabi on USDT OK), so forge verify should work; unproven until the first verify. Fallback: verify by hand on the BscScan website with the standard JSON input, or a paid plan.
 * baw wallet chains (23 Nov 2026): Base, BNB Smart Chain (56), Ethereum, Polygon, Robinhood, Solana, Arbitrum One. No BSC testnet, so the Agentic Wallet path (contract-call preview and execute) is first exercised on the mainnet canary round; testnet rounds use the CLI with local keys only.
+* BSC TESTNET instance D, ledger v1.2 (23 Nov 2026, fix package 1): ForecastLedger 0xfbba24635EbfaAeCd57fc199E4bC217C86fA80Bf, MockAgentID 0xfeDB631E907ac4f32227F487b4d022f36Cb4Ca06, MockConditionalTokens 0x34E842B038e636829704AEAb8a7B65b762973530; windows 120 s and 300 s; agent CLI testnet config points here. Older instances: C 0x0327...54bE (v1.1), B 0xB27E...ED80d and A 0x73FF...5fC3 (v1).
 * BSC TESTNET deploy (23 Nov 2026, Owais yes, testnet only):
   * ForecastLedger 0x73FFFB21A497d173f1C3581467Ca1F7385655fC3 (MAX_RESOLUTION_WAIT 7 days; allowlist: mock CTF plus the 3 Predict.fun testnet CTFs; admin and pauser deployer, round manager keeper).
   * MockAgentID 0xF48FD3447f5D9012a572Bd4F4c79080a01596c72, MockConditionalTokens 0xB5693815550deB69992cbF4814AAe3bCD0442f08.
@@ -100,6 +101,7 @@
   * Developer Mode the expected path?
   * Relayer revealFor counts as an interaction?
   * 30 holder rule counts distinct callers of submitted contracts?
+  * (added 23 Nov 2026, review L2 and L3) Can an Agent ID be burned, revoked or reissued to a different wallet (by the user or by the issuer), and if so how fast? The contract has an owner and admin functions we cannot name from bytecode.
 
 ## Field snapshot (the "leaderboard")
 * 23 Nov 2026, us: 0 contracts, 0 of 30 committing holders, 0 of 7 rounds, no product live. Rubric validator score: not yet run.

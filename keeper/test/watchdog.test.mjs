@@ -3,23 +3,21 @@ import assert from 'node:assert/strict';
 import { missedDuties, dailyOpenMissed, GRACE, DAY } from '../lib/watchdog.mjs';
 
 const CD = 1_800_000_000, RD = CD + 24 * 3600;
-const ZERO = '0x' + '0'.repeat(64), H = '0x' + 'ab'.repeat(32);
-const round = (o = {}) => ({ commitDeadline: CD, revealDeadline: RD, questionCount: 3, resolvedMask: 0, baselineCommit: H, baselineRevealed: true, isSealed: true, ...o });
+const round = (o = {}) => ({ commitDeadline: CD, revealDeadline: RD, questionCount: 3, resolvedMask: 0, baselineSet: true, isSealed: true, ...o });
 const check = (o, now, extra = {}) => missedDuties({ round: round(o), resolvedOnchainMask: 0, unprocessed: 0, now, ...extra });
 
 test('a round on schedule reports nothing', () => {
-  assert.deepEqual(check({ isSealed: false, baselineRevealed: false }, CD - 60), []);
+  assert.deepEqual(check({ isSealed: false, baselineSet: false }, CD - 60), []);
   assert.deepEqual(check({}, CD + 2 * GRACE), []);
 });
 
-test('missed baseline commit is detected at the deadline', () => {
-  assert.match(check({ baselineCommit: ZERO, isSealed: false, baselineRevealed: false }, CD)[0], /baseline: not committed/);
+test('missed baseline is detected at the deadline', () => {
+  assert.match(check({ baselineSet: false, isSealed: false }, CD)[0], /baseline: not set/);
 });
 
-test('missed seal and missed baseline reveal are detected after the grace period, not before', () => {
-  assert.deepEqual(check({ isSealed: false, baselineRevealed: false }, CD + GRACE), []);
-  const m = check({ isSealed: false, baselineRevealed: false }, CD + GRACE + 1);
-  assert.ok(m.some((x) => x.startsWith('seal')) && m.some((x) => x.startsWith('baseline reveal')));
+test('missed seal is detected after the grace period, not before', () => {
+  assert.deepEqual(check({ isSealed: false }, CD + GRACE), []);
+  assert.ok(check({ isSealed: false }, CD + GRACE + 1).some((x) => x.startsWith('seal')));
 });
 
 test('missed finalize: resolved onchain but not finalized', () => {

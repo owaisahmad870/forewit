@@ -2,8 +2,8 @@
 // Run from the repo root: node --env-file=.env keeper/keeper.mjs <command> --network testnet|mainnet [options]
 //   select    --commit-deadline <iso> [--kind daily|long]   apply docs/QUESTION_SELECTION.md v3, archive raw API data and output
 //   open      --selection <file> [--resolution-days 7] [--reveal-hours 24]   createRound only (no baseline yet)
-//   baseline  --round <id>                           snapshot books and commitBaseline; only in the last 5 minutes before the commit deadline
-//   seal      --round <id>                           sealRound and revealBaseline, with retries and alerting
+//   baseline  [--round <id>]                         snapshot books and setBaseline in clear; only in the last 15 minutes before the deadline
+//   seal      [--round <id>]                         sealRound right after the deadline (alerts if no baseline was set)
 //   finalize  --round <id>                           finalize every question resolved onchain; voidStale when allowed
 //   score     --round <id>                           scoreBatch and forfeitBatch over every committer (from logs)
 //   status    --round <id>
@@ -13,8 +13,7 @@ import { createPublicClient, createWalletClient, http, keccak256, toHex, parseAb
 import { privateKeyToAccount } from 'viem/accounts';
 import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { randomBytes } from 'node:crypto';
-import { takeBaseline, snapshotTimeOk } from './lib/baseline.mjs';
+import { takeBaseline } from './lib/baseline.mjs';
 import * as sel from './lib/selection.mjs';
 
 const args = Object.fromEntries(process.argv.slice(3).reduce((a, v, i, arr) => (v.startsWith('--') ? [...a, [v.slice(2), arr[i + 1]?.startsWith('--') || arr[i + 1] === undefined ? 'true' : arr[i + 1]]] : a), []));
@@ -29,7 +28,7 @@ const pub = createPublicClient({ chain: NET.chain, transport: http(NET.rpc) });
 // event logs need an RPC that serves eth_getLogs ranges (the bnbchain dataseed endpoints refuse them); override with LOGS_RPC_URL
 const logsPub = createPublicClient({ chain: NET.chain, transport: http(process.env.LOGS_RPC_URL || (isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com')) });
 // committed ABI so the keeper host needs no Foundry; CI fails if it drifts from contracts/out
-const ABI = JSON.parse(readFileSync('keeper/abi/ForecastLedger_v1_1.json', 'utf8'));
+const ABI = JSON.parse(readFileSync(process.env.KEEPER_ABI || 'keeper/abi/ForecastLedger_v1_2.json', 'utf8'));
 const CTF_ABI = [parseAbiItem('function getOutcomeSlotCount(bytes32) view returns (uint256)'), parseAbiItem('function payoutDenominator(bytes32) view returns (uint256)')];
 const big = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
 const log = (...a) => console.log(new Date().toISOString(), ...a);
@@ -145,44 +144,32 @@ async function open() {
   const questions = sel.chosen.map((c, i) => ({ index: i, marketId: String(c.marketId), conditionId: c.conditionId, ctf: c.ctf, eventQuestion: c.eventQuestion, label: c.label, marketQuestion: c.marketQuestion ?? null, endsAt: c.endsAt ?? null, tags: c.tags ?? [] }));
   questions.forEach((q) => presentQuestion(q)); // refuse to publish a question without its event question
   writeFileSync(`${pubDir}/${roundId}.json`, JSON.stringify({ network: NET.chain.id, ledger: NET.ledger, roundId, kind: sel.kind ?? 'daily', rule: sel.rule, commitDeadline: sel.commitDeadline, revealDeadline: new Date(Number(rd) * 1000).toISOString(), resolutionWaitSeconds: wait, questions }, big, 2));
-  log(`round ${roundId} open; run "baseline --round ${roundId}" in the 5 minutes before ${sel.commitDeadline}`);
+  log(`round ${roundId} open; run "baseline --round ${roundId}" in the last 15 minutes before ${sel.commitDeadline} (target 5)`);
 }
 
 async function baseline(rIn) {
   const r = rIn ?? (await roundArg());
   const round = await read('getRound', [r]);
+  if (round.baselineSet) return log(`round ${r}: baseline already set`);
   const deadlineMs = Number(round.commitDeadline) * 1000;
   const meta = JSON.parse(readFileSync(`keeper/state/round_${NET.chain.id}_${r}.json`, 'utf8'));
   const snap = await takeBaseline({ deadlineMs, marketIds: meta.marketIds, fetchBook: async (id) => (await apiGet(`/v1/markets/${id}/orderbook`)).data });
   for (const bk of snap.books) if (bk.source !== 'mid') await alert(`round ${r} market ${bk.marketId}: baseline from ${bk.source}, not a two sided mid`);
-  const salt = '0x' + randomBytes(32).toString('hex');
-  const { writeSecretFile } = await import('../agent/lib/secure_file.mjs');
-  writeSecretFile(`keeper/state/baseline_${NET.chain.id}_${r}.json`, JSON.stringify({ roundId: r, packed: snap.packed, salt, takenAtStart: snap.takenAtStart, takenAtEnd: snap.takenAtEnd, deadlineMs }, big));
   const dir = `keeper/archive/${args.network || 'testnet'}/round_${r}`;
   mkdirSync(dir, { recursive: true });
-  writeFileSync(`${dir}/baseline_books.json`, JSON.stringify(snap.books, big, 2)); // public archive; the salt stays private
-  const base = await read('BASELINE');
-  await send('commitBaseline', [r, await read('computeCommitHash', [r, base, snap.packed, salt])]);
-  log(`round ${r} baseline committed ${Math.round((deadlineMs - snap.takenAtEnd) / 1000)} s before the deadline`);
+  writeFileSync(`${dir}/baseline_books.json`, JSON.stringify(snap.books, big, 2)); // public archive of the raw books
+  // posted in clear (ledger v1.2): retries stay inside the 15 minute window; the contract refuses anything later
+  await send('setBaseline', [r, snap.packed], { tries: 5 });
+  log(`round ${r} baseline set ${Math.round((deadlineMs - Date.now()) / 1000)} s before the deadline`);
 }
 
 async function seal(rIn) {
   const r = rIn ?? (await roundArg());
   const round = await read('getRound', [r]);
-  const now = BigInt(Math.floor(Date.now() / 1000));
-  if (now < round.commitDeadline) throw new Error('commit window still open');
+  if (BigInt(Math.floor(Date.now() / 1000)) < round.commitDeadline) throw new Error('commit window still open');
   if (!round.isSealed) await send('sealRound', [r]);
-  if (!round.baselineRevealed) {
-    const f = `keeper/state/baseline_${NET.chain.id}_${r}.json`;
-    if (!existsSync(f)) return alert(`round ${r}: baseline salt file missing, cannot reveal baseline`);
-    const s = JSON.parse(readFileSync(f, 'utf8'));
-    if (!snapshotTimeOk(s.takenAtEnd, Number(round.commitDeadline) * 1000)) await alert(`round ${r}: stored baseline was not taken in the last 5 minutes before the deadline`);
-    // escalate in the second half of the reveal window (12 h before the deadline on mainnet windows)
-    const late = (round.revealDeadline - round.commitDeadline) / 2n < 12n * 3600n ? (round.revealDeadline - round.commitDeadline) / 2n : 12n * 3600n;
-    if (now > round.revealDeadline - late) await alert(`round ${r}: baseline still unrevealed late in the reveal window`);
-    await send('revealBaseline', [r, BigInt(s.packed), s.salt], { tries: 6 });
-  }
-  log(`round ${r} sealed and baseline revealed`);
+  if (!round.baselineSet) await alert(`round ${r}: no baseline was set before the deadline; the round scores with skill 0`);
+  log(`round ${r} sealed`);
 }
 
 async function finalize(rIn) {
@@ -194,7 +181,12 @@ async function finalize(rIn) {
     if ((round.resolvedMask >> i) & 1) continue;
     const den = await pub.readContract({ address: qs[i].ctf, abi: [CTF_ABI[1]], functionName: 'payoutDenominator', args: [qs[i].conditionId] });
     if (den > 0n) await send('finalizeQuestion', [r, BigInt(i)]);
-    else if (now > round.revealDeadline + (await read('MAX_RESOLUTION_WAIT'))) await send('voidStale', [r, BigInt(i)]);
+    else if (now > round.revealDeadline + round.resolutionWait) {
+      const meta = existsSync(`keeper/state/round_${NET.chain.id}_${r}.json`) ? JSON.parse(readFileSync(`keeper/state/round_${NET.chain.id}_${r}.json`, 'utf8')) : null;
+      const status = meta ? (await apiGet(`/v1/markets/${meta.marketIds[i]}`).catch(() => null))?.data?.status : null;
+      if (['PRICE_PROPOSED', 'PRICE_DISPUTED'].includes(status)) { log(`round ${r} q${i}: resolution pending (${status}); not voiding`); continue; }
+      await send('voidStale', [r, BigInt(i)]);
+    }
   }
 }
 
@@ -247,7 +239,7 @@ async function tick() {
   for (let r = count > 14n ? count - 14n : 1n; r <= count; r++) {
     const round = await read('getRound', [r]);
     if (now < round.commitDeadline) continue;
-    if (!round.isSealed || (!round.baselineRevealed && round.baselineCommit !== '0x' + '0'.repeat(64) && now <= round.revealDeadline)) await seal(r);
+    if (!round.isSealed) await seal(r);
     await finalize(r);
     await score(r);
   }

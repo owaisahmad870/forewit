@@ -73,12 +73,8 @@ contract ForecastLedgerFuzzTest is Base {
             uint16(uint256(keccak256(abi.encode(seed, "v")))) & uint16(uint256(keccak256(abi.encode(seed, "w"))));
         _commit(id, alice, c.packed, bytes32(seed));
         _commit(id, bob, c.packed, bytes32(seed ^ 1));
-        if (withBaseline) _commitBaseline(id, c.base, bytes32(seed));
+        if (withBaseline) _setBaseline(id, c.base);
         _toReveal(id);
-        if (withBaseline) {
-            vm.prank(keeper);
-            ledger.revealBaseline(id, c.base, bytes32(seed));
-        }
         vm.prank(alice);
         ledger.reveal(id, c.packed, bytes32(seed));
         for (uint256 i; i < c.n; ++i) {
@@ -152,12 +148,8 @@ contract ForecastLedgerFuzzTest is Base {
         assertEq(b, 1_970_346_312_138_758_000);
         _commit(id, alice, p, bytes32("a"));
         _commit(id, bob, p, bytes32("b")); // same forecast, never revealed
-        if (withBaseline) _commitBaseline(id, b, bytes32("base"));
+        if (withBaseline) _setBaseline(id, b);
         _toReveal(id);
-        if (withBaseline) {
-            vm.prank(keeper);
-            ledger.revealBaseline(id, b, bytes32("base"));
-        }
         vm.prank(alice);
         ledger.reveal(id, p, bytes32("a"));
         _resolve(qs[0], true);

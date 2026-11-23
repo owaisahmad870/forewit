@@ -75,10 +75,11 @@ abstract contract Base is Test {
         ledger.commit(roundId, h);
     }
 
-    function _commitBaseline(uint256 roundId, uint256 packed, bytes32 salt) internal {
-        bytes32 h = ledger.computeCommitHash(roundId, ledger.BASELINE(), packed, salt);
+    function _setBaseline(uint256 roundId, uint256 packed) internal {
+        uint256 at = uint256(ledger.getRound(roundId).commitDeadline) - 5 minutes;
+        if (block.timestamp < at) vm.warp(at);
         vm.prank(keeper);
-        ledger.commitBaseline(roundId, h);
+        ledger.setBaseline(roundId, packed);
     }
 
     function _toReveal(uint256 roundId) internal {

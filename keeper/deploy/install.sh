@@ -31,7 +31,7 @@ chmod 700 keeper/state
 
 # Units
 install -m 0644 keeper/deploy/prescient@.service /etc/systemd/system/
-for t in daily baseline tick watchdog; do install -m 0644 "keeper/deploy/prescient_$t.timer" /etc/systemd/system/; done
+for t in daily baseline seal tick watchdog; do install -m 0644 "keeper/deploy/prescient_$t.timer" /etc/systemd/system/; done
 mkdir -p /etc/prescient && chmod 700 /etc/prescient
 systemctl daemon-reload
 
@@ -39,5 +39,5 @@ if [ ! -f /etc/prescient/keeper.env.cred ]; then
   echo "Next: create the encrypted keeper credential (keeper/deploy/README.md step 4), then rerun this script to enable the timers."
   exit 0
 fi
-for t in daily baseline tick watchdog; do systemctl enable --now "prescient_$t.timer"; done
+for t in daily baseline seal tick watchdog; do systemctl enable --now "prescient_$t.timer"; done
 systemctl list-timers 'prescient*'

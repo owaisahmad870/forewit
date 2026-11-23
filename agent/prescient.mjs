@@ -85,14 +85,14 @@ export const revealForCalldata = (roundId, forecaster, packed, salt) =>
 
 export function decodeRound(hex) {
   const w = decodeWords(hex);
-  // 11 words: ledger v1 (testnet instances A and B); 12 words: v1.1 adds resolutionWait at the end
-  if (w.length !== 11 && w.length !== 12) throw new Error(`getRound returned ${w.length} words, expected 11 or 12`);
+  // 11 words: ledger v1.2 (baseline posted in clear, no baseline commit); 12 words: v1.1 (baselineCommit before resolutionWait)
+  if (w.length !== 11 && w.length !== 12) throw new Error(`getRound returned ${w.length} words, expected 11 (v1.2) or 12 (v1.1)`);
   const n = (x) => Number(x);
   return {
     commitDeadline: n(w[0]), revealDeadline: n(w[1]), createdAt: n(w[2]), questionCount: n(w[3]),
     outcomeYesMask: n(w[4]), voidMask: n(w[5]), resolvedMask: n(w[6]),
-    baselineRevealed: w[7] !== 0n, isSealed: w[8] !== 0n, baselinePacked: w[9], baselineCommit: wordToBytes32(w[10]),
-    resolutionWait: w.length === 12 ? n(w[11]) : null,
+    baselineSet: w[7] !== 0n, isSealed: w[8] !== 0n, baselinePacked: w[9],
+    resolutionWait: n(w[w.length - 1]),
   };
 }
 

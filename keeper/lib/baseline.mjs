@@ -1,10 +1,11 @@
-// Baseline snapshot at the commit deadline (spec 4.2 step 4; Owais rule 23 Nov 2026: at most 5 minutes before it).
+// Baseline snapshot at the commit deadline. Ledger v1.2 accepts setBaseline only in the last 15 minutes before the deadline
+// (security review M1 and L4); the keeper targets about 5 minutes before it and retries inside the window.
 // Pure logic with an injectable clock and book fetcher, so the timing rule is unit tested (keeper/test/baseline.test.mjs).
 import { pack } from '../../scripts/golden_vectors.mjs';
 
-export const MAX_EARLY_MS = 5 * 60 * 1000;
+export const MAX_EARLY_MS = 15 * 60 * 1000; // must equal ForecastLedger.BASELINE_WINDOW
 
-/** True when a snapshot taken at takenAtMs is inside [deadline minus 5 minutes, deadline). */
+/** True when a snapshot taken at takenAtMs is inside [deadline minus 15 minutes, deadline). */
 export function snapshotTimeOk(takenAtMs, deadlineMs) {
   return takenAtMs >= deadlineMs - MAX_EARLY_MS && takenAtMs < deadlineMs;
 }
@@ -20,13 +21,13 @@ export function midBps(book) {
 }
 
 /**
- * Take the baseline for a round. Refuses if called more than 5 minutes before the deadline or at/after it,
+ * Take the baseline for a round. Refuses if called more than 15 minutes before the deadline or at/after it,
  * and re checks the clock after the last book so a slow fetch cannot push the snapshot outside the window.
  * @param {{deadlineMs:number, marketIds:(string|number)[], fetchBook:(id)=>Promise<object>, now?:()=>number}} o
  */
 export async function takeBaseline({ deadlineMs, marketIds, fetchBook, now = Date.now }) {
   const start = now();
-  if (!snapshotTimeOk(start, deadlineMs)) throw new Error(`baseline refused: ${Math.round((deadlineMs - start) / 1000)} s before the deadline (allowed 0 to 300 s)`);
+  if (!snapshotTimeOk(start, deadlineMs)) throw new Error(`baseline refused: ${Math.round((deadlineMs - start) / 1000)} s before the deadline (allowed 0 to 900 s)`);
   const books = [];
   for (const id of marketIds) {
     const b = await fetchBook(id);
@@ -35,6 +36,6 @@ export async function takeBaseline({ deadlineMs, marketIds, fetchBook, now = Dat
     books.push({ marketId: String(id), ...m, takenAt: now(), updateTimestampMs: b.updateTimestampMs ?? null, raw: b });
   }
   const end = now();
-  if (!snapshotTimeOk(end, deadlineMs)) throw new Error('baseline refused: snapshot finished outside the 5 minute window');
+  if (!snapshotTimeOk(end, deadlineMs)) throw new Error('baseline refused: snapshot finished outside the 15 minute window');
   return { packed: pack(books.map((b) => b.bps)), takenAtStart: start, takenAtEnd: end, deadlineMs, books };
 }

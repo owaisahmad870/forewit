@@ -3,9 +3,9 @@
 ForecastLedger is non upgradeable: no proxy, no selfdestruct, no delegatecall, no payable function. It holds no funds and no tokens and asks for no approvals.
 
 ## Roles
-* ROUND_MANAGER can create rounds, choosing questions by the published selection rule (docs/QUESTION_SELECTION.md) and each round's resolution wait (1 to 120 days, fixed at creation and published before any commit), and can commit and reveal the baseline.
+* ROUND_MANAGER can create rounds, choosing questions by the published selection rule (docs/QUESTION_SELECTION.md) and each round's resolution wait (1 to 120 days, fixed at creation and published before any commit), and posts the market baseline in clear, once, only in the last 15 minutes before the commit deadline. The baseline sets every forecaster's skill for that round (not Brier); its raw order books are archived and operator wallets are never ranked.
 * PAUSER can pause new commits and new rounds. Pause never blocks reveal, revealFor, seal, finalize, voidStale, score or forfeit.
-* DEFAULT_ADMIN can grant and revoke roles, using a two step transfer with a 1 day delay.
+* DEFAULT_ADMIN can grant and revoke roles instantly (only the admin seat itself moves by a two step transfer with a 1 day delay). When that transfer completes, the old admin's PAUSER_ROLE moves to the new admin.
 
 ## Nobody, including the admin, can
 * edit or delete commits, reveals, outcomes or scores;

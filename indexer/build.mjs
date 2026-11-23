@@ -6,6 +6,7 @@ import { createPublicClient, http, parseAbi } from 'viem';
 import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { crowdV1, METHOD } from './lib/crowd.mjs';
+import { roundFlags, roleHolders, operators } from './lib/flags.mjs';
 
 const big = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
 const unpack = (packed, n) => Array.from({ length: n }, (_, i) => Number((BigInt(packed) >> BigInt(16 * i)) & 0xffffn));
@@ -15,8 +16,8 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
   // eth_getLogs ranges need a capable RPC (the bnbchain dataseed endpoints refuse them)
   const pub = createPublicClient({ chain, transport: http(rpc || (chain.id === 56 ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com')) });
   if (!ledger || fromBlock === undefined) throw new Error('ledger and fromBlock are required');
-  // v1 testnet instances need keeper/abi/ForecastLedger_v1.json (RoundCreated gained resolutionWait in v1.1)
-  const ABI = JSON.parse(readFileSync(abiPath || 'keeper/abi/ForecastLedger_v1_1.json', 'utf8'));
+  // older testnet instances need their own ABI: keeper/abi/ForecastLedger_v1.json or _v1_1.json
+  const ABI = JSON.parse(readFileSync(abiPath || 'keeper/abi/ForecastLedger_v1_2.json', 'utf8'));
   const events = ABI.filter((x) => x.type === 'event');
   const dir = `indexer/out/${network}/${ledger}`;
   mkdirSync(dir, { recursive: true });
@@ -54,7 +55,7 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
     if (l.eventName === 'RoundCreated') Object.assign(R(a.roundId), { commitDeadline: a.commitDeadline, revealDeadline: a.revealDeadline, resolutionWait: a.resolutionWait ?? null, questions: a.questions, createdBlock: l.blockNumber });
     if (l.eventName === 'Committed') R(a.roundId).committers.add(a.forecaster.toLowerCase());
     if (l.eventName === 'Revealed') { R(a.roundId).revealed.add(a.forecaster.toLowerCase()); R(a.roundId).forecasts[a.forecaster.toLowerCase()] = a.packed; }
-    if (l.eventName === 'BaselineRevealed') R(a.roundId).baseline = a.packed;
+    if (l.eventName === 'BaselineSet' || l.eventName === 'BaselineRevealed') R(a.roundId).baseline = a.packed; // v1.2 posts in clear; v1.1 revealed
     if (l.eventName === 'QuestionFinalized') R(a.roundId).outcomes[a.index] = outcomeNames[Number(a.outcome)];
     if (l.eventName === 'Scored' || l.eventName === 'Forfeited') {
       const rec = { questions: a.questions, brier: a.brierSum, baseline: a.baselineBrierSum, skill: a.skillSum, baselineUsed: a.baselineUsed, at: ts(l) };
@@ -67,6 +68,7 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
     }
   }
 
+  const agentIdAddr = await pub.readContract({ address: ledger, abi: ABI, functionName: 'AGENT_ID' }).catch(() => null);
   // Agent ID Crowd v1: prior records only from scores recorded before each round's commit deadline (no look ahead)
   const scoreEvents = Object.values(rounds).flatMap((r) => [...Object.entries(r.scored), ...Object.entries(r.forfeited)].map(([f, s]) => ({ f, round: r.roundId, ...s })));
   for (const r of Object.values(rounds)) {
@@ -84,7 +86,6 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
 
   // public profiles: the contract stores only labelId = keccak256(label); show a name only while ownerOf still matches
   const profiles = {};
-  const agentIdAddr = await pub.readContract({ address: ledger, abi: ABI, functionName: 'AGENT_ID' }).catch(() => null);
   const AID = parseAbi(['function ownerOf(uint256) view returns (address)', 'function tokenURI(uint256) view returns (string)']);
   for (const [f, p] of Object.entries(profileEv)) {
     if (!p.isPublic) continue; // opted out: never shown (red line 9)
@@ -98,7 +99,21 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
     profiles[f] = prof;
   }
 
+  // review mitigations: flags per round, operators off the leaderboard (L1), Agent ID moves after committing (L2, L3)
+  const headTime = Number((await pub.getBlock({ blockNumber: head })).timestamp);
+  for (const r of Object.values(rounds)) r.flags = roundFlags(r, headTime);
+  const ops = operators(roleHolders(cache.logs.filter((l) => l.eventName === 'RoleGranted' || l.eventName === 'RoleRevoked').map((l) => ({ eventName: l.eventName, role: l.args.role, account: l.args.account }))));
   const allCommitters = new Set(Object.values(rounds).flatMap((r) => [...r.committers]));
+  const identityChanged = {};
+  if (agentIdAddr && allCommitters.size) {
+    const transfer = parseAbi(['event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'])[0];
+    const from = [...allCommitters];
+    for (let a = BigInt(fromBlock); a <= head; a += 5000n) {
+      const b = a + 4999n > head ? head : a + 4999n;
+      const moved = await pub.getLogs({ address: agentIdAddr, event: transfer, args: { from }, fromBlock: a, toBlock: b }).catch(() => []);
+      for (const t of moved) identityChanged[t.args.from.toLowerCase()] = { tokenId: String(t.args.tokenId), to: t.args.to.toLowerCase(), block: String(t.blockNumber) };
+    }
+  }
   const out = {
     network: chain.id, ledger, builtAt: new Date().toISOString(), headBlock: head,
     metrics: { distinctCommitters: allCommitters.size, rounds: Object.keys(rounds).length, perDay: days },
@@ -110,6 +125,8 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
       revealRate: r.committers.size ? r.revealed.size / r.committers.size : null,
     })),
     profiles,
+    operators: ops, // round manager, admin and pauser wallets: never ranked
+    identityChanged, // committers whose Agent ID left their wallet after the ledger went live
   };
   writeFileSync(`${dir}/snapshot.json`, JSON.stringify(out, big, 2));
   return { out, dir };

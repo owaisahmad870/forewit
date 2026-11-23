@@ -1,11 +1,11 @@
 {
   "sample": false,
   "network": 97,
-  "ledger": "0x03274897dDb1121eBdF1aDf3b84E16d94A4c54bE",
-  "publishedAt": "2026-11-23T16:35:02.390Z",
+  "ledger": "0xfbba24635EbfaAeCd57fc199E4bC217C86fA80Bf",
+  "publishedAt": "2026-11-23T17:29:38.051Z",
   "note": "Real BSC testnet data (test forecasters and mock markets where noted), not mainnet.",
   "snapshot": "snapshot.json",
   "rounds": [
-    "rounds/2.json"
+    "rounds/1.json"
   ]
 }

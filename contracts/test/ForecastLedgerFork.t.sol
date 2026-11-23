@@ -124,13 +124,11 @@ contract ForecastLedgerForkTest is Test {
         vm.prank(address(0xdEaD));
         vm.expectRevert(ForecastLedger.NoAgentID.selector);
         ledger.commit(id, keccak256("x"));
-        bytes32 bh = ledger.computeCommitHash(id, ledger.BASELINE(), base, s);
+        vm.warp(block.timestamp + 20 hours - 5 minutes);
         vm.prank(keeper);
-        ledger.commitBaseline(id, bh);
+        ledger.setBaseline(id, base);
 
-        vm.warp(block.timestamp + 20 hours);
-        vm.prank(keeper);
-        ledger.revealBaseline(id, base, s);
+        vm.warp(block.timestamp + 5 minutes);
         vm.prank(H1);
         ledger.reveal(id, p1, s);
         ledger.revealFor(id, H2, p2, s);
