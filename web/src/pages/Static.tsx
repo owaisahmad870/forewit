@@ -5,7 +5,7 @@ import { fmtBrier } from '../lib/format';
 import { Headline } from './Home';
 
 type Block = Parameters<typeof Blocks>[0]['blocks'][number];
-export const DOC_SLUGS = ['how', 'scoring', 'selection', 'owner', 'security', 'prior', 'risk', 'faq'] as const;
+export const DOC_SLUGS = ['how', 'scoring', 'selection', 'owner', 'security', 'agents', 'prior', 'risk', 'faq'] as const;
 
 export function DocsIndex() {
   const { t } = useT();

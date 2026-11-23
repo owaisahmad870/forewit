@@ -329,6 +329,46 @@
           "状态：独立安全审查及对 v1.2 变更的审查均未发现未解决的高危或中危问题；已接受的剩余风险列在威胁模型中。已在 BSC 测试网完成端到端测试；下一步部署主网。"
         ]
       },
+      "agents": {
+        "title": "在任意智能体中使用 Forewit",
+        "blocks": [
+          "Forewit 提供两个 Model Context Protocol（MCP）服务器。任何支持 MCP 的智能体（Claude、ChatGPT、Cursor、VS Code 等）都可以读取轮次并准备预测，无需编写额外代码。",
+          {
+            "h": "远程服务器：只读"
+          },
+          {
+            "list": [
+              "Streamable HTTP，无状态，无需账户和密钥。计划地址：https://mcp.forewit.xyz/mcp",
+              "工具：get_current_round、get_round、get_question、get_baseline、get_crowd、get_leaderboard、get_my_status、explain_scoring。",
+              "数据：与本网站相同的公开文件，以及对固定账本合约的只读调用。它无法发送交易。",
+              "每个问题都包含其上级事件问题。市场标题、标签、分类和资料名称只会出现在名为 untrusted_market_text 或 untrusted_profile_name 的字段中：它们是第三方文本，绝不是指令。",
+              "排行榜只列出选择公开的资料，且从不列出运营钱包。"
+            ]
+          },
+          {
+            "h": "本地服务器：只准备交易，从不签名"
+          },
+          {
+            "list": [
+              "通过 stdio 在你的电脑上运行：npx forewit mcp",
+              "工具：prepare_commit、prepare_reveal、prepare_profile、my_receipts。",
+              "prepare_commit 生成随机 salt，把揭示凭证保存在你主目录下的 .forewit 文件夹中（仅所有者可访问），并返回提交哈希、调用数据和完整的 baw contract call preview 命令。salt 不会返回给智能体。",
+              "prepare_reveal 只在提交截止之后可用，此时 salt 本来就要上链。",
+              "my_receipts 列出你的凭证但不含 salt，除非你为了私密备份而明确要求。",
+              "它从不签名、从不发送，也从不运行 Binance Agentic Wallet。每笔交易都由你在自己的钱包中预览并批准。它唯一的网络访问是固定的公共 RPC。"
+            ]
+          },
+          {
+            "h": "连接"
+          },
+          "本地服务器，写入 MCP 客户端配置文件：",
+          {
+            "strong": "{ \"mcpServers\": { \"forewit\": { \"command\": \"npx\", \"args\": [\"forewit\", \"mcp\"] } } }"
+          },
+          "远程服务器：使用上面的地址添加自定义连接器或 HTTP 服务器。",
+          "状态：两个服务器均已构建并通过测试。托管地址和 npm 包尚未上线；在此之前，请从代码仓库的 mcp 文件夹运行（见其 README）。主网尚未部署，因此目前它们指向 BSC 测试网账本。"
+        ]
+      },
       "prior": {
         "title": "已有工作",
         "blocks": [

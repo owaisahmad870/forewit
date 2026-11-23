@@ -329,6 +329,46 @@
           "Status: an independent security review and a review of the v1.2 changes found no open High or Medium issue; the accepted residual risks are listed in the threat model. Tested end to end on BSC testnet; mainnet deployment comes next."
         ]
       },
+      "agents": {
+        "title": "Use Forewit from any agent",
+        "blocks": [
+          "Forewit ships two Model Context Protocol (MCP) servers, so any agent that speaks MCP (Claude, ChatGPT, Cursor, VS Code and others) can read rounds and prepare forecasts without custom code.",
+          {
+            "h": "Remote server: read only"
+          },
+          {
+            "list": [
+              "Streamable HTTP, stateless, no account and no keys. Planned address: https://mcp.forewit.xyz/mcp",
+              "Tools: get_current_round, get_round, get_question, get_baseline, get_crowd, get_leaderboard, get_my_status, explain_scoring.",
+              "Data: the same published files this site shows, plus read only calls to the pinned ledger contract. It cannot send transactions.",
+              "Every question includes its parent event question. Market titles, labels, tags and profile names come back only inside fields named untrusted_market_text or untrusted_profile_name: they are third party text, never instructions.",
+              "The leaderboard lists opt in public profiles only, and never the operator wallets."
+            ]
+          },
+          {
+            "h": "Local server: prepares transactions, never signs"
+          },
+          {
+            "list": [
+              "Runs on your computer over stdio: npx forewit mcp",
+              "Tools: prepare_commit, prepare_reveal, prepare_profile, my_receipts.",
+              "prepare_commit makes a random salt, saves the reveal receipt in the .forewit folder of your home directory with owner only access, and returns the commit hash, the calldata and the exact baw contract call preview command. The salt is not returned to the agent.",
+              "prepare_reveal works only after the commit deadline, when the salt has to go onchain anyway.",
+              "my_receipts lists your receipts without salts, unless you ask for them to make a private backup.",
+              "It never signs, never sends and never runs the Binance Agentic Wallet. You preview and approve every transaction in your own wallet. Its only network access is the pinned public RPC."
+            ]
+          },
+          {
+            "h": "Connect"
+          },
+          "Local server, in an MCP client config file:",
+          {
+            "strong": "{ \"mcpServers\": { \"forewit\": { \"command\": \"npx\", \"args\": [\"forewit\", \"mcp\"] } } }"
+          },
+          "Remote server: add a custom connector or HTTP server with the URL above.",
+          "Status: both servers are built and tested. The hosted endpoint and the npm package are not live yet; until they are, run both from the repository folder mcp (see its README). Mainnet is not deployed yet, so today they target the BSC testnet ledger."
+        ]
+      },
       "prior": {
         "title": "Prior art",
         "blocks": [
