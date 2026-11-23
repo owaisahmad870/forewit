@@ -1,6 +1,6 @@
 // PRESCIENT keeper (milestone 2). One command per duty in docs/KEEPER.md.
 // Run from the repo root: node --env-file=.env keeper/keeper.mjs <command> --network testnet|mainnet [options]
-//   select    --commit-deadline <iso> [--max 8]     apply docs/QUESTION_SELECTION.md v2, archive raw API data and output
+//   select    --commit-deadline <iso> [--kind daily|long]   apply docs/QUESTION_SELECTION.md v3, archive raw API data and output
 //   open      --selection <file> [--resolution-days 7] [--reveal-hours 24]   createRound only (no baseline yet)
 //   baseline  --round <id>                           snapshot books and commitBaseline; only in the last 5 minutes before the commit deadline
 //   seal      --round <id>                           sealRound and revealBaseline, with retries and alerting
@@ -15,6 +15,7 @@ import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
 import { takeBaseline, snapshotTimeOk } from './lib/baseline.mjs';
+import * as sel from './lib/selection.mjs';
 
 const args = Object.fromEntries(process.argv.slice(3).reduce((a, v, i, arr) => (v.startsWith('--') ? [...a, [v.slice(2), arr[i + 1]?.startsWith('--') || arr[i + 1] === undefined ? 'true' : arr[i + 1]]] : a), []));
 const cmd = process.argv[2];
@@ -25,6 +26,8 @@ const NET = {
 if (!NET) throw new Error('--network must be testnet or mainnet');
 const isMainnet = NET.chain.id === 56;
 const pub = createPublicClient({ chain: NET.chain, transport: http(NET.rpc) });
+// event logs need an RPC that serves eth_getLogs ranges (the bnbchain dataseed endpoints refuse them); override with LOGS_RPC_URL
+const logsPub = createPublicClient({ chain: NET.chain, transport: http(process.env.LOGS_RPC_URL || (isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com')) });
 const ABI = JSON.parse(readFileSync('contracts/out/ForecastLedger.sol/ForecastLedger.json', 'utf8')).abi;
 const CTF_ABI = [parseAbiItem('function getOutcomeSlotCount(bytes32) view returns (uint256)'), parseAbiItem('function payoutDenominator(bytes32) view returns (uint256)')];
 const big = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
@@ -70,8 +73,6 @@ async function send(fn, a, { tries = 4 } = {}) {
   }
 }
 
-// Selection rule v2 (docs/QUESTION_SELECTION.md): 6 to 72 h after the deadline, at most 3 crypto Up/Down questions
-const CAP = Date.parse('2026-12-08T00:00:00Z');
 function ctfFor(m) {
   if (!m.isYieldBearing) return NET.ctfs.std;
   return m.isNegRisk ? NET.ctfs.ybnr : NET.ctfs.yb;
@@ -85,7 +86,8 @@ async function apiGet(p) {
 async function select() {
   const cd = Date.parse(args['commit-deadline']);
   if (!cd) throw new Error('--commit-deadline <iso> required');
-  const max = Number(args.max || 8), minVol = Number(args['min-volume'] || 100), maxCrypto = 3;
+  const kind = args.kind || 'daily';
+  if (!['daily', 'long'].includes(kind)) throw new Error('--kind daily|long');
   const raw = [];
   let cur = '';
   for (let i = 0; i < 200; i++) {
@@ -94,51 +96,39 @@ async function select() {
     cur = j.cursor;
     if (!cur) break;
   }
+  // categories hold the only end time; fetch them only for markets passing the cheap filters (250 requests per minute)
   const cats = {};
-  // fetch categories (the only end time source) only for markets that can pass the cheap filters: 250 requests per minute
-  const cheap = (m) => { const [x, y] = m.outcomes; if (!(m.outcomes.length === 2 && x.indexSet === 1 && y.indexSet === 2 && /^(Yes|Up)$/.test(x.name) && /^(No|Down)$/.test(y.name))) return false; if (m.marketVariant === 'CRYPTO_UP_DOWN' || m.marketVariant === 'UP_DOWN') return true; return x.bestBid && x.bestAsk && x.bestAsk.price - x.bestBid.price <= 0.1 && (m.stats?.volume24hUsd ?? 0) >= minVol; };
-  for (const s of new Set(raw.filter(cheap).map((m) => m.categorySlug))) cats[s] = (await apiGet('/v1/categories/' + s)).data;
-  const picks = [];
-  for (const m of raw) {
-    const end = Date.parse(cats[m.categorySlug]?.endsAt ?? '');
-    const h = (end - cd) / 3.6e6;
-    if (!(h >= 6 && h <= 72 && end <= CAP)) continue;
-    const [a, b] = m.outcomes;
-    if (!(m.outcomes.length === 2 && a.indexSet === 1 && b.indexSet === 2 && /^(Yes|Up)$/.test(a.name) && /^(No|Down)$/.test(b.name))) continue;
-    const crypto = m.marketVariant === 'CRYPTO_UP_DOWN' || m.marketVariant === 'UP_DOWN';
-    // crypto Up/Down markets are exempt from the book and volume filters: their measured window often starts after selection
-    if (!crypto) {
-      if (!(a.bestBid && a.bestAsk) || a.bestAsk.price - a.bestBid.price > 0.1) continue;
-      if ((m.stats?.volume24hUsd ?? 0) < minVol) continue;
-    }
-    picks.push({ marketId: m.id, conditionId: m.conditionId, ctf: ctfFor(m), category: m.categorySlug, endsAt: cats[m.categorySlug].endsAt, title: m.title, crypto, daily: crypto && /Up or Down on /.test(m.title), vol24h: m.stats?.volume24hUsd ?? 0 });
-  }
-  // one market per event; daily crypto first (at most 3 crypto), then the most traded; then chain checks
-  picks.sort((x, y) => (y.daily - x.daily) || (y.vol24h - x.vol24h));
+  for (const slug of new Set(raw.filter((m) => sel.prefilter(m, kind)).map((m) => m.categorySlug))) cats[slug] = (await apiGet('/v1/categories/' + slug)).data;
+  const picks = raw
+    .filter((m) => sel.eligible(m, Date.parse(cats[m.categorySlug]?.endsAt ?? ''), cd, kind))
+    .map((m) => ({ marketId: m.id, conditionId: m.conditionId, ctf: ctfFor(m), category: m.categorySlug, endsAt: cats[m.categorySlug].endsAt, title: m.title, dailyCrypto: sel.isDailyCrypto(m), vol24h: m.stats?.volume24hUsd ?? 0 }));
+  // one market per event; daily crypto first, then the most traded; then chain checks (2 slots, unresolved)
+  picks.sort((x, y) => (y.dailyCrypto - x.dailyCrypto) || (y.vol24h - x.vol24h));
   const chosen = [], seen = new Set();
   for (const p of picks) {
-    if (chosen.length >= max || seen.has(p.category)) continue;
-    if (p.crypto && chosen.filter((c) => c.crypto).length >= maxCrypto) continue;
-    const [slots, den] = await Promise.all(CTF_ABI.map((f) => pub.readContract({ address: p.ctf, abi: [f], functionName: f.name, args: [p.conditionId] })));
+    if (chosen.length >= sel.MAX_ROUND || seen.has(p.category)) continue;
+    const [slots, den] = await Promise.all(CTF_ABI.map((fn) => pub.readContract({ address: p.ctf, abi: [fn], functionName: fn.name, args: [p.conditionId] })));
     if (slots !== 2n || den !== 0n) continue;
     seen.add(p.category);
     chosen.push(p);
   }
-  const dir = `keeper/archive/${args.network || 'testnet'}/${new Date().toISOString().slice(0, 10)}`;
+  const dir = `keeper/archive/${args.network || 'testnet'}/${new Date().toISOString().slice(0, 10)}_${kind}`;
   mkdirSync(dir, { recursive: true });
   writeFileSync(`${dir}/markets_raw.json`, JSON.stringify({ fetchedAt: new Date().toISOString(), markets: raw, categories: cats }));
-  const out = { rule: 'QUESTION_SELECTION v2', commitDeadline: new Date(cd).toISOString(), eligible: picks.length, chosen };
+  const out = { rule: sel.RULE, kind, commitDeadline: new Date(cd).toISOString(), resolutionDays: kind === 'long' ? 120 : 7, eligible: picks.length, chosen };
   writeFileSync(`${dir}/selection.json`, JSON.stringify(out, null, 2));
-  log(`selection: ${picks.length} eligible, ${chosen.length} chosen; archived in ${dir}`);
-  if (chosen.length < 5) await alert(`only ${chosen.length} questions pass rule v2 (need 5)`);
+  log(`selection (${kind}): ${picks.length} eligible, ${chosen.length} chosen; archived in ${dir}`);
+  if (chosen.length < sel.MIN_ROUND) await alert(`only ${chosen.length} questions pass rule v3 for a ${kind} round (minimum ${sel.MIN_ROUND})`);
   return out;
 }
+
+const sel_days = (file) => JSON.parse(readFileSync(file, 'utf8')).resolutionDays || 7;
 
 async function open() {
   const sel = JSON.parse(readFileSync(args.selection, 'utf8'));
   const cd = BigInt(Math.floor(Date.parse(sel.commitDeadline) / 1000));
   const rd = cd + BigInt(Math.round(Number(args['reveal-hours'] || 24) * 3600));
-  const wait = BigInt(Math.round(Number(args['resolution-days'] || 7) * 86400));
+  const wait = BigInt(Math.round(Number(args['resolution-days'] || sel_days(args.selection)) * 86400));
   const qs = sel.chosen.map((c) => ({ conditionId: c.conditionId, ctf: c.ctf, yesSlot: 0, marketId: BigInt(c.marketId) }));
   const before = await read('roundCount');
   await send('createRound', [qs, cd, rd, wait]);
@@ -177,7 +167,9 @@ async function seal() {
     if (!existsSync(f)) return alert(`round ${r}: baseline salt file missing, cannot reveal baseline`);
     const s = JSON.parse(readFileSync(f, 'utf8'));
     if (!snapshotTimeOk(s.takenAtEnd, Number(round.commitDeadline) * 1000)) await alert(`round ${r}: stored baseline was not taken in the last 5 minutes before the deadline`);
-    if (now > round.revealDeadline - 12n * 3600n) await alert(`round ${r}: baseline still unrevealed within 12 h of the reveal deadline`);
+    // escalate in the second half of the reveal window (12 h before the deadline on mainnet windows)
+    const late = (round.revealDeadline - round.commitDeadline) / 2n < 12n * 3600n ? (round.revealDeadline - round.commitDeadline) / 2n : 12n * 3600n;
+    if (now > round.revealDeadline - late) await alert(`round ${r}: baseline still unrevealed late in the reveal window`);
     await send('revealBaseline', [r, BigInt(s.packed), s.salt], { tries: 6 });
   }
   log(`round ${r} sealed and baseline revealed`);
@@ -198,16 +190,23 @@ async function finalize() {
 
 async function committers(r) {
   const ev = ABI.find((x) => x.type === 'event' && x.name === 'Committed');
-  const head = await pub.getBlockNumber();
+  const head = await logsPub.getBlockNumber();
   const created = (await read('getRound', [r])).createdAt;
   const out = new Set();
-  // walk back in 5000 block windows until before the round was created (0.45 s blocks)
-  for (let to = head; to > 0n; to -= 5000n) {
-    const from = to > 4999n ? to - 4999n : 0n;
-    const logs = await pub.getLogs({ address: await ledger(), event: ev, args: { roundId: r }, fromBlock: from, toBlock: to });
+  // walk back until before the round was created (0.45 s blocks); halve the window when the RPC limits log ranges
+  let span = 5000n;
+  for (let to = head; to > 0n; ) {
+    const from = to >= span ? to - span + 1n : 0n;
+    let logs;
+    try {
+      logs = await logsPub.getLogs({ address: await ledger(), event: ev, args: { roundId: r }, fromBlock: from, toBlock: to });
+    } catch (e) {
+      if (span > 50n && /limit|range|exceed/i.test(e.shortMessage || e.message)) { span /= 2n; continue; }
+      throw e;
+    }
     for (const l of logs) out.add(l.args.forecaster);
-    const blk = await pub.getBlock({ blockNumber: from });
-    if (blk.timestamp < created) break;
+    if ((await logsPub.getBlock({ blockNumber: from })).timestamp < created) break;
+    to = from - 1n;
   }
   return [...out];
 }
