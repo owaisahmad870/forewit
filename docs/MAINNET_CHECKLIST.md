@@ -1,10 +1,10 @@
 # Mainnet checklist (ForecastLedger v1.2 on BSC, chain 56)
 
-Every onchain step needs Owais's explicit yes, given for that step, with the action, cost and addresses shown first. Nothing here runs automatically. Status 23 Nov 2026: the Forewit rename is done and its gates passed (below). Open: organizer answers, keyed RPC, fresh keys, the GitHub repository rename (proposed, waiting for Owais), then Owais's yes for step 3.
+Every onchain step needs Owais's explicit yes, given for that step, with the action, cost and addresses shown first. Nothing here runs automatically. Status 23 Nov 2026: the Forewit rename is done and its gates passed (below). Open: organizer answers, keyed RPC, fresh keys, then Owais's yes for step 3.
 
 ## 0. Blockers before any mainnet transaction
 * Done 23 Nov 2026: final name Forewit applied in one change: COMMIT_TYPEHASH label "ForewitCommit(...)", the three approved comment fixes (ForecastLedger.sol lines 96, 380, 608), CLI "forewit", keeper units forewit@.service and forewit_*.timer, site in EN and ZH (display name 先见), docs; golden commit hash regenerated (0x343e0813...d192b8). Delta check: compiled bytecode identical to the previous build once the typehash constant (2 sites) is swapped and the metadata trailer stripped; ABI, storage layout and selectors identical.
-* Proposed, not done: rename the GitHub repository owaisahmad870/prescient to owaisahmad870/forewit (stays private). Until then keeper/deploy/README.md and CLAUDE.md keep the current repository URL.
+* Done 23 Nov 2026: GitHub repository renamed to owaisahmad870/forewit (private); remote, deploy README and CI follow it.
 * Organizer answers (notes/knowledge.md): Developer Mode as the expected path, whether a relayer revealFor counts as an interaction, how the 30 holder rule counts, and whether an Agent ID can be burned or reissued.
 * A keyed BSC RPC for the keeper (the .env RPC values are public endpoints).
 

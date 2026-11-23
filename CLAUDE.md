@@ -34,7 +34,7 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 * This file is the index loaded every turn; keep it under about 10 KB. Details go in notes/*.md, each opening with a summary.
 
 ## Now (update at every step)
-* **Base / best**: 23 Nov 2026. Renamed to Forewit (forewit.xyz, X @forewitai, Chinese display name 先见). v1.2 Forewit build on testnet instance E 0xa497...12E1: END TO END OK via keeper.mjs; instances A to D deprecated. Repo private on GitHub (owaisahmad870/prescient; rename to owaisahmad870/forewit proposed, waiting for Owais). 79 Solidity, 77 node, 40 web tests pass. Nothing on mainnet.
+* **Base / best**: 23 Nov 2026. Renamed to Forewit (forewit.xyz, X @forewitai, Chinese display name 先见). v1.2 Forewit build on testnet instance E 0xa497...12E1: END TO END OK via keeper.mjs; instances A to D deprecated. Repo private on GitHub (owaisahmad870/forewit, renamed 23 Nov 2026). 79 Solidity, 77 node, 40 web tests pass. Nothing on mainnet.
 * **Gap to rank 1**: 0 of 30 holders, 0 of 7 rounds, no deploy, no site. Owais holds owaisahmad.ai (wallet 0x4Db4...282C); Developer Mode on (until about 30 Nov unless used).
 * **Running**: round 2 on instance A: settle job at 24 Nov 04:14 UTC (reveal job at 16:09 UTC). Rule v1 census and keeper select smoke test (background).
 * **Blocked on**: mainnet needs Owais's yes, fresh offline backed keys, a keyed RPC and the organizer answers. .env LEDGER_TESTNET and INDEXER_FROM_BLOCK_TESTNET must move to instance E (Owais).
