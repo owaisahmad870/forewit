@@ -21,8 +21,14 @@ Last updated 23 Nov 2026. Nothing is deployed.
 * cyclomatic-complexity (Informational) on createRound: accepted; each branch is a documented input check with its own test.
 * naming-convention (Informational, 5): immutables in capitals and the role constants follow OpenZeppelin style.
 
-## Aderyn
-* Not run yet. Aderyn 0.6.8 has no Windows build and failed to compile from source here (missing dlltool), and its release has no Linux binary attached (only checksums). .github/workflows/ci.yml builds it from the release tag on Ubuntu and uploads the report; it runs on the first push (Owais condition 7).
+## Aderyn 0.6.8 triage (CI run 45210857725, 23 Nov 2026; built in GitHub Actions with its pinned nightly-2025-09-20, report kept as a CI artifact)
+* Result: 2 High, 10 Low, all triaged; none needs a code change.
+* H-1 reentrancy, state change after an external call (createRound, commit, setPublicProfile): false positive. Every call is to a function declared view (getOutcomeSlotCount, payoutDenominator, balanceOf, ownerOf), which Solidity issues as STATICCALL, so the callee cannot change state or reenter in a way that changes it; targets are immutable and allowlisted.
+* H-2 unsafe casting (uint32 questions, int64 skill in _applyScore): false positive. questions is at most MAX_QUESTIONS (16); a round's skill is bounded by 16 x 1e8 in absolute value; test_headroom proves a 1e9x margin for the stats widths.
+* L-1 centralization: the documented role design (docs/OWNER_PERMISSIONS.md); nobody can change scores or outcomes.
+* L-7 state change without event: test mocks only (MockAgentID, MockConditionalTokens).
+* L-8 unchecked return of _grantRole in the constructor: it returns false only when the role is already held, impossible at construction.
+* L-2 costly operations in loops, L-6 revert in loop: bounded by 16 questions or 100 batch entries by design. L-3, L-4, L-5, L-9, L-10: style; no behaviour impact.
 
 ## Independent review
 * Not done yet (milestone 3, before mainnet).
