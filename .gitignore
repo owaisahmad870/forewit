@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+.venv/
+node_modules/
+contracts/out/
+contracts/cache/
+coverage/
+lcov.info
+contracts/broadcast/**/dry-run/
+keeper/state/
+indexer/out/
+keeper/archive/

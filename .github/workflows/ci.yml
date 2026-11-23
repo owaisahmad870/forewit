@@ -1,0 +1,80 @@
+# Contracts CI: tests, coverage, Slither, Aderyn (Ubuntu; Aderyn has no Windows build). Actions pinned to commits.
+name: contracts
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+      - uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1.9.2
+        with:
+          version: v1.10.0
+      - name: Build
+        run: forge build --sizes
+      - name: Test (fork tests run only when the BSC_RPC_URL secret is set)
+        env:
+          BSC_RPC_URL: ${{ secrets.BSC_RPC_URL }}
+        run: forge test -vv
+      - name: Coverage (must stay at 100% for ForecastLedger)
+        run: |
+          forge coverage --no-match-coverage "(test|mocks|script)" --no-match-contract Fork --report summary | tee cov.txt
+          grep -E "src/ForecastLedger.sol +\| 100.00% .*\| 100.00% .*\| 100.00% .*\| 100.00%" cov.txt
+
+  golden:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+      - name: JavaScript golden vectors (must match the Solidity test_golden* tests)
+        run: |
+          npm ci
+          npm run golden
+
+  analyze:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1.9.2
+        with:
+          version: v1.10.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Slither 0.11.6 (fails on any High or Medium)
+        working-directory: contracts
+        run: |
+          pip install slither-analyzer==0.11.6
+          slither . --filter-paths "lib/|test/|mocks/" --exclude-dependencies --fail-medium
+      - name: Cache Aderyn build
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cargo/bin/aderyn
+          key: aderyn-v0.6.8-${{ runner.os }}
+      - name: Aderyn 0.6.8 (built from the release tag; the release has no Linux binary attached)
+        working-directory: contracts
+        run: |
+          command -v aderyn || cargo install --git https://github.com/Cyfrin/aderyn --tag aderyn-v0.6.8 --locked aderyn
+          aderyn . --output ../aderyn-report.md
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: aderyn-report
+          path: aderyn-report.md
