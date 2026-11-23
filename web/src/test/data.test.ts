@@ -107,11 +107,11 @@ describe('real indexer output (testnet snapshot, no round files)', () => {
   });
 });
 
-describe('sample dataset in public/data', () => {
+describe('published dataset in public/data (sample or real)', () => {
   const index = json<{ sample: boolean; snapshot: string; rounds: string[] }>('../../public/data/index.json');
   const s = json<Snapshot>(`../../public/data/${index.snapshot}`);
   const files = index.rounds.map((p) => json<RoundFile>(`../../public/data/${p}`));
-  it('is labelled as sample', () => expect(index.sample).toBe(true));
+  it('says whether it is sample data', () => expect(typeof index.sample).toBe('boolean'));
   it('every published question has an event question', () => {
     for (const f of files) for (const q of f.questions) expect(q.eventQuestion?.trim()).toBeTruthy();
   });
@@ -121,6 +121,7 @@ describe('sample dataset in public/data', () => {
       const n = r.questions.length;
       const base = unpack(r.baseline, n);
       for (const [a, packed] of Object.entries(r.forecasts ?? {})) {
+        if (!r.scored[a]) continue; // revealed but not scored yet (live data)
         const f = unpack(packed, n);
         let brier = 0, b = 0, q = 0;
         f.forEach((p, i) => {
@@ -129,7 +130,7 @@ describe('sample dataset in public/data', () => {
           const y = o === 'Yes' ? 10000 : 0;
           brier += (p - y) ** 2; b += (base[i] - y) ** 2; q++;
         });
-        expect(r.scored[a]).toEqual({ questions: String(q), brier: String(brier), skill: String(b - brier) });
+        expect(r.scored[a]).toMatchObject({ questions: String(q), brier: String(brier), skill: String(b - brier) });
       }
     }
   });

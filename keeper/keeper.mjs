@@ -299,6 +299,13 @@ if (!cmds[cmd]) {
 const hc = process.env[`HC_PING_${cmd.toUpperCase()}`];
 try {
   await cmds[cmd]();
+  // publish real data to the site after every state changing job (needs the ledger's deploy block; PUBLISH=0 disables)
+  const fromBlock = process.env[`INDEXER_FROM_BLOCK_${isMainnet ? 'MAINNET' : 'TESTNET'}`];
+  if (['open', 'baseline', 'seal', 'finalize', 'score', 'tick', 'daily'].includes(cmd) && process.env.PUBLISH !== '0' && fromBlock) {
+    const { publish } = await import('../indexer/publish.mjs');
+    const p = await publish({ network: args.network || 'testnet', ledger: await ledger(), fromBlock, rpc: process.env.LOGS_RPC_URL }).catch(async (e) => { await alert(`publish failed: ${e.message.split('\n')[0]}`); return null; });
+    if (p) log(`published ${p.rounds} rounds, ${p.files} round files to web/public/data`);
+  }
   if (hc) await fetch(process.exitCode ? `${hc}/fail` : hc).catch(() => log('healthcheck ping failed'));
 } catch (e) {
   if (hc) await fetch(`${hc}/fail`).catch(() => {});

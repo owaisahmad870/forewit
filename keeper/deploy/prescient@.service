@@ -18,11 +18,12 @@ NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
 ProtectHome=yes
-ReadWritePaths=/opt/prescient/app/keeper/state /opt/prescient/app/keeper/archive
+ReadWritePaths=/opt/prescient/app/keeper/state /opt/prescient/app/keeper/archive /opt/prescient/app/indexer/out /opt/prescient/app/web/public/data
 ProtectKernelTunables=yes
 ProtectKernelModules=yes
 ProtectControlGroups=yes
 RestrictSUIDSGID=yes
 LockPersonality=yes
 CapabilityBoundingSet=
-UMask=0077
+# 0022 so published site data is readable by a web server; salts are written 0600 explicitly (agent/lib/secure_file.mjs)
+UMask=0022

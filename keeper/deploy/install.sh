@@ -25,8 +25,8 @@ id prescient >/dev/null 2>&1 || useradd --system --home /opt/prescient --shell /
 if [ ! -d /opt/prescient/app/.git ]; then git clone --depth 1 "$REPO" /opt/prescient/app; else git -C /opt/prescient/app pull --ff-only; fi
 cd /opt/prescient/app
 PATH=/opt/prescient/node/bin:$PATH npm ci --no-audit --no-fund
-mkdir -p keeper/state keeper/archive
-chown -R prescient:prescient /opt/prescient/app/keeper/state /opt/prescient/app/keeper/archive
+mkdir -p keeper/state keeper/archive indexer/out web/public/data
+chown -R prescient:prescient /opt/prescient/app/keeper/state /opt/prescient/app/keeper/archive /opt/prescient/app/indexer/out /opt/prescient/app/web/public/data
 chmod 700 keeper/state
 
 # Units
