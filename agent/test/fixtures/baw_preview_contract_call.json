@@ -1,0 +1,34 @@
+{
+  "_note": "Real baw 1.12.0 reply, 23 Nov 2026: contract-call preview on BSC mainnet (chain 56) from the owner wallet to the Agent ID contract 0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F, value 0, calldata balanceOf(owner wallet), selector 0x70a08231. Never executed. requestId replaced with zeros.",
+  "reply": {
+    "success": true,
+    "data": {
+      "requestId": "00000000000000000000000000000000",
+      "parsedTx": {
+        "transactionType": "ContractInteraction",
+        "action": "0x70a08231",
+        "contractAddress": "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F",
+        "contractAddressList": null,
+        "transactionTypeTranslationKey": null
+      },
+      "simulationResult": {
+        "gasTokenFromData": 0,
+        "balanceChanges": [],
+        "simulationErrorDetail": null,
+        "simulationCode": "000000000",
+        "preCheckCode": "",
+        "authorityChanges": [],
+        "allowanceChanges": []
+      },
+      "risks": {
+        "addresses": {},
+        "riskDetails": [],
+        "riskBehaviors": []
+      },
+      "tokenInfos": {},
+      "requireConfirmation": false,
+      "expiresAt": 1795465615264,
+      "gasLimit": null
+    }
+  }
+}

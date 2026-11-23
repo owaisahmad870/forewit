@@ -19,11 +19,11 @@ export const DEV_MODE_HELP =
   'extends it), has its own daily limit, and the wallet balance must be under its cap. Then run this command again.';
 
 /**
- * The one place that decides which program is baw. PRESCIENT_BAW_BIN is for tests only (a fake baw script).
+ * The one place that decides which program is baw. FOREWIT_BAW_BIN is for tests only (a fake baw script).
  * On Windows npm installs baw as a .cmd shim, which cannot run without a shell, so its JS entry is run with node instead.
  */
 export function bawCommand(env = process.env) {
-  const bin = env.PRESCIENT_BAW_BIN || 'baw';
+  const bin = env.FOREWIT_BAW_BIN || 'baw';
   if (/\.m?js$/i.test(bin)) return { file: process.execPath, pre: [bin] };
   if (bin !== 'baw' || process.platform !== 'win32') return { file: bin, pre: [] };
   for (const dir of (env.PATH ?? env.Path ?? '').split(delimiter).filter(Boolean)) {
@@ -83,26 +83,31 @@ export function preflight(now = Date.now()) {
 function explainError(reply, stage) {
   const code = codeOf(reply);
   if (code === 351802 || code === 351804) return `${code}: ${DEV_MODE_HELP}`;
-  if (code === 351803) return '351803: risk blocked by the Binance Agentic Wallet. Stopped. PRESCIENT never works around a risk block.';
+  if (code === 351803) return '351803: risk blocked by the Binance Agentic Wallet. Stopped. Forewit never works around a risk block.';
   if (code === 351805) return `351805: the simulation failed (${errText(reply)}). Common reasons: the commit window closed, the wallet holds no Agent ID, the reveal window is not open, or the receipt does not match. Run status; do not retry blindly.`;
   return `${stage} failed${Number.isFinite(code) ? ` (${code})` : ''}: ${errText(reply)}`;
 }
 
-// shortcut: the preview's parsedTx field names for a contract call are not documented (only a Send example is);
-// these candidates are a guess to confirm on the first mainnet preview. Any missing field refuses.
+// Field names confirmed on a real BSC mainnet preview (baw 1.12.0, 23 Nov 2026, agent/test/fixtures/baw_preview_contract_call.json):
+// parsedTx is { transactionType: 'ContractInteraction', action: <4 byte selector>, contractAddress, contractAddressList,
+// transactionTypeTranslationKey }. It echoes neither the value nor the full calldata, so value 0 is proven by the
+// simulation showing no balance, allowance or authority change, and the calldata by the selector plus our own argv.
 export function parsedCall(parsedTx) {
   const p = parsedTx ?? {};
-  return { to: p.contractAddress ?? p.to, value: p.amount ?? p.value, data: p.inputData ?? p.data ?? p.callData ?? p.input };
+  return { type: p.transactionType, to: p.contractAddress, selector: p.action };
 }
+
+const isEmptyList = (v) => Array.isArray(v) && v.length === 0;
 
 /** Refuses unless the preview targets the pinned ledger, has value 0 and carries exactly our calldata. */
 export function checkPreview(d, { ledger, data }) {
   const got = parsedCall(d?.parsedTx);
   const bad = [];
+  if (got.type !== 'ContractInteraction') bad.push(`transaction type ${cleanText(String(got.type))} is not ContractInteraction`);
   if (typeof got.to !== 'string' || got.to.toLowerCase() !== ledger.toLowerCase()) bad.push(`target ${cleanText(String(got.to))} is not the pinned ledger ${ledger}`);
-  if (got.value === undefined || got.value === null || !/^(0|0x0*)$/i.test(String(got.value))) bad.push(`value ${cleanText(String(got.value))} is not 0`);
-  if (typeof got.data !== 'string' || got.data.toLowerCase() !== data.toLowerCase()) bad.push('calldata is missing or differs from ours');
+  if (typeof got.selector !== 'string' || got.selector.toLowerCase() !== data.slice(0, 10).toLowerCase()) bad.push('function selector is missing or differs from ours');
   const sim = d?.simulationResult ?? {};
+  if (!['balanceChanges', 'allowanceChanges', 'authorityChanges'].every((k) => isEmptyList(sim[k]))) bad.push('the simulation shows a balance, allowance or authority change, so value is not 0');
   if (sim.simulationErrorDetail || (sim.simulationCode != null && !/^0+$/.test(String(sim.simulationCode)))) bad.push(`simulation did not pass (${cleanText(String(sim.simulationCode))})`);
   if (typeof d?.requestId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(d.requestId)) bad.push('no usable requestId');
   const keys = Object.keys(d?.parsedTx ?? {}).map((k) => cleanText(k)).join(', ');
@@ -113,7 +118,7 @@ function printPreview(d, data, log) {
   const s = (v) => cleanText(typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v));
   log('', 'Preview from the Binance Agentic Wallet:', '  parsedTx:');
   for (const [k, v] of Object.entries(d.parsedTx ?? {})) log(`    ${cleanText(k)}: ${s(v)}`);
-  log(`  calldata (matches ours exactly): ${data}`);
+  log(`  calldata sent (baw echoes only its selector, checked above): ${data}`);
   const sim = d.simulationResult ?? {};
   log('  simulationResult:');
   for (const [k, v] of Object.entries(sim)) log(`    ${cleanText(k)}: ${s(v)}`);
@@ -143,7 +148,7 @@ export async function sendWithConfirmation({ net, from, data, what, io }) {
   const d = preview.data;
   checkPreview(d, { ledger: net.ledger, data });
   printPreview(d, data, log);
-  log('', `Risk warning: ${RISK_WARNING}`, `This sends the ${what} from ${from} to ${net.ledger} with value 0 (network gas only). PRESCIENT pays no returns.`);
+  log('', `Risk warning: ${RISK_WARNING}`, `This sends the ${what} from ${from} to ${net.ledger} with value 0 (network gas only). Forewit pays no returns.`);
   const answer = await io.ask('Type yes to send it, anything else aborts: ');
   if (String(answer ?? '').trim() !== 'yes') throw new Error('aborted: you did not type yes. Nothing was sent.');
   const exp = typeof d.expiresAt === 'string' && !/^d+$/.test(d.expiresAt) ? Date.parse(d.expiresAt) : Number(d.expiresAt); // docs: ms number
