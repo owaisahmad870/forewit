@@ -38,7 +38,7 @@ HTTP hardening:
 
 * `POST /mcp` only (stateless, JSON responses, one server and transport per request); other methods 405, other paths 404.
 * Origin allowlist (`FOREWIT_ALLOWED_ORIGINS`, comma separated, default `https://forewit.xyz,https://www.forewit.xyz`). Requests without an Origin header (non browser clients) pass; any other Origin gets 403.
-* Request body limit 64 KB (413). Rate limit per client address, default 60 requests per minute (`FOREWIT_RATE_LIMIT`, 429). Behind a reverse proxy all clients share one address, so set the limit at the proxy too.
+* Request body limit 64 KB (413). Rate limit per client address, default 60 requests per minute (`FOREWIT_RATE_LIMIT`, 429). Behind a reverse proxy all clients share one socket address, so the default becomes a global cap: raise `FOREWIT_RATE_LIMIT` there and enforce the per client limit at the proxy.
 * No secrets: nothing to configure besides `PORT`, `HOST` (default 127.0.0.1), `FOREWIT_DATA`, `FOREWIT_ALLOWED_ORIGINS`, `FOREWIT_RATE_LIMIT`.
 
 ## Local server (stdio)
@@ -82,3 +82,7 @@ Recorded in `mcp/INSPECTOR.md`.
 * Publish with provenance from CI: `npm publish --provenance --access public` (package name `forewit`; check it is free on npm first).
 * MCP Registry: needs a `server.json` and a namespace (`io.github.owaisahmad870/forewit` or a domain namespace `xyz.forewit/forewit` with DNS verification). Not created.
 * Hosting the remote server: run `node bin/forewit.mjs mcp remote` behind TLS at `mcp.forewit.xyz`, with `HOST=0.0.0.0` and a proxy rate limit.
+* Reserve the npm name `forewit` before the docs page goes live: the page tells users to run `npx forewit mcp`, and the name is unregistered today.
+* Provenance needs a public repository and a publish workflow with `id-token: write`; neither exists yet.
+* The repository has no LICENSE file; add the MIT text before packing so the tarball carries it.
+* `agent/config.mjs` is copied at pack time: a package published before the mainnet ledger is pinned stays testnet only until republished.
