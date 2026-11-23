@@ -1,0 +1,136 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { bins10, calibrationError, crowdVsMarket, joinRounds, leaderboard, liveRound, phase, unpack, type RoundFile, type Snapshot, type SnapRound } from '../lib/data';
+
+const json = <T,>(p: string): T => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
+const pack = (bps: number[]) => bps.reduce((a, p, i) => a | (BigInt(p) << BigInt(16 * i)), 0n).toString();
+
+// docs/SCORING.md golden vectors: outcomes Yes, No, Void, Yes; forecast [8000, 3000, 9000, 6500]; baseline [6000, 5000, 5000, 7000]
+const GOLD_F = [8000, 3000, 9000, 6500];
+const GOLD_B = [6000, 5000, 5000, 7000];
+const goldRound = (id: number, scoredAs: Record<string, { questions: string; brier: string; skill: string }>, extra: Partial<SnapRound> = {}): SnapRound => ({
+  roundId: String(id),
+  questions: GOLD_F.map((_, i) => ({ conditionId: `0x${i}`, ctf: '0x0', yesSlot: 0, marketId: String(i) })),
+  committers: Object.keys(scoredAs), revealed: Object.keys(scoredAs), scored: scoredAs, forfeited: {},
+  outcomes: { 0: 'Yes', 1: 'No', 2: 'Void', 3: 'Yes' }, baseline: pack(GOLD_B),
+  commitDeadline: String(1795000000 + id * 86400), revealDeadline: String(1795086400 + id * 86400), resolutionWait: '604800',
+  commitCount: Object.keys(scoredAs).length, revealRate: 1, ...extra,
+});
+const snap = (rounds: SnapRound[], profiles: Snapshot['profiles'] = {}): Snapshot => ({ network: 97, ledger: '0xL', builtAt: '2026-11-23T00:00:00Z', metrics: { distinctCommitters: 0, rounds: rounds.length, perDay: {} }, rounds, profiles });
+
+describe('unpack', () => {
+  it('reads 16 bits per question', () => {
+    expect(unpack(pack(GOLD_F), 4)).toEqual(GOLD_F);
+    expect(unpack('0', 3)).toEqual([0, 0, 0]);
+  });
+});
+
+describe('scoring against the golden vectors', () => {
+  const gold = { questions: '3', brier: '25250000', skill: '24750000' };
+  it('crowd vs market Brier skips Void and matches the golden sums', () => {
+    const rounds = joinRounds(snap([goldRound(1, { '0xa': gold }, { crowd: { method: 'test', bps: GOLD_F } })]), []);
+    const s = crowdVsMarket(rounds);
+    expect(s.n).toBe(3);
+    expect(s.crowd).toBeCloseTo(25250000 / 3 / 1e8, 12);
+    expect(s.market).toBeCloseTo(50000000 / 3 / 1e8, 12);
+  });
+  it('leaderboard shrinks skill with K = 20', () => {
+    const r = leaderboard(snap([goldRound(1, { '0xa': gold })], { '0xa': { isPublic: true, name: 'A' } })).rows[0];
+    expect(r.meanBrier).toBeCloseTo(25250000 / 3 / 1e8, 12);
+    expect(r.shrunkSkill).toBeCloseTo(24750000 / 23 / 1e8, 12);
+    expect(r.ranked).toBe(false);
+  });
+  it('empty state when nothing is resolved', () => {
+    expect(crowdVsMarket([])).toEqual({ crowd: null, market: null, n: 0 });
+  });
+});
+
+describe('leaderboard eligibility', () => {
+  const s = (q: number) => ({ questions: String(q), brier: '0', skill: String(q * 1e6) });
+  const build = (rounds: number, qPer: number, isPublic = true) =>
+    leaderboard(snap(Array.from({ length: rounds }, (_, i) => goldRound(i + 1, { '0xA': s(qPer) })), { '0xa': { isPublic, name: 'A' } }));
+  it('ranks at exactly 5 rounds and 20 baseline questions', () => expect(build(5, 4).rows[0].ranked).toBe(true));
+  it('does not rank at 4 rounds', () => expect(build(4, 5).rows[0].ranked).toBe(false));
+  it('does not rank at 19 baseline questions', () => expect(build(5, 3.8).rows[0]?.ranked ?? false).toBe(false));
+  it('never lists forecasters who did not opt in, but counts them', () => {
+    const lb = build(6, 5, false);
+    expect(lb.rows).toEqual([]);
+    expect(lb.forecasters).toBe(1);
+  });
+  it('participation ignores rounds still inside their reveal window', () => {
+    const open = goldRound(9, {}, { committers: ['0xa'], revealed: [], commitCount: 1, revealDeadline: String(Date.parse('2026-11-23T00:00:00Z') / 1000 + 3600) });
+    const lb = leaderboard(snap([goldRound(1, { '0xa': s(3) }), open], { '0xa': { isPublic: true } }));
+    expect(lb.rows[0].participation).toBe(1);
+  });
+  it('rounds without a baseline add no skill and no baseline questions', () => {
+    const lb = leaderboard(snap([goldRound(1, { '0xa': s(3) }, { baseline: null })], { '0xa': { isPublic: true } }));
+    expect(lb.rows[0].baselineQuestions).toBe(0);
+    expect(lb.rows[0].shrunkSkill).toBe(0);
+  });
+});
+
+describe('round state uses the passed clock', () => {
+  const [r] = joinRounds(snap([goldRound(1, {})]), []);
+  it('moves through the phases', () => {
+    expect(phase(r, r.commitDeadline.getTime() - 1)).toBe('commit');
+    expect(phase(r, r.commitDeadline.getTime())).toBe('reveal');
+    expect(phase(r, r.revealDeadline.getTime() + 1)).toBe('scored');
+  });
+  it('features the open round, else the newest', () => {
+    const rounds = joinRounds(snap([goldRound(1, {}), goldRound(2, {})]), []);
+    expect(liveRound(rounds, rounds[1].commitDeadline.getTime() - 1)?.id).toBe(1);
+    expect(liveRound(rounds, 4e12)?.id).toBe(2);
+  });
+});
+
+describe('histogram and calibration', () => {
+  it('bins 0 to 100% into 10 bins, 100% in the last', () => expect(bins10([0, 999, 1000, 5000, 10000])).toEqual([2, 1, 0, 0, 0, 1, 0, 0, 0, 1]));
+  it('calibration error is 0 when frequencies match', () => {
+    expect(calibrationError([{ p: 5000, yes: true }, { p: 5000, yes: false }])).toBeCloseTo(0, 12);
+    expect(calibrationError([{ p: 9000, yes: false }])).toBeCloseTo(0.9, 12);
+    expect(calibrationError([])).toBeNull();
+  });
+});
+
+describe('real indexer output (testnet snapshot, no round files)', () => {
+  const real = json<Snapshot>('./fixtures/testnet_snapshot.json');
+  it('parses and hides every question, since no event question was published', () => {
+    const [r] = joinRounds(real, []);
+    expect(r.questions).toHaveLength(3);
+    expect(r.questions.every((q) => q.title === null)).toBe(true);
+    expect(r.hasBaseline).toBe(true);
+    expect(r.questions[0].outcome).toBe('Yes');
+  });
+  it('round files for another ledger are never joined', () => {
+    const file: RoundFile = { network: 97, ledger: '0xother', roundId: '1', commitDeadline: '', revealDeadline: '', questions: [{ index: 0, marketId: '1', eventQuestion: 'E?', label: 'L' }] };
+    expect(joinRounds(real, [file])[0].questions[0].title).toBeNull();
+  });
+});
+
+describe('sample dataset in public/data', () => {
+  const index = json<{ sample: boolean; snapshot: string; rounds: string[] }>('../../public/data/index.json');
+  const s = json<Snapshot>(`../../public/data/${index.snapshot}`);
+  const files = index.rounds.map((p) => json<RoundFile>(`../../public/data/${p}`));
+  it('is labelled as sample', () => expect(index.sample).toBe(true));
+  it('every published question has an event question', () => {
+    for (const f of files) for (const q of f.questions) expect(q.eventQuestion?.trim()).toBeTruthy();
+  });
+  it('stored scores match the scoring rule recomputed from forecasts, baseline and outcomes', () => {
+    for (const r of s.rounds) {
+      if (!r.baseline) continue;
+      const n = r.questions.length;
+      const base = unpack(r.baseline, n);
+      for (const [a, packed] of Object.entries(r.forecasts ?? {})) {
+        const f = unpack(packed, n);
+        let brier = 0, b = 0, q = 0;
+        f.forEach((p, i) => {
+          const o = r.outcomes[String(i)];
+          if (o !== 'Yes' && o !== 'No') return;
+          const y = o === 'Yes' ? 10000 : 0;
+          brier += (p - y) ** 2; b += (base[i] - y) ** 2; q++;
+        });
+        expect(r.scored[a]).toEqual({ questions: String(q), brier: String(brier), skill: String(b - brier) });
+      }
+    }
+  });
+});
