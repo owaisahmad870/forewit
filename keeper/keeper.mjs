@@ -28,13 +28,16 @@ const isMainnet = NET.chain.id === 56;
 const pub = createPublicClient({ chain: NET.chain, transport: http(NET.rpc) });
 // event logs need an RPC that serves eth_getLogs ranges (the bnbchain dataseed endpoints refuse them); override with LOGS_RPC_URL
 const logsPub = createPublicClient({ chain: NET.chain, transport: http(process.env.LOGS_RPC_URL || (isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com')) });
-const ABI = JSON.parse(readFileSync('contracts/out/ForecastLedger.sol/ForecastLedger.json', 'utf8')).abi;
+// committed ABI so the keeper host needs no Foundry; CI fails if it drifts from contracts/out
+const ABI = JSON.parse(readFileSync('keeper/abi/ForecastLedger_v1_1.json', 'utf8'));
 const CTF_ABI = [parseAbiItem('function getOutcomeSlotCount(bytes32) view returns (uint256)'), parseAbiItem('function payoutDenominator(bytes32) view returns (uint256)')];
 const big = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 
 async function alert(msg) {
   log('ALERT', msg);
+  const { TELEGRAM_BOT_TOKEN: tg, TELEGRAM_CHAT_ID: chat } = process.env;
+  if (tg && chat) await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: chat, text: `PRESCIENT keeper (${args.network || 'testnet'}): ${msg}` }) }).catch(() => log('telegram alert failed'));
   if (process.env.ALERT_WEBHOOK_URL) await fetch(process.env.ALERT_WEBHOOK_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: `PRESCIENT keeper: ${msg}` }) }).catch(() => log('alert webhook failed'));
 }
 
@@ -100,8 +103,8 @@ async function select() {
   const cats = {};
   for (const slug of new Set(raw.filter((m) => sel.prefilter(m, kind)).map((m) => m.categorySlug))) cats[slug] = (await apiGet('/v1/categories/' + slug)).data;
   const picks = raw
-    .filter((m) => sel.eligible(m, Date.parse(cats[m.categorySlug]?.endsAt ?? ''), cd, kind))
-    .map((m) => ({ marketId: m.id, conditionId: m.conditionId, ctf: ctfFor(m), category: m.categorySlug, endsAt: cats[m.categorySlug].endsAt, title: m.title, dailyCrypto: sel.isDailyCrypto(m), vol24h: m.stats?.volume24hUsd ?? 0 }));
+    .filter((m) => sel.eligible(m, cats[m.categorySlug], cd, kind))
+    .map((m) => ({ marketId: m.id, conditionId: m.conditionId, ctf: ctfFor(m), category: m.categorySlug, endsAt: cats[m.categorySlug].endsAt, eventQuestion: cats[m.categorySlug].title, label: m.title, marketQuestion: m.question, tags: (cats[m.categorySlug].tags ?? []).map((t) => t.name), title: m.title, dailyCrypto: sel.isDailyCrypto(m), vol24h: m.stats?.volume24hUsd ?? 0 }));
   // one market per event; daily crypto first, then the most traded; then chain checks (2 slots, unresolved)
   picks.sort((x, y) => (y.dailyCrypto - x.dailyCrypto) || (y.vol24h - x.vol24h));
   const chosen = [], seen = new Set();
@@ -118,7 +121,7 @@ async function select() {
   const out = { rule: sel.RULE, kind, commitDeadline: new Date(cd).toISOString(), resolutionDays: kind === 'long' ? 120 : 7, eligible: picks.length, chosen };
   writeFileSync(`${dir}/selection.json`, JSON.stringify(out, null, 2));
   log(`selection (${kind}): ${picks.length} eligible, ${chosen.length} chosen; archived in ${dir}`);
-  if (chosen.length < sel.MIN_ROUND) await alert(`only ${chosen.length} questions pass rule v3 for a ${kind} round (minimum ${sel.MIN_ROUND})`);
+  if (chosen.length < sel.MIN_ROUND) await alert(`only ${chosen.length} questions pass rule v3.1 for a ${kind} round (minimum ${sel.MIN_ROUND})`);
   return out;
 }
 
@@ -135,11 +138,18 @@ async function open() {
   const roundId = before + 1n;
   mkdirSync('keeper/state', { recursive: true });
   writeFileSync(`keeper/state/round_${NET.chain.id}_${roundId}.json`, JSON.stringify({ roundId, commitDeadline: sel.commitDeadline, marketIds: sel.chosen.map((c) => c.marketId) }, big, 2));
+  // public round file (data contract for the CLI and site): every question carries its parent event question and label
+  const { presentQuestion } = await import('../agent/lib/question.mjs');
+  const pubDir = `keeper/archive/${args.network || 'testnet'}/rounds`;
+  mkdirSync(pubDir, { recursive: true });
+  const questions = sel.chosen.map((c, i) => ({ index: i, marketId: String(c.marketId), conditionId: c.conditionId, ctf: c.ctf, eventQuestion: c.eventQuestion, label: c.label, marketQuestion: c.marketQuestion ?? null, endsAt: c.endsAt ?? null, tags: c.tags ?? [] }));
+  questions.forEach((q) => presentQuestion(q)); // refuse to publish a question without its event question
+  writeFileSync(`${pubDir}/${roundId}.json`, JSON.stringify({ network: NET.chain.id, ledger: NET.ledger, roundId, kind: sel.kind ?? 'daily', rule: sel.rule, commitDeadline: sel.commitDeadline, revealDeadline: new Date(Number(rd) * 1000).toISOString(), resolutionWaitSeconds: wait, questions }, big, 2));
   log(`round ${roundId} open; run "baseline --round ${roundId}" in the 5 minutes before ${sel.commitDeadline}`);
 }
 
-async function baseline() {
-  const r = BigInt(args.round);
+async function baseline(rIn) {
+  const r = rIn ?? (await roundArg());
   const round = await read('getRound', [r]);
   const deadlineMs = Number(round.commitDeadline) * 1000;
   const meta = JSON.parse(readFileSync(`keeper/state/round_${NET.chain.id}_${r}.json`, 'utf8'));
@@ -156,8 +166,8 @@ async function baseline() {
   log(`round ${r} baseline committed ${Math.round((deadlineMs - snap.takenAtEnd) / 1000)} s before the deadline`);
 }
 
-async function seal() {
-  const r = BigInt(args.round);
+async function seal(rIn) {
+  const r = rIn ?? (await roundArg());
   const round = await read('getRound', [r]);
   const now = BigInt(Math.floor(Date.now() / 1000));
   if (now < round.commitDeadline) throw new Error('commit window still open');
@@ -175,8 +185,8 @@ async function seal() {
   log(`round ${r} sealed and baseline revealed`);
 }
 
-async function finalize() {
-  const r = BigInt(args.round);
+async function finalize(rIn) {
+  const r = rIn ?? (await roundArg());
   const round = await read('getRound', [r]);
   const qs = await read('getQuestions', [r]);
   const now = BigInt(Math.floor(Date.now() / 1000));
@@ -186,6 +196,10 @@ async function finalize() {
     if (den > 0n) await send('finalizeQuestion', [r, BigInt(i)]);
     else if (now > round.revealDeadline + (await read('MAX_RESOLUTION_WAIT'))) await send('voidStale', [r, BigInt(i)]);
   }
+}
+
+async function roundArg() {
+  return args.round === undefined || args.round === 'latest' ? await read('roundCount') : BigInt(args.round);
 }
 
 async function committers(r) {
@@ -211,10 +225,14 @@ async function committers(r) {
   return [...out];
 }
 
-async function score() {
-  const r = BigInt(args.round);
-  const all = await committers(r);
-  log(`round ${r}: ${all.length} committers`);
+async function score(rIn) {
+  const r = rIn ?? (await roundArg());
+  const round = await read('getRound', [r]);
+  const all1 = (1n << BigInt(round.questionCount)) - 1n;
+  if (BigInt(Math.floor(Date.now() / 1000)) <= round.revealDeadline || BigInt(round.resolvedMask) !== all1) return log(`round ${r}: not scorable yet`);
+  const all = [];
+  for (const a of await committers(r)) if (((await read('flags', [r, a])) & 6) === 0) all.push(a); // skip scored or forfeited
+  log(`round ${r}: ${all.length} committers to process`);
   for (let i = 0; i < all.length; i += 100) {
     const chunk = all.slice(i, i + 100);
     await send('scoreBatch', [r, chunk]);
@@ -222,9 +240,68 @@ async function score() {
   }
 }
 
-const cmds = { select, open, baseline, seal, finalize, score, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
+/** Every 15 minutes: seal and reveal the baseline, finalize, score, over the recent rounds. */
+async function tick() {
+  const count = await read('roundCount');
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  for (let r = count > 14n ? count - 14n : 1n; r <= count; r++) {
+    const round = await read('getRound', [r]);
+    if (now < round.commitDeadline) continue;
+    if (!round.isSealed || (!round.baselineRevealed && round.baselineCommit !== '0x' + '0'.repeat(64) && now <= round.revealDeadline)) await seal(r);
+    await finalize(r);
+    await score(r);
+  }
+}
+
+/** Daily at 03:00 UTC: select and open a daily round whose commit deadline is 23:00 UTC today. */
+async function daily() {
+  const d = new Date();
+  d.setUTCHours(23, 0, 0, 0);
+  if (d.getTime() - Date.now() < 3 * 3600 * 1000) throw new Error('less than 3 hours to 23:00 UTC; open tomorrow instead');
+  Object.assign(args, { 'commit-deadline': d.toISOString(), kind: 'daily' });
+  await select();
+  args.selection = `keeper/archive/${args.network || 'testnet'}/${new Date().toISOString().slice(0, 10)}_daily/selection.json`;
+  const chosen = JSON.parse(readFileSync(args.selection, 'utf8')).chosen.length;
+  if (chosen < 3) throw new Error(`only ${chosen} questions; round not opened`);
+  await open();
+}
+
+/** Read only, every 30 minutes (GitHub Actions and the host): alert on any missed duty. Exit 1 when something is missed. */
+async function watchdog() {
+  const { missedDuties, dailyOpenMissed } = await import('./lib/watchdog.mjs');
+  const now = Math.floor(Date.now() / 1000);
+  const count = await read('roundCount');
+  const missed = [];
+  if (count === 0n) missed.push('open: no round yet');
+  for (let r = count > 14n ? count - 14n : 1n; r <= count && count > 0n; r++) {
+    const round = await read('getRound', [r]);
+    const qs = await read('getQuestions', [r]);
+    let onchain = 0;
+    for (let i = 0; i < qs.length; i++) {
+      const den = await pub.readContract({ address: qs[i].ctf, abi: [CTF_ABI[1]], functionName: 'payoutDenominator', args: [qs[i].conditionId] });
+      if (den > 0n) onchain |= 1 << i;
+    }
+    let unprocessed = 0;
+    if (BigInt(now) > round.revealDeadline) for (const a of await committers(r)) if (((await read('flags', [r, a])) & 6) === 0) unprocessed++;
+    for (const m of missedDuties({ round, resolvedOnchainMask: onchain, unprocessed, now })) missed.push(`round ${r} ${m}`);
+    if (r === count) missed.push(...dailyOpenMissed(round.createdAt, now));
+  }
+  if (!missed.length) return log('watchdog: all duties on schedule');
+  for (const m of missed) await alert(`MISSED ${m}`);
+  process.exitCode = 1;
+}
+
+const cmds = { select, open, baseline, seal, finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
 if (!cmds[cmd]) {
-  console.log('usage: select | open | baseline | seal | finalize | score | status  (--network testnet|mainnet)');
+  console.log('usage: select | open | baseline | seal | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
   process.exit(1);
 }
-await cmds[cmd]();
+const hc = process.env[`HC_PING_${cmd.toUpperCase()}`];
+try {
+  await cmds[cmd]();
+  if (hc) await fetch(process.exitCode ? `${hc}/fail` : hc).catch(() => log('healthcheck ping failed'));
+} catch (e) {
+  if (hc) await fetch(`${hc}/fail`).catch(() => {});
+  await alert(`${cmd} failed: ${(e.shortMessage || e.message).split('\n')[0]}`);
+  throw e;
+}
