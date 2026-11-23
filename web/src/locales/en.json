@@ -85,7 +85,10 @@
   "round": {
     "title": "Round {n}",
     "all": "All rounds",
-    "kinds": { "daily": "Daily round", "long": "Long horizon round" },
+    "kinds": {
+      "daily": "Daily round",
+      "long": "Long horizon round"
+    },
     "rule": "Selection rule",
     "resolutionWait": "Resolution wait",
     "days": "{n} days",
@@ -122,7 +125,8 @@
     "unranked": "Not yet ranked",
     "unrankedNote": "Needs at least {r} scored rounds and {q} questions with a market baseline.",
     "empty": "No public forecasters yet. Opting in is optional and can be undone at any time.",
-    "formula": "Skill = sum of (market Brier minus own Brier) / (questions with a baseline + 20). Positive means better than the market."
+    "formula": "Skill = sum of (market Brier minus own Brier) / (questions with a baseline + 20). Positive means better than the market.",
+    "postBaselineFlag": "Part of this skill came from commits made after the market baseline was posted (rule pre registered on 23 Nov 2026)."
   },
   "crowd": {
     "title": "Agent ID Crowd",
@@ -153,33 +157,49 @@
   "play": {
     "title": "How to play",
     "blocks": [
-      { "h": "What you need" },
-      { "list": [
-        "An Agent ID, claimed in the Binance App.",
-        "The Binance Agentic Wallet with a little BNB for network gas.",
-        "Developer Mode turned on (see below)."
-      ] },
-      { "h": "Developer Mode" },
+      {
+        "h": "What you need"
+      },
+      {
+        "list": [
+          "An Agent ID, claimed in the Binance App.",
+          "The Binance Agentic Wallet with a little BNB for network gas.",
+          "Developer Mode turned on (see below)."
+        ]
+      },
+      {
+        "h": "Developer Mode"
+      },
       "Commit and reveal are custom contract calls, and the Agentic Wallet allows those only with Developer Mode on. In the Binance App, open Agentic Wallet, then Settings (the top right icon), turn on Developer Mode, read and confirm the risk warning, and approve the signature request.",
-      { "list": [
-        "Developer Mode has its own daily limit.",
-        "It lasts 7 days, and each use extends it.",
-        "Your wallet balance must be under its balance cap."
-      ] },
-      { "h": "You confirm every transaction" },
+      {
+        "list": [
+          "Developer Mode has its own daily limit.",
+          "It lasts 7 days, and each use extends it.",
+          "Your wallet balance must be under its balance cap."
+        ]
+      },
+      {
+        "h": "You confirm every transaction"
+      },
       "Your agent prepares each commit or reveal and shows you a preview: the parsed transaction, the simulation result and every risk flag. Nothing is sent until you say yes. If the wallet asks for approval in the Binance App, approve it there. No PRESCIENT prompt or skill skips this step.",
-      { "list": [
-        "Every transaction has value 0 and goes only to the published ledger contract. The only cost is network gas.",
-        "PRESCIENT never asks for seed phrases, private keys, pairing codes or API secrets.",
-        "Keep your salt (the reveal receipt) private until the commit deadline. Without it you cannot reveal, and the round counts as a forfeit."
-      ] },
-      { "h": "One round, step by step" },
-      { "ol": [
-        "Before the commit deadline, your agent commits a hidden hash of your probabilities.",
-        "After the deadline, the market price is recorded as the baseline and you reveal.",
-        "The markets resolve onchain through Predict.fun.",
-        "The contract scores you: Brier for accuracy, and skill against the market price."
-      ] }
+      {
+        "list": [
+          "Every transaction has value 0 and goes only to the published ledger contract. The only cost is network gas.",
+          "PRESCIENT never asks for seed phrases, private keys, pairing codes or API secrets.",
+          "Keep your salt (the reveal receipt) private until the commit deadline. Without it you cannot reveal, and the round counts as a forfeit."
+        ]
+      },
+      {
+        "h": "One round, step by step"
+      },
+      {
+        "ol": [
+          "Before the commit deadline, your agent commits a hidden hash of your probabilities.",
+          "After the deadline, the market price is recorded as the baseline and you reveal.",
+          "The markets resolve onchain through Predict.fun.",
+          "The contract scores you: Brier for accuracy, and skill against the market price."
+        ]
+      }
     ]
   },
   "docs": {
@@ -190,12 +210,14 @@
         "title": "How it works",
         "blocks": [
           "PRESCIENT publishes one round of real questions each day. The questions come from Predict.fun prediction markets, the markets inside Binance Wallet.",
-          { "list": [
-            "Before the commit deadline, your agent sends a hidden hash of your probabilities. Nobody, including us, can read them.",
-            "In the last 5 minutes before the deadline, the market price of each question is taken as the baseline and committed the same way.",
-            "After the deadline, you reveal. The contract checks that the reveal matches your commit.",
-            "When the markets resolve onchain (Gnosis Conditional Tokens on BSC), the contract scores every forecast with the Brier rule and compares it with the baseline."
-          ] },
+          {
+            "list": [
+              "Before the commit deadline, your agent sends a hidden hash of your probabilities. Nobody, including us, can read them.",
+              "In the last 5 minutes before the deadline, the market price of each question is taken as the baseline and committed the same way.",
+              "After the deadline, you reveal. The contract checks that the reveal matches your commit.",
+              "When the markets resolve onchain (Gnosis Conditional Tokens on BSC), the contract scores every forecast with the Brier rule and compares it with the baseline."
+            ]
+          },
           "Your scores form a public track record tied to your Agent ID. An Agent ID is non transferable and limited to one per Binance user, so a track record cannot be bought, sold or faked with many wallets.",
           "The Agent ID Crowd combines all revealed forecasts into one forecast per question. The site always shows whether it beats the market."
         ]
@@ -203,35 +225,43 @@
       "scoring": {
         "title": "Scoring",
         "blocks": [
-          { "list": [
-            "Probabilities are stored in basis points, from 0 to 10000. A Yes outcome is 10000 and a No outcome is 0.",
-            "Brier = (p minus outcome) squared. This site divides it by 100,000,000, so 0 is perfect and 1 is the worst possible. Lower is better.",
-            "Baseline Brier is the same formula applied to the market price: the order book mid price taken in the last 5 minutes before the commit deadline.",
-            "Skill = baseline Brier minus your Brier. Positive skill means you beat the market price on that question.",
-            "Void questions (a split payout, a resolution seen before the round was sealed, or a question still unresolved after the reveal deadline plus the round's resolution wait) are skipped for everyone.",
-            "A commit that is never revealed is a forfeit: every non void question counts as the worst possible Brier. Revealing is never worse than forfeiting."
-          ] },
-          { "h": "Leaderboard rank" },
-          { "list": [
-            "Score = sum of skill / (questions with a baseline + 20). The 20 pulls small samples toward zero skill.",
-            "To be ranked you need at least 5 scored rounds and 20 questions with a baseline. Sample size and participation rate are shown next to every score.",
-            "Rank uses skill against the market, never raw Brier. Raw Brier mostly measures how easy the questions were; skill rewards only information beyond the market price.",
-            "Raw Brier and calibration are shown as diagnostics and never used for rank."
-          ] }
+          {
+            "list": [
+              "Probabilities are stored in basis points, from 0 to 10000. A Yes outcome is 10000 and a No outcome is 0.",
+              "Brier = (p minus outcome) squared. This site divides it by 100,000,000, so 0 is perfect and 1 is the worst possible. Lower is better.",
+              "Baseline Brier is the same formula applied to the market price: the order book mid price taken in the last 5 minutes before the commit deadline.",
+              "Skill = baseline Brier minus your Brier. Positive skill means you beat the market price on that question.",
+              "Void questions (a split payout, a resolution seen before the round was sealed, or a question still unresolved after the reveal deadline plus the round's resolution wait) are skipped for everyone.",
+              "A commit that is never revealed is a forfeit: every non void question counts as the worst possible Brier. Revealing is never worse than forfeiting."
+            ]
+          },
+          {
+            "h": "Leaderboard rank"
+          },
+          {
+            "list": [
+              "Score = sum of skill / (questions with a baseline + 20). The 20 pulls small samples toward zero skill.",
+              "To be ranked you need at least 5 scored rounds and 20 questions with a baseline. Sample size and participation rate are shown next to every score.",
+              "Rank uses skill against the market, never raw Brier. Raw Brier mostly measures how easy the questions were; skill rewards only information beyond the market price.",
+              "Raw Brier and calibration are shown as diagnostics and never used for rank."
+            ]
+          }
         ]
       },
       "selection": {
         "title": "Question selection",
         "blocks": [
           "Rule v3, pre registered on 23 Nov 2026. The keeper applies it mechanically and archives the raw market data and its output, so anyone can rerun it. A round never changes rules after it opens.",
-          { "list": [
-            "Binary and unresolved on one of the allowlisted Conditional Tokens contracts, with Yes as the first outcome.",
-            "No sports or esports markets.",
-            "Every non crypto question needs a two sided order book, a spread of at most 10 points and at least 100 USD of 24 hour volume.",
-            "At most one market per event.",
-            "Daily rounds: the daily crypto Up or Down markets plus liquid event markets, ending 6 to 72 hours after the commit deadline, 3 to 8 questions, resolution wait 7 days.",
-            "Long horizon rounds: liquid event markets ending more than 72 hours and at most 100 days after the deadline, resolution wait 120 days."
-          ] },
+          {
+            "list": [
+              "Binary and unresolved on one of the allowlisted Conditional Tokens contracts, with Yes as the first outcome.",
+              "No sports or esports markets.",
+              "Every non crypto question needs a two sided order book, a spread of at most 10 points and at least 100 USD of 24 hour volume.",
+              "At most one market per event.",
+              "Daily rounds: the daily crypto Up or Down markets plus liquid event markets, ending 6 to 72 hours after the commit deadline, 3 to 8 questions, resolution wait 7 days.",
+              "Long horizon rounds: liquid event markets ending more than 72 hours and at most 100 days after the deadline, resolution wait 120 days."
+            ]
+          },
           "Every question is shown with its parent event question and its option, for example the event \"Highest temperature in Shenzhen on November 24?\" with the option \"24°C\". A question without an event question is never shown."
         ]
       },
@@ -239,26 +269,40 @@
         "title": "Owner permissions",
         "blocks": [
           "ForecastLedger is non upgradeable: no proxy, no selfdestruct, no delegatecall, no payable function. It holds no funds and no tokens and asks for no approvals.",
-          { "h": "Roles" },
-          { "list": [
-            "ROUND_MANAGER can create rounds, choosing questions by the published selection rule (docs/QUESTION_SELECTION.md) and each round's resolution wait (1 to 120 days, fixed at creation and published before any commit), and can commit and reveal the baseline.",
-            "PAUSER can pause new commits and new rounds. Pause never blocks reveal, revealFor, seal, finalize, voidStale, score or forfeit.",
-            "DEFAULT_ADMIN can grant and revoke roles, using a two step transfer with a 1 day delay."
-          ] },
-          { "h": "Nobody, including the admin, can" },
-          { "list": [
-            "edit or delete commits, reveals, outcomes or scores;",
-            "set a market outcome (outcomes come only from the Conditional Tokens payouts onchain, or Void);",
-            "move any asset, because the contract holds none."
-          ] },
-          { "h": "Fixed forever at deploy (immutable, no setter exists)" },
-          { "list": [
-            "AGENT_ID: the Agent ID contract used for the commit gate.",
-            "The allowlist of up to 4 Conditional Tokens contracts.",
-            "MIN_COMMIT_WINDOW and MIN_REVEAL_WINDOW: the shortest commit and reveal windows a round may have. On BSC mainnet (chain 56) the constructor refuses anything below 2 hours and 12 hours, and the mainnet deploy script fails before broadcasting if the configured windows are lower. Short windows exist only on test networks for fast end to end tests.",
-            "Maximum windows (7 days each), the resolution wait bounds (1 to 120 days), MAX_QUESTIONS (16), MAX_BATCH (100) and the commit hash scheme are compile time constants."
-          ] },
-          { "h": "Plan after the hackathon" },
+          {
+            "h": "Roles"
+          },
+          {
+            "list": [
+              "ROUND_MANAGER can create rounds, choosing questions by the published selection rule (docs/QUESTION_SELECTION.md) and each round's resolution wait (1 to 120 days, fixed at creation and published before any commit), and can commit and reveal the baseline.",
+              "PAUSER can pause new commits and new rounds. Pause never blocks reveal, revealFor, seal, finalize, voidStale, score or forfeit.",
+              "DEFAULT_ADMIN can grant and revoke roles, using a two step transfer with a 1 day delay."
+            ]
+          },
+          {
+            "h": "Nobody, including the admin, can"
+          },
+          {
+            "list": [
+              "edit or delete commits, reveals, outcomes or scores;",
+              "set a market outcome (outcomes come only from the Conditional Tokens payouts onchain, or Void);",
+              "move any asset, because the contract holds none."
+            ]
+          },
+          {
+            "h": "Fixed forever at deploy (immutable, no setter exists)"
+          },
+          {
+            "list": [
+              "AGENT_ID: the Agent ID contract used for the commit gate.",
+              "The allowlist of up to 4 Conditional Tokens contracts.",
+              "MIN_COMMIT_WINDOW and MIN_REVEAL_WINDOW: the shortest commit and reveal windows a round may have. On BSC mainnet (chain 56) the constructor refuses anything below 2 hours and 12 hours, and the mainnet deploy script fails before broadcasting if the configured windows are lower. Short windows exist only on test networks for fast end to end tests.",
+              "Maximum windows (7 days each), the resolution wait bounds (1 to 120 days), MAX_QUESTIONS (16), MAX_BATCH (100) and the commit hash scheme are compile time constants."
+            ]
+          },
+          {
+            "h": "Plan after the hackathon"
+          },
           "Move DEFAULT_ADMIN to a multisig, or renounce roles that are not essential. This will be announced before it happens."
         ]
       },
@@ -266,18 +310,20 @@
         "title": "Security and threat model",
         "blocks": [
           "The full threat model names a defence and a test for every item. The main ones:",
-          { "list": [
-            "Copying others: commits are hashes over a 32 byte random salt, so nobody can read a forecast before the deadline.",
-            "Copying the market: skill is measured against the market price, so copying it scores about zero skill.",
-            "Selective reveal: an unrevealed commit is a forfeit with the worst possible Brier.",
-            "Cherry picking rounds: ranking needs 5 rounds and 20 questions, and shows participation.",
-            "Many identities: commit requires an Agent ID, one per Binance user. Residual risk: a person with two Binance accounts.",
-            "Early resolution: a question resolved before the round is sealed is Void for everyone.",
-            "Baseline manipulation: the baseline hash is committed before the deadline, the raw order books are archived, and the same baseline applies to everyone.",
-            "Admin abuse: no upgrade path, and pause never blocks reveal or scoring.",
-            "Prompt injection: market titles and all API text are treated as untrusted data and shown as plain text.",
-            "This site: static files, read only, no wallet connection, no secrets, pinned dependencies and a strict Content Security Policy."
-          ] },
+          {
+            "list": [
+              "Copying others: commits are hashes over a 32 byte random salt, so nobody can read a forecast before the deadline.",
+              "Copying the market: skill is measured against the market price, so copying it scores about zero skill.",
+              "Selective reveal: an unrevealed commit is a forfeit with the worst possible Brier.",
+              "Cherry picking rounds: ranking needs 5 rounds and 20 questions, and shows participation.",
+              "Many identities: commit requires an Agent ID, one per Binance user. Residual risk: a person with two Binance accounts.",
+              "Early resolution: a question resolved before the round is sealed is Void for everyone.",
+              "Baseline manipulation: the baseline hash is committed before the deadline, the raw order books are archived, and the same baseline applies to everyone.",
+              "Admin abuse: no upgrade path, and pause never blocks reveal or scoring.",
+              "Prompt injection: market titles and all API text are treated as untrusted data and shown as plain text.",
+              "This site: static files, read only, no wallet connection, no secrets, pinned dependencies and a strict Content Security Policy."
+            ]
+          },
           "Status: implemented and tested on testnet; an independent security review is pending before mainnet."
         ]
       },
@@ -287,41 +333,61 @@
           "Foresight Arena (arXiv 2605.00420, April 2026) is an onchain benchmark for AI forecasting agents. It runs commit reveal on Polygon over Polymarket questions, scores with Brier and the Murphy decomposition, and uses ERC8004 reputation. Our mechanism is close to theirs, and we say so openly.",
           "The difference is identity. ERC8004 identities can be transferred and anyone can mint them, so a track record built on them can be bought, or faked with many identities. Agent ID is non transferable and limited to one per Binance user, which makes both the track record and the crowd forecast resistant to fake accounts.",
           "PRESCIENT is also built for people as well as agents, and uses the prediction markets already inside Binance Wallet.",
-          { "h": "Lessons we apply" },
-          { "list": [
-            "ForecastBench: most forecasters scored worse than the market price they were given, so all skill is measured against the market.",
-            "Good Judgment Open: an improper scoring rule can be gamed, so we use only strictly proper rules.",
-            "Allora: weight the crowd by past skill.",
-            "Always show sample size, and compare forecasters with the crowd as well as the market."
-          ] }
+          {
+            "h": "Lessons we apply"
+          },
+          {
+            "list": [
+              "ForecastBench: most forecasters scored worse than the market price they were given, so all skill is measured against the market.",
+              "Good Judgment Open: an improper scoring rule can be gamed, so we use only strictly proper rules.",
+              "Allora: weight the crowd by past skill.",
+              "Always show sample size, and compare forecasters with the crowd as well as the market."
+            ]
+          }
         ]
       },
       "risk": {
         "title": "Risk warning",
         "blocks": [
-          { "strong": "Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region." },
-          { "list": [
-            "PRESCIENT records forecasts and scores. It is not a betting product and pays nothing out.",
-            "Each commit and reveal costs network gas, paid by you.",
-            "Market prices shown here are information, not a recommendation to trade.",
-            "Check the rules where you live before using prediction markets."
-          ] }
+          {
+            "strong": "Forecasting scores only. Not financial advice. PRESCIENT does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region."
+          },
+          {
+            "list": [
+              "PRESCIENT records forecasts and scores. It is not a betting product and pays nothing out.",
+              "Each commit and reveal costs network gas, paid by you.",
+              "Market prices shown here are information, not a recommendation to trade.",
+              "Check the rules where you live before using prediction markets."
+            ]
+          }
         ]
       },
       "faq": {
         "title": "FAQ",
         "blocks": [
-          { "h": "Do I need an Agent ID?" },
+          {
+            "h": "Do I need an Agent ID?"
+          },
           "Yes. On mainnet the contract accepts a commit only from a wallet that holds an Agent ID.",
-          { "h": "Does it cost anything?" },
+          {
+            "h": "Does it cost anything?"
+          },
           "Only network gas. Every transaction has value 0. There are no deposits, entry fees or payouts.",
-          { "h": "What if I forget to reveal?" },
+          {
+            "h": "What if I forget to reveal?"
+          },
           "The round counts as a forfeit: every non void question gets the worst possible Brier. Keep your reveal receipt safe.",
-          { "h": "Who can see my forecasts?" },
+          {
+            "h": "Who can see my forecasts?"
+          },
           "Nobody before the commit deadline. Revealed forecasts are public onchain. Your name appears on the leaderboard only if you opt in.",
-          { "h": "Can I look up someone else?" },
+          {
+            "h": "Can I look up someone else?"
+          },
           "No. Only people who opted in are listed by name, and there is no search by name for anyone else.",
-          { "h": "Why compare with the market?" },
+          {
+            "h": "Why compare with the market?"
+          },
           "Because the market price is hard to beat. Skill shows whether a forecast added information beyond it."
         ]
       }

@@ -22,3 +22,25 @@ export function roleHolders(events) {
 export function operators(holders) {
   return [...new Set(Object.values(holders).flatMap((s) => [...s]))].sort();
 }
+
+/**
+ * Commit timing versus the baseline post (Owais, 23 Nov 2026). commits: [{ forecaster, at }] in log order (unix s);
+ * baselineAt: unix s of BaselineSet, or null. The effective commit is a forecaster's last one (overwrites allowed).
+ * gapSec = at minus baselineAt (positive: committed after seeing the posted baseline).
+ */
+export function commitTiming(commits, baselineAt) {
+  const last = {};
+  for (const c of commits) last[c.forecaster.toLowerCase()] = Number(c.at);
+  const out = {};
+  for (const [f, at] of Object.entries(last)) {
+    const gapSec = baselineAt === null || baselineAt === undefined ? null : at - Number(baselineAt);
+    out[f] = { at, afterBaseline: gapSec !== null && gapSec >= 0, gapSec };
+  }
+  return out;
+}
+
+/** Mean absolute market move inside the posting window, in probability points (bps / 100): baseline vs deadline mids. */
+export function meanMovePts(baselineBps, deadlineBps) {
+  const pairs = baselineBps.map((b, i) => [b, deadlineBps[i]]).filter(([b, d]) => Number.isFinite(b) && Number.isFinite(d));
+  return pairs.length ? pairs.reduce((s, [b, d]) => s + Math.abs(d - b), 0) / pairs.length / 100 : null;
+}

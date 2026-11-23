@@ -20,3 +20,17 @@ test('role holders follow grants and revokes in order; operators are their union
   assert.deepEqual([...h.PAUSER], ['0xb']);
   assert.deepEqual(operators(h), ['0xa', '0xb', '0xk']);
 });
+
+import { commitTiming, meanMovePts } from '../lib/flags.mjs';
+
+test('commit timing uses each forecaster\'s last commit and the gap to the baseline post', () => {
+  const t = commitTiming([{ forecaster: '0xA', at: 100 }, { forecaster: '0xB', at: 400 }, { forecaster: '0xA', at: 520 }], 500);
+  assert.deepEqual(t['0xa'], { at: 520, afterBaseline: true, gapSec: 20 });
+  assert.deepEqual(t['0xb'], { at: 400, afterBaseline: false, gapSec: -100 });
+  assert.deepEqual(commitTiming([{ forecaster: '0xA', at: 1 }], null)['0xa'], { at: 1, afterBaseline: false, gapSec: null });
+});
+
+test('mean market move inside the window in probability points', () => {
+  assert.equal(meanMovePts([5000, 3000], [5100, 2900]), 1);
+  assert.equal(meanMovePts([5000], [null]), null);
+});

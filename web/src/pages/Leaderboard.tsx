@@ -28,7 +28,7 @@ function Table({ rows, ranked }: { rows: Row[]; ranked: boolean }) {
             <tr key={r.addr} className="border-t border-line">
               {ranked && <td className="px-3 py-3">{i + 1}</td>}
               <td className="px-3 py-3 whitespace-nowrap">
-                <span className="block font-semibold">{r.name ?? short(r.addr)}</span>
+                <span className="block font-semibold">{r.name ?? short(r.addr)}{r.postBaselineFlag && <span title={t('leaderboard.postBaselineFlag')} aria-label={t('leaderboard.postBaselineFlag')}> †</span>}</span>
                 {r.name && <span className="block text-xs text-muted">{short(r.addr)}</span>}
               </td>
               <td className={`px-3 py-3 text-right font-semibold ${r.shrunkSkill > 0 ? 'text-pos' : r.shrunkSkill < 0 ? 'text-neg' : ''}`}>{fmtSkill(r.shrunkSkill)}</td>

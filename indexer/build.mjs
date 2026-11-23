@@ -6,7 +6,7 @@ import { createPublicClient, http, parseAbi } from 'viem';
 import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { crowdV1, METHOD } from './lib/crowd.mjs';
-import { roundFlags, roleHolders, operators } from './lib/flags.mjs';
+import { roundFlags, roleHolders, operators, commitTiming } from './lib/flags.mjs';
 
 const big = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
 const unpack = (packed, n) => Array.from({ length: n }, (_, i) => Number((BigInt(packed) >> BigInt(16 * i)) & 0xffffn));
@@ -40,7 +40,7 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
     cache.lastBlock = String(to);
     from = to + 1n;
   }
-  const needTime = cache.logs.filter((l) => ['Committed', 'Revealed', 'Scored', 'Forfeited'].includes(l.eventName));
+  const needTime = cache.logs.filter((l) => ['Committed', 'Revealed', 'Scored', 'Forfeited', 'BaselineSet'].includes(l.eventName));
   for (const l of needTime) cache.blockTimes[l.blockNumber] ??= String((await pub.getBlock({ blockNumber: BigInt(l.blockNumber) })).timestamp);
   writeFileSync(cacheFile, JSON.stringify(cache));
   const ts = (l) => Number(cache.blockTimes[l.blockNumber]);
@@ -53,7 +53,8 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
   for (const l of cache.logs) {
     const a = l.args;
     if (l.eventName === 'RoundCreated') Object.assign(R(a.roundId), { commitDeadline: a.commitDeadline, revealDeadline: a.revealDeadline, resolutionWait: a.resolutionWait ?? null, questions: a.questions, createdBlock: l.blockNumber });
-    if (l.eventName === 'Committed') R(a.roundId).committers.add(a.forecaster.toLowerCase());
+    if (l.eventName === 'Committed') { R(a.roundId).committers.add(a.forecaster.toLowerCase()); (R(a.roundId).commitLog ??= []).push({ forecaster: a.forecaster, at: ts(l) }); }
+    if (l.eventName === 'BaselineSet') R(a.roundId).baselineAt = ts(l);
     if (l.eventName === 'Revealed') { R(a.roundId).revealed.add(a.forecaster.toLowerCase()); R(a.roundId).forecasts[a.forecaster.toLowerCase()] = a.packed; }
     if (l.eventName === 'BaselineSet' || l.eventName === 'BaselineRevealed') R(a.roundId).baseline = a.packed; // v1.2 posts in clear; v1.1 revealed
     if (l.eventName === 'QuestionFinalized') R(a.roundId).outcomes[a.index] = outcomeNames[Number(a.outcome)];
@@ -101,7 +102,11 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
 
   // review mitigations: flags per round, operators off the leaderboard (L1), Agent ID moves after committing (L2, L3)
   const headTime = Number((await pub.getBlock({ blockNumber: head })).timestamp);
-  for (const r of Object.values(rounds)) r.flags = roundFlags(r, headTime);
+  for (const r of Object.values(rounds)) {
+    r.flags = roundFlags(r, headTime);
+    r.commitTiming = commitTiming(r.commitLog ?? [], r.baselineAt ?? null); // before or after the baseline post, gap in seconds
+    delete r.commitLog;
+  }
   const ops = operators(roleHolders(cache.logs.filter((l) => l.eventName === 'RoleGranted' || l.eventName === 'RoleRevoked').map((l) => ({ eventName: l.eventName, role: l.args.role, account: l.args.account }))));
   const allCommitters = new Set(Object.values(rounds).flatMap((r) => [...r.committers]));
   const identityChanged = {};
