@@ -41,7 +41,7 @@ Every onchain step needs Owais's explicit yes, given for that step, with the act
 
 ## 6. Canary round (mainnet, real Agent ID, Owais's wallet)
 * Keeper (manual, Owais yes): `keeper.mjs select --kind daily` and `open` with at least 3 questions, commit deadline at least 2 h ahead.
-* Owais (Developer Mode on): `node agent/forewit.mjs commit --execute ...`. The first real baw preview may be refused if the parsedTx field names differ from our guess; the refusal lists the real names and parsedCall gets a one line fix. Confirm the typed yes prompt in PowerShell or Windows Terminal.
+* Owais (Developer Mode on): `node agent/forewit.mjs commit --execute ...`. The preview field names were confirmed on a real mainnet preview on 23 Nov 2026 (never executed) and the parser fixed: parsedTx carries only the type, the selector and the target, so execute mode checks those plus empty balance, allowance and authority changes. Confirm the typed yes prompt in PowerShell or Windows Terminal.
 * Keeper: `baseline` at T minus 5, `seal` right after the deadline; watchdog shows all duties on schedule.
 * Owais: `node agent/forewit.mjs reveal --execute ...` inside the reveal window.
 * Keeper: `finalize` after the markets resolve (daily crypto about 18 h after the deadline), `score` after the reveal deadline.
