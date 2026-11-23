@@ -38,7 +38,7 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 * **Gap to rank 1**: 0 of 30 holders, 0 of 7 rounds, no deploy, no site. Owais holds owaisahmad.ai (wallet 0x4Db4...282C); Developer Mode off.
 * **Running**: round 2 on instance A: settle job at 24 Nov 04:14 UTC (reveal job at 16:09 UTC). Rule v1 census and keeper select smoke test (background).
 * **Blocked on**: nothing for testnet. Mainnet needs fresh offline backed keys, the project name (baked into the typehash), and Developer Mode on.
-* **Rules**: selection v2 (6 to 72 h, max 3 crypto, others two sided, spread <= 10 pts, >= 100 USD volume, resolve by 8 Dec 00:00 UTC), per round resolution wait (7 days daily, max 120), baseline in the last 5 min before the deadline. Pre registered 23 Nov.
+* **Rules**: selection v3 (no sports; daily: all daily crypto plus liquid events, 6 to 72 h, cap 8 Dec, 3 to 8 questions, wait 7 days; long: liquid events 72 h to 100 days, wait 120 days), baseline in the last 5 min before the deadline. Pre registered 23 Nov.
 * **Next**: testnet deploy of v1.1 and a fast end to end round with keeper.mjs (open, baseline, seal, finalize, score) instead of the test script; then the independent security review (milestone 3).
 * **Human steps open**: enable Developer Mode; keyed RPC (current .env RPCs are public); organizer questions; name, domain, X; GitHub repo for CI. Done: Agent ID claimed, wallet signed in, Predict key verified.
 * **Toolchain**: Foundry at ~/.foundry/bin, Slither in .venv, baw global, viem via npm ci. .env now holds private keys: for fork tests export only the RPC, e.g. BSC_RPC_URL="$(grep ^BSC_RPC_URL= ../.env | cut -d= -f2-)" forge test; never source the whole file; redact URLs and 64 hex values in output.
@@ -67,3 +67,4 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 * 23 Nov 2026: preparing our own conditions on Predict.fun CTFs in fork tests. prepareCondition reverts for every caller tried, oracles included.
 * 23 Nov 2026: Aderyn local build on Windows gnu toolchain (dlltool missing). Use CI.
 * 23 Nov 2026: reading Slither severity from the INFO log prefix. Count by impact from --json.
+* 23 Nov 2026: sports questions, owner decision 23 Nov, image.
