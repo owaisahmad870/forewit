@@ -10,6 +10,7 @@
     "golden": "node scripts/golden_vectors.mjs"
   },
   "devDependencies": {
+    "@openzeppelin/merkle-tree": "1.0.8",
     "viem": "2.58.4"
   }
 }
