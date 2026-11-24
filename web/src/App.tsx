@@ -37,36 +37,56 @@ const NAV = [
   ['proof', 'nav.proof'],
 ] as const;
 
-function Header({ route, theme, setTheme }: { route: string[]; theme: string; setTheme: (t: string) => void }) {
+const MARK = (
+  /* Same mark as public/favicon.svg: a forecast on the 0 to 1 probability scale. */
+  <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16h24M4 12.5v7M28 12.5v7" className="stroke-muted" strokeWidth="2" strokeLinecap="round" fill="none" /><path d="M13 9.5l6.5 6.5-6.5 6.5-6.5-6.5z" className="fill-accent" /></svg>
+);
+
+/** Side navigation from 60rem; under it a top bar whose menu opens the same list. */
+function Sidebar({ route, theme, setTheme }: { route: string[]; theme: string; setTheme: (t: string) => void }) {
   const { t, lang } = useT();
   const { setLang } = useContext(LangContext);
   const menu = useRef<HTMLDetailsElement>(null);
   useEffect(() => { if (menu.current) menu.current.open = false; }, [route]);
   const current = route[0] === 'round' ? 'rounds' : route[0] ?? '';
-  const links = NAV.map(([path, key]) => (
-    <a key={path} href={`#/${path}`} aria-current={current === path ? 'page' : undefined} className={`flex min-h-11 items-center rounded-md px-3 ${current === path ? 'font-semibold text-ink' : 'text-muted hover:text-ink'}`}>{t(key)}</a>
-  ));
-  const btn = 'min-h-11 min-w-11 rounded-md border border-line px-3 text-sm hover:border-accent';
+  const links = (
+    <ul className="space-y-0.5">
+      {NAV.map(([path, key]) => (
+        <li key={path}>
+          <a href={`#/${path}`} aria-current={current === path ? 'page' : undefined} className={`flex min-h-10 items-center rounded-lg px-3 text-[0.95rem] ${current === path ? 'bg-surface-2 font-semibold text-ink shadow-[inset_2px_0_0_var(--accent)]' : 'text-muted hover:bg-surface hover:text-ink'}`}>{t(key)}</a>
+        </li>
+      ))}
+    </ul>
+  );
+  const btn = 'min-h-10 rounded-lg border border-line px-3 text-sm text-muted hover:border-accent hover:text-ink';
+  const toggles = (
+    <div className="flex flex-wrap gap-2">
+      <button type="button" className={btn} lang={lang === 'en' ? 'zh' : 'en'} title={t('ui.otherLangName')} onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}>{t('ui.otherLang')}</button>
+      <button type="button" className={btn} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? t('ui.toLight') : t('ui.toDark')}</button>
+    </div>
+  );
+  const brand = (
+    <a href="#/" className="flex min-h-11 items-center gap-2 font-semibold">
+      {MARK}
+      {t('brand')}
+      {t('brandLocal') && <span lang="zh-CN" className="font-normal text-muted">{t('brandLocal')}</span>}
+    </a>
+  );
   return (
-    <header className="border-b border-line">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-2">
-        <a href="#/" className="flex min-h-11 items-center gap-2 font-semibold tracking-wide">
-          {/* Same mark as public/favicon.svg: a forecast on the 0 to 1 probability scale. */}
-          <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16h24M4 12.5v7M28 12.5v7" className="stroke-muted" strokeWidth="2" strokeLinecap="round" fill="none" /><path d="M13 9.5l6.5 6.5-6.5 6.5-6.5-6.5z" className="fill-accent" /></svg>
-          {t('brand')}
-          {t('brandLocal') && <span lang="zh-CN" className="font-normal text-muted">{t('brandLocal')}</span>}
-        </a>
-        <nav aria-label={t('nav.main')} className="hidden items-center lg:flex">{links}</nav>
-        <div className="flex items-center gap-2">
-          <button type="button" className={btn} lang={lang === 'en' ? 'zh' : 'en'} title={t('ui.otherLangName')} onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}>{t('ui.otherLang')}</button>
-          <button type="button" className={btn} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? t('ui.toLight') : t('ui.toDark')}</button>
-        </div>
-      </div>
-      <details ref={menu} className="border-t border-line lg:hidden">
-        <summary className="mx-auto flex min-h-11 max-w-5xl cursor-pointer items-center px-4 text-sm">{t('nav.menu')}</summary>
-        <nav aria-label={t('nav.main')} className="mx-auto grid max-w-5xl grid-cols-2 px-2 pb-2">{links}</nav>
-      </details>
-    </header>
+    <>
+      <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col gap-6 overflow-y-auto border-r border-line bg-bg px-3 py-4 min-[60rem]:flex">
+        <div className="px-2">{brand}</div>
+        <nav aria-label={t('nav.main')} className="flex-1">{links}</nav>
+        <div className="px-2">{toggles}</div>
+      </aside>
+      <header className="border-b border-line min-[60rem]:hidden">
+        <div className="flex items-center justify-between gap-2 px-4 py-2">{brand}{toggles}</div>
+        <details ref={menu} className="border-t border-line">
+          <summary className="flex min-h-11 cursor-pointer items-center px-4 text-sm">{t('nav.menu')}</summary>
+          <nav aria-label={t('nav.main')} className="px-2 pb-2">{links}</nav>
+        </details>
+      </header>
+    </>
   );
 }
 
@@ -76,7 +96,7 @@ function RiskBanner() {
   if (seen) return null;
   return (
     <div role="region" aria-label={t('docs.pages.risk.title')} className="border-b border-accent bg-surface-2">
-      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm">
           <p lang="en" className="font-semibold">{t('risk')}</p>
           {t('riskLocal') && <p className="mt-1">{t('riskLocal')}</p>}
@@ -91,7 +111,7 @@ function Footer({ data }: { data: Dataset | null }) {
   const { t, lang } = useT();
   return (
     <footer className="mt-10 border-t border-line">
-      <div className="mx-auto max-w-5xl space-y-3 px-4 py-6 text-sm">
+      <div className="mx-auto max-w-5xl space-y-3 px-4 py-6 text-sm sm:px-8">
         <p lang="en" className="font-semibold">{t('risk')}</p>
         {t('riskLocal') && <p>{t('riskLocal')}</p>}
         {data && (
@@ -159,12 +179,16 @@ export function App() {
   return (
     <LangContext.Provider value={{ lang, setLang: chooseLang }}>
       <a href="#/" onClick={(e) => { e.preventDefault(); document.getElementById('main')?.focus(); }} className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-10 focus:rounded focus:bg-surface focus:p-2">{translate(lang, 'ui.skip')}</a>
-      <RiskBanner />
-      <Header route={route} theme={theme} setTheme={setTheme} />
-      <main id="main" tabIndex={-1} className="mx-auto min-h-svh max-w-5xl px-4 py-5">
-        <Page route={route} data={data} error={error} />
-      </main>
-      <Footer data={data} />
+      <div className="min-[60rem]:flex">
+        <Sidebar route={route} theme={theme} setTheme={setTheme} />
+        <div className="min-w-0 flex-1">
+          <RiskBanner />
+          <main id="main" tabIndex={-1} className="mx-auto min-h-svh max-w-5xl px-4 py-6 sm:px-8">
+            <Page route={route} data={data} error={error} />
+          </main>
+          <Footer data={data} />
+        </div>
+      </div>
     </LangContext.Provider>
   );
 }

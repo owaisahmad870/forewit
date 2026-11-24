@@ -186,7 +186,7 @@ export function CopyBlock({ text }: { text: string }) {
   const { t } = useT();
   const [done, setDone] = useState(false);
   return (
-    <div className="mt-3 rounded-lg border border-line bg-surface-2">
+    <div className="mt-3 rounded-lg bg-surface-2">
       <pre className="overflow-x-auto p-3 text-sm leading-relaxed whitespace-pre-wrap break-words">{text}</pre>
       <div className="flex justify-end border-t border-line p-1">
         <button
