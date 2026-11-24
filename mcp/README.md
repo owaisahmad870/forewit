@@ -1,12 +1,12 @@
 # Forewit MCP servers
 
-Preview, testnet only (0.0.1). Targets the BSC testnet ledger until mainnet launch.
+0.1.0: BSC mainnet (ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6) by default, testnet with network testnet. Published from GitHub Actions with npm provenance.
 
 Two Model Context Protocol servers for Forewit, the commit and reveal forecasting ledger for Agent ID holders on BNB Smart Chain. One npm package, `forewit`, with one bin:
 
 * `forewit mcp`: local server over stdio. Prepares commit, reveal and profile transactions. Never signs, never sends, never runs baw.
 * `forewit mcp remote`: read only server over stateless Streamable HTTP, for hosting at `https://mcp.forewit.xyz/mcp`.
-* `forewit <round|forecast|commit|reveal|status|receipt>`: the Forewit CLI (same code as `agent/forewit.mjs`).
+* `forewit <round|forecast|commit|reveal|status|receipt|agent|schedule>`: the Forewit CLI (same code as `agent/forewit.mjs`).
 
 Status: built and tested, not published to npm, not listed in the MCP Registry, not hosted. Mainnet is not deployed, so both servers target the BSC testnet ledger pinned in `agent/config.mjs` until the mainnet address is pinned there.
 
@@ -83,7 +83,7 @@ Recorded in `mcp/INSPECTOR.md`.
 ## Ready for the publish step (owner approval needed, not done)
 
 * `npm pack` output is checked (see `INSPECTOR.md`): bin, src, vendor, README only.
-* Preview publish (0.0.1, testnet only, no provenance): `npm publish --access public` by the owner after `npm login`. At mainnet launch, with the repo public, republish with `npm publish --provenance --access public` from a CI workflow with `id-token: write`.
+* Releases: tag vX.Y.Z matching package.json, then run the publish workflow on that tag (GitHub Actions trusted publishing with provenance; no npm token on any machine). 0.0.1 was a manual testnet preview.
 * MCP Registry: needs a `server.json` and a namespace (`io.github.owaisahmad870/forewit` or a domain namespace `xyz.forewit/forewit` with DNS verification). Not created.
 * Hosting the remote server: run `node bin/forewit.mjs mcp remote` behind TLS at `mcp.forewit.xyz`, with `HOST=0.0.0.0` and a proxy rate limit.
 * Reserve the npm name `forewit` before the docs page goes live: the page tells users to run `npx forewit mcp`, and the name is unregistered today.
