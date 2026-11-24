@@ -55,7 +55,7 @@ async function alert(msg) {
   const { ALERT_ISSUE_NUMBER: issue, GITHUB_TOKEN: gh, GITHUB_REPOSITORY: repo } = process.env;
   // the issue is public and GitHub does not mask secrets in API bodies: drop URLs (a keyed RPC) and long tokens other than tx hashes and addresses
   const pubMsg = redactPublic(msg);
-  if (issue && gh && repo) await fetch(`https://api.github.com/repos/${repo}/issues/${issue}/comments`, { method: 'POST', headers: { authorization: `Bearer ${gh}`, accept: 'application/vnd.github+json', 'content-type': 'application/json' }, body: JSON.stringify({ body: `Keeper (${args.network || 'testnet'}): ${pubMsg}` }) }).catch(() => log('issue alert failed'));
+  if (issue && gh && repo) await fetch(`https://api.github.com/repos/${repo}/issues/${issue}/comments`, { method: 'POST', headers: { authorization: `Bearer ${gh}`, accept: 'application/vnd.github+json', 'content-type': 'application/json' }, body: JSON.stringify({ body: `Keeper (${args.network || 'testnet'}): ${pubMsg}` }) }).then((r) => { if (!r.ok) log(`issue alert failed: HTTP ${r.status}`); }, () => log('issue alert failed'));
   if (process.env.ALERT_WEBHOOK_URL) await fetch(process.env.ALERT_WEBHOOK_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: `Forewit keeper: ${msg}` }) }).catch(() => log('alert webhook failed'));
 }
 
@@ -435,9 +435,18 @@ async function adminWatch() {
   const addrs = [await ledger(), isMainnet && process.env.SCORES_MAINNET].filter(Boolean);
   // AccessControl events share one signature on both contracts; RootRevoked exists only on ForewitScores
   const evs = [...ABI.filter((x) => x.type === 'event' && names.includes(x.name)), parseAbiItem('event RootRevoked(uint256 indexed epoch, string reason)')];
-  for (let a = from; a <= head; a += 5000n) {
-    const b = a + 4999n > head ? head : a + 4999n;
-    for (const l of await logsPub.getLogs({ address: addrs, events: evs, fromBlock: a, toBlock: b })) {
+  let span = 5000n;
+  for (let a = from; a <= head; ) {
+    const b = a + span - 1n > head ? head : a + span - 1n;
+    let got;
+    try {
+      got = await logsPub.getLogs({ address: addrs, events: evs, fromBlock: a, toBlock: b });
+    } catch (e) {
+      if (span > 50n && /limit|range|exceed/i.test(e.shortMessage || e.message)) { span /= 2n; continue; }
+      throw e;
+    }
+    a = b + 1n;
+    for (const l of got) {
       const key = `${l.transactionHash}:${l.logIndex}`;
       now.push(key);
       if (seen.has(key)) continue;
