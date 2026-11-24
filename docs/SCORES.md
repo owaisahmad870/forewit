@@ -104,7 +104,7 @@ Excluded forecasters are listed in the leaves file with a reason: operator, not_
 
 ## 6. Example consumer (ForewitGate, signatures and checks only)
 * Purpose: gate something on a minimum Forewit skill, for example a non transferable "Calibrated" badge or an allowlist. Holds no funds.
-* Immutables: SCORES, AGENT_ID, MIN_SKILL (int256, 0 means "beats the market so far"), MIN_N (20, the leaderboard minimum), MAX_AGE (for example 3 days), optional MIN_AGE (for example 1 hour, see threat T2).
+* Immutables: SCORES, AGENT_ID, MIN_SKILL (int256; set it clearly above 0, for example 1,000,000, about 0.01 Brier per question: copying the posted baseline scores exactly 0, so MIN_SKILL 0 lets a copier pass with no risk taken, checklist review N1, 24 Nov 2026), MIN_N (20, the leaderboard minimum), MAX_AGE (for example 3 days), optional MIN_AGE (for example 1 hour, see threat T2).
 * claim(uint256 tokenId, int256 skill, uint256 n, bytes32[] calldata proof) checks, in order (MIN_AGE unset):
   * AGENT_ID.ownerOf(tokenId) == msg.sender (proofs are public; without this anyone could use someone else's proof);
   * LEDGER.profileLabelId(msg.sender) == tokenId, the caller is the wallet that opted in this name on ForecastLedger (narrows a reissue, T5);

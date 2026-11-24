@@ -75,7 +75,7 @@ A proof is public. Anyone can copy it. Always bind it to the wallet you are serv
 1. `AGENT_ID.ownerOf(tokenId) == msg.sender`, else `NotHolder`. Proofs are public, so the caller must own the token.
 2. `LEDGER.profileLabelId(msg.sender) == tokenId`, else `NotOptedIn`. The caller must be the wallet that opted in this name on ForecastLedger. This narrows a reissued name.
 3. `SCORES.verify(tokenId, skill, n, proof)`, else `BadProof`. It checks only the latest root, and fails if that root is revoked. It never falls back to an older root.
-4. `skill >= MIN_SKILL` and `n >= MIN_N`, else `BelowMinimum`. `MIN_SKILL` 0 means "beats the market so far". The leaderboard uses at least 20 questions.
+4. `skill >= MIN_SKILL` and `n >= MIN_N`, else `BelowMinimum`. Set `MIN_SKILL` clearly above 0, for example 1,000,000 (about 0.01 Brier per question). The baseline is public before the deadline, so a wallet that copies it scores exactly 0 on every question; with `MIN_SKILL` 0 it would pass with no risk taken. `n` counts questions, not risk. The leaderboard uses at least 20 questions.
 5. `block.timestamp <= SCORES.getEpoch(latestEpoch).postedAt + MAX_AGE`, else `StaleRoot`. This bounds how old the root may be (for example 3 days).
 
 Then it records `passed[tokenId] = epoch` and emits `Passed`.

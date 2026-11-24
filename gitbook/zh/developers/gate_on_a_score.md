@@ -75,7 +75,7 @@ console.log({ proven, owner, skill: leaf?.skill, n: leaf?.n });
 1. `AGENT_ID.ownerOf(tokenId) == msg.sender`，否则 `NotHolder`。证明是公开的，所以调用者必须持有该代币。
 2. `LEDGER.profileLabelId(msg.sender) == tokenId`，否则 `NotOptedIn`。调用者必须是在 ForecastLedger 上用这个名称选择加入的钱包。这缩小了名称被重新签发时的影响范围。
 3. `SCORES.verify(tokenId, skill, n, proof)`，否则 `BadProof`。它只检查最新的根，如果该根已被撤销则失败，永远不会退回到更早的根。
-4. `skill >= MIN_SKILL` 且 `n >= MIN_N`，否则 `BelowMinimum`。`MIN_SKILL` 为 0 表示“到目前为止胜过市场”。排行榜要求至少 20 个问题。
+4. `skill >= MIN_SKILL` 且 `n >= MIN_N`，否则 `BelowMinimum`。请把 `MIN_SKILL` 设得明显高于 0，例如 1,000,000（约每题 0.01 Brier）。基线在截止前公开，照抄基线的钱包每题得分正好为 0；若 `MIN_SKILL` 为 0，它无需承担任何风险就能通过。`n` 只统计题数，不代表承担的风险。排行榜要求至少 20 个问题。
 5. `block.timestamp <= SCORES.getEpoch(latestEpoch).postedAt + MAX_AGE`，否则 `StaleRoot`。这限制了根的最大时效（例如 3 天）。
 
 然后它记录 `passed[tokenId] = epoch` 并发出 `Passed` 事件。
