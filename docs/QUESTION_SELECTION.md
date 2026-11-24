@@ -1,4 +1,4 @@
-# Question selection rule (v3.1, pre registered 23 Nov 2026)
+# Question selection rule (v3.1, pre registered 23 Nov 2026; v3.2 open board pre registered 24 Nov 2026)
 
 The keeper applies this rule mechanically (keeper/keeper.mjs select --kind daily|long; logic in keeper/lib/selection.mjs, tests in keeper/test/selection.test.mjs) and archives the raw API response and its output, so anyone can rerun it. Changes are versioned and announced before the next round; a round never changes rules after it opens. No real round has opened under v1 or v2.
 
@@ -24,6 +24,17 @@ The keeper applies this rule mechanically (keeper/keeper.mjs select --kind daily
 * Window: endsAt more than 72 hours and at most 100 days after the commit deadline (approved by Owais), so the 120 day resolution wait after the reveal deadline covers the oracle step.
 * Size: at least 3, at most 8. No 8 Dec cap: these rounds are not part of the 7 completed rounds target.
 
+## v3.2 open board (Owais decision 24 Nov 2026, pre registered before any v3.2 round opens)
+* Applies only to rounds opened after this entry is published, never to a round already open. Rounds 1 and 2 run under v3.1.
+* Featured round: one per day, unchanged from the v3.1 daily rule (liquid, resolving 6 to 72 hours after the deadline, one market per event, at most 8). The site, posts and quickstart point to it first.
+* Two boards.
+  * Scored board: markets that pass the liquidity rule (two sided book, spread at most 0.10, at least 100 USD traded in 24 hours, rule 5). The keeper posts a baseline, so these questions count for skill, the leaderboard and ForewitScores.
+  * Open board: markets that fail the liquidity rule. The keeper posts no baseline, so the contract adds no skill and no baseline question count (ForecastLedger, baselineSet); the Brier score is still recorded. Labeled "no market price" everywhere and never counted toward skill.
+* Topic rounds: Scored and Open markets are grouped by topic (crypto, macro, tech, weather, other) and by horizon, at most 16 questions per round (the contract limit stays 16; more rounds instead). A round scores only when its slowest question resolves, so a round never mixes markets ending more than a few days apart.
+* Optional boards, off by default and never Featured: Sports (an explicit owner override of the earlier rule "No sports questions", 24 Nov 2026) and Elections (elections and candidates). Policy outcomes (central banks, laws, tariffs) are macro.
+* Before the first v3.2 topic round: measure keeper gas per day at full volume, user gas per round, and Agentic Wallet previews and executes a user needs per day per topic; if the friction is too high, cap the default topics. Logged in notes/ledger.md as predicted versus observed.
+* Every round publishes its selection funnel (open markets, then each filter with its count), so a visitor sees why these questions were chosen.
+
 ## Pre registered predictions
 * Crypto question skill versus the market averages about zero; any measurable skill comes from non crypto questions (Owais, 23 Nov 2026). Checked by category with sample sizes.
 
@@ -31,7 +42,8 @@ The keeper applies this rule mechanically (keeper/keeper.mjs select --kind daily
 * v1 (24 to 72 h, all categories): census showed only 14 liquid candidates out of 17,303 open markets, all sports.
 * v2 (6 to 72 h, at most 3 crypto, sports allowed): replaced the same day by v3 before any round.
 * v3: sports excluded, daily crypto uncapped, minimum 3 questions, long horizon rounds added.
-* v3.1 (this): politics excluded in both kinds; long horizon tag allowlist; event question display rule.
+* v3.1: politics excluded in both kinds; long horizon tag allowlist; event question display rule.
+* v3.2 (24 Nov 2026): open board, Featured round, topic rounds, optional Sports and Elections boards, published funnel.
 
 ## Backstops in the contract
 * A question resolved before the round is sealed is Void.

@@ -60,3 +60,15 @@ test('long horizon: allowlisted tags only, more than 72 h and at most 100 days, 
 test('names other than Yes/No or Up/Down are out', () => {
   assert.equal(prefilter(mk({ outcomes: outcomes('Over 3.5', 'Under 3.5') }), 'daily'), false);
 });
+
+test('funnel counts each filter in order and never exceeds the previous stage', async () => {
+  const { funnel } = await import('../lib/selection.mjs');
+  const yes = { name: 'Yes', indexSet: 1, bestBid: { price: 0.4 }, bestAsk: { price: 0.45 } }, no = { name: 'No', indexSet: 2 };
+  const m = (id, extra = {}) => ({ id, categorySlug: 'c' + id, outcomes: [yes, no], stats: { volume24hUsd: 500 }, ...extra });
+  const raw = [m(1), m(2), m(3, { outcomes: [yes] }), m(4, { stats: { volume24hUsd: 1 } })];
+  const dl = Date.parse('2026-11-24T23:00:00Z');
+  const end = new Date(dl + 24 * 3.6e6).toISOString();
+  const cats = { c1: { endsAt: end, tags: [] }, c2: { endsAt: end, tags: [{ name: 'Elections' }] }, c4: { endsAt: end, tags: [] } };
+  const f = funnel(raw, cats, dl, 'daily', 1);
+  assert.deepEqual(f, { open: 4, binary: 3, notSports: 3, liquid: 2, notPolitics: 1, inWindow: 1, events: 1, chosen: 1 });
+});

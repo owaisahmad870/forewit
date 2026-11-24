@@ -113,7 +113,22 @@
     "crowdMethod": "Crowd method: {m}",
     "noRounds": "No rounds yet.",
     "open": "Open",
-    "notFound": "Round {n} is not in the published data."
+    "notFound": "Round {n} is not in the published data.",
+    "featured": "Featured",
+    "openBoard": "Open board: no market price",
+    "why": {
+      "title": "Why these {n} questions?",
+      "intro": "Every open Predict.fun market is checked against the published rule. Each line shows how many markets were left after that filter.",
+      "open": "Open markets",
+      "binary": "Yes or no questions",
+      "notSports": "Not sports",
+      "liquid": "Liquid: a real market price to beat",
+      "notPolitics": "Not elections or politics",
+      "inWindow": "Resolve 6 to 72 hours after the deadline",
+      "events": "Different events (one question per event)",
+      "chosen": "Chosen for this round (at most 8)",
+      "rule": "Read the full selection rule"
+    }
   },
   "leaderboard": {
     "title": "Leaderboard",

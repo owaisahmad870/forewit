@@ -113,7 +113,22 @@
     "crowdMethod": "群体方法：{m}",
     "noRounds": "暂无轮次。",
     "open": "查看",
-    "notFound": "已发布的数据中没有第 {n} 轮。"
+    "notFound": "已发布的数据中没有第 {n} 轮。",
+    "featured": "精选",
+    "openBoard": "开放区：无市场价格",
+    "why": {
+      "title": "为什么是这 {n} 道题？",
+      "intro": "每个开放中的 Predict.fun 市场都会按公开规则筛选。每一行显示经过该条件后剩下的市场数量。",
+      "open": "开放中的市场",
+      "binary": "是非题",
+      "notSports": "非体育",
+      "liquid": "有流动性：有真实的市场价格可比",
+      "notPolitics": "非选举或政治",
+      "inWindow": "在截止后 6 到 72 小时内结算",
+      "events": "不同事件（每个事件一道题）",
+      "chosen": "本轮入选（最多 8 道）",
+      "rule": "阅读完整的选题规则"
+    }
   },
   "leaderboard": {
     "title": "排行榜",

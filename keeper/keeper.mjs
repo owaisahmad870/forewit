@@ -126,7 +126,7 @@ async function select() {
   const dir = `keeper/archive/${args.network || 'testnet'}/${new Date().toISOString().slice(0, 10)}_${kind}`;
   mkdirSync(dir, { recursive: true });
   writeFileSync(`${dir}/markets_raw.json`, JSON.stringify({ fetchedAt: new Date().toISOString(), markets: raw, categories: cats }));
-  const out = { rule: sel.RULE, kind, commitDeadline: new Date(cd).toISOString(), resolutionDays: kind === 'long' ? 120 : 7, eligible: picks.length, chosen };
+  const out = { rule: sel.RULE, kind, commitDeadline: new Date(cd).toISOString(), resolutionDays: kind === 'long' ? 120 : 7, eligible: picks.length, chosen, funnel: sel.funnel(raw, cats, cd, kind, chosen.length) };
   writeFileSync(`${dir}/selection.json`, JSON.stringify(out, null, 2));
   log(`selection (${kind}): ${picks.length} eligible, ${chosen.length} chosen; archived in ${dir}`);
   if (chosen.length < sel.MIN_ROUND) await alert(`only ${chosen.length} questions pass rule v3.1 for a ${kind} round (minimum ${sel.MIN_ROUND})`);
@@ -152,7 +152,7 @@ async function open() {
   mkdirSync(pubDir, { recursive: true });
   const questions = sel.chosen.map((c, i) => ({ index: i, marketId: String(c.marketId), conditionId: c.conditionId, ctf: c.ctf, eventQuestion: c.eventQuestion, label: c.label, marketQuestion: c.marketQuestion ?? null, endsAt: c.endsAt ?? null, tags: c.tags ?? [] }));
   questions.forEach((q) => presentQuestion(q)); // refuse to publish a question without its event question
-  writeFileSync(`${pubDir}/${roundId}.json`, JSON.stringify({ network: NET.chain.id, ledger: NET.ledger, roundId, kind: sel.kind ?? 'daily', rule: sel.rule, commitDeadline: sel.commitDeadline, revealDeadline: new Date(Number(rd) * 1000).toISOString(), resolutionWaitSeconds: wait, questions }, big, 2));
+  writeFileSync(`${pubDir}/${roundId}.json`, JSON.stringify({ network: NET.chain.id, ledger: NET.ledger, roundId, kind: sel.kind ?? 'daily', board: 'scored', featured: (sel.kind ?? 'daily') === 'daily', funnel: sel.funnel ?? null, rule: sel.rule, commitDeadline: sel.commitDeadline, revealDeadline: new Date(Number(rd) * 1000).toISOString(), resolutionWaitSeconds: wait, questions }, big, 2));
   log(`round ${roundId} open; run "baseline --round ${roundId}" in the last 15 minutes before ${sel.commitDeadline} (target 5)`);
 }
 

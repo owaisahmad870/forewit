@@ -45,8 +45,13 @@ export interface RoundFile {
   revealDeadline: string;
   resolutionWaitSeconds?: string | number;
   marketPriceAt?: string;
+  board?: 'scored' | 'open';
+  featured?: boolean;
+  funnel?: Funnel | null;
   questions: { index: number; marketId: string; eventQuestion?: string | null; label?: string | null; endsAt?: string | null; tags?: string[]; marketPrice?: number }[];
 }
+
+export interface Funnel { open: number; binary: number; notSports: number; liquid: number; notPolitics: number; inWindow: number; events: number; chosen: number }
 
 export interface Manifest { sample?: boolean; note?: string; snapshot: string; rounds: string[] }
 
@@ -78,6 +83,9 @@ export interface Round {
   hasBaseline: boolean;
   crowdMethod: string | null;
   marketPriceAt: Date | null;
+  board: 'scored' | 'open';
+  featured: boolean;
+  funnel: Funnel | null;
   questions: Question[];
 }
 
@@ -118,6 +126,9 @@ export function joinRounds(snap: Snapshot, files: RoundFile[]): Round[] {
         hasBaseline: base !== null,
         crowdMethod: r.crowd?.method ?? null,
         marketPriceAt: file?.marketPriceAt ? new Date(file.marketPriceAt) : null,
+        board: file?.board ?? 'scored',
+        featured: file?.featured ?? (file?.kind ?? 'daily') === 'daily',
+        funnel: file?.funnel ?? null,
         questions: r.questions.map((q, i) => {
           const fq = file?.questions.find((x) => x.index === i);
           return {

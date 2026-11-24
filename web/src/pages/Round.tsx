@@ -45,10 +45,26 @@ export function RoundPage({ data, id }: { data: Dataset; id: number }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">{t('round.title', { n: r.id })}</h1>
-        <Badge tone={ph === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${ph}`)}</Badge>
+        <div className="flex flex-wrap gap-2">
+          {r.featured && <Badge tone="accent">{t('round.featured')}</Badge>}
+          {r.board === 'open' && <Badge tone="neutral">{t('round.openBoard')}</Badge>}
+          <Badge tone={ph === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${ph}`)}</Badge>
+        </div>
       </div>
       <p className="max-w-[68ch]">{t('help.intro.round')}</p>
       {ph === 'commit' && <p className="max-w-[68ch] text-sm text-muted">{t('help.intro.roundHidden')}</p>}
+      {r.funnel && (
+        <details className="max-w-[68ch] rounded-lg border border-line bg-surface p-3 text-sm">
+          <summary className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-accent">{t('round.why.title', { n: r.funnel.chosen })}</summary>
+          <p className="mt-2 text-muted">{t('round.why.intro')}</p>
+          <ol className="mt-2 space-y-1">
+            {(['open', 'binary', 'notSports', 'liquid', 'notPolitics', 'inWindow', 'events', 'chosen'] as const).map((k) => (
+              <li key={k} className="flex justify-between gap-3 border-t border-line py-1"><span>{t(`round.why.${k}`)}</span><span className="font-semibold tabular-nums">{r.funnel![k].toLocaleString()}</span></li>
+            ))}
+          </ol>
+          <a href="#/docs/selection" className="mt-2 inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('round.why.rule')}</a>
+        </details>
+      )}
       <Card>
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div><dt className="text-muted">{t('home.commitDeadline')}</dt><dd><DateLine d={r.commitDeadline} /></dd></div>

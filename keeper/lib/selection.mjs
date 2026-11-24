@@ -45,3 +45,20 @@ export function eligible(m, cat, deadlineMs, kind) {
   if (kind === 'long') return h > 72 && h <= LONG_MAX_HOURS && tagNames(cat).some((t) => LONG_ALLOWED_TAGS.has(t));
   throw new Error(`unknown round kind ${kind}`);
 }
+
+/** Selection funnel for display: how many markets survive each filter (published with every round, v3.2). */
+export function funnel(raw, cats, deadlineMs, kind, chosen) {
+  const f = { open: raw.length, binary: 0, notSports: 0, liquid: 0, notPolitics: 0, inWindow: 0, events: 0, chosen };
+  const events = new Set();
+  for (const m of raw) {
+    if (!isBinary(m)) continue; f.binary++;
+    if (isSports(m)) continue; f.notSports++;
+    if (!prefilter(m, kind)) continue; f.liquid++;
+    const cat = cats[m.categorySlug];
+    if (!cat || isSports(m, cat) || isPolitics(cat)) continue; f.notPolitics++;
+    if (!eligible(m, cat, deadlineMs, kind)) continue; f.inWindow++;
+    events.add(m.categorySlug);
+  }
+  f.events = events.size;
+  return f;
+}
