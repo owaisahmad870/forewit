@@ -128,6 +128,34 @@
       "events": "Different events (one question per event)",
       "chosen": "Chosen for this round (at most 8)",
       "rule": "Read the full selection rule"
+    },
+    "boards": {
+      "title": "Boards",
+      "status": {
+        "live": "Live",
+        "rolling": "Rolling out",
+        "planned": "Planned"
+      },
+      "featured": {
+        "name": "Featured round",
+        "what": "The best 8 liquid questions that resolve soonest, one round a day. Start here."
+      },
+      "topics": {
+        "name": "Topic rounds",
+        "what": "Every other liquid market, grouped by topic and horizon (crypto, macro, tech, weather, other). Scored against the market."
+      },
+      "open": {
+        "name": "Open board",
+        "what": "Markets without a real market price. Brier score only, never counted toward skill."
+      },
+      "sports": {
+        "name": "Sports",
+        "what": "Planned as an optional board."
+      },
+      "elections": {
+        "name": "Elections",
+        "what": "Elections and candidates, planned as an optional board. Policy outcomes are already under macro."
+      }
     }
   },
   "leaderboard": {

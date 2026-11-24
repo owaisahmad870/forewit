@@ -19,6 +19,12 @@ test('topic map: sports and elections first, policy under macro', () => {
   assert.equal(topicOf(mk(1, 'a'), cat(['Movies'], 24, DL)), 'other');
 });
 
+test('elections are skipped unless switched on', () => {
+  const cats = { e: cat(['Elections'], 48, DL) };
+  assert.equal(planTopicRounds([mk(1, 'e')], cats, DL).rounds.length, 0);
+  assert.equal(planTopicRounds([mk(1, 'e')], cats, DL, { elections: true }).rounds[0].topic, 'elections');
+});
+
 test('horizon buckets and window', () => {
   assert.equal(horizonOf(5), null);
   assert.equal(horizonOf(6).name, '3d');
