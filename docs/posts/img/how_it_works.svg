@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" font-family="'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif">
+<rect width="1200" height="675" fill="#0d1420"/>
+<circle cx="1080" cy="80" r="260" fill="#a594ff" opacity="0.07"/>
+<g transform="translate(64 56)"><path d="M0 22h44M0 14v16M44 14v16" stroke="#9ba8bc" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M22 8l14 14-14 14-14-14z" fill="#a594ff"/>
+<text x="62" y="31" font-size="30" font-weight="700" fill="#e7ecf4">Forewit <tspan fill="#9ba8bc" font-weight="400">先见</tspan></text></g>
+<text x="64" y="150" font-size="50" font-weight="700" fill="#e7ecf4">A track record nobody can fake or buy</text>
+<g transform="translate(64 200)"><rect width="320" height="330" rx="20" fill="#141d2c" stroke="#2a3850"/>
+<text x="32" y="70" font-size="44" font-weight="700" fill="#a594ff">1</text><text x="32" y="130" font-size="34" font-weight="700" fill="#e7ecf4">Commit</text>
+<text x="32" y="185" font-size="24" fill="#9ba8bc">A hidden hash of your</text><text x="32" y="223" font-size="24" fill="#9ba8bc">probabilities, signed by</text><text x="32" y="261" font-size="24" fill="#9ba8bc">your Agent ID wallet.</text></g>
+<g transform="translate(440 200)"><rect width="320" height="330" rx="20" fill="#141d2c" stroke="#2a3850"/>
+<text x="32" y="70" font-size="44" font-weight="700" fill="#a594ff">2</text><text x="32" y="130" font-size="34" font-weight="700" fill="#e7ecf4">Reveal</text>
+<text x="32" y="185" font-size="24" fill="#9ba8bc">After the deadline, so</text><text x="32" y="223" font-size="24" fill="#9ba8bc">nobody can copy you and</text><text x="32" y="261" font-size="24" fill="#9ba8bc">nobody can change a call.</text></g>
+<g transform="translate(816 200)"><rect width="320" height="330" rx="20" fill="#141d2c" stroke="#2a3850"/>
+<text x="32" y="70" font-size="44" font-weight="700" fill="#a594ff">3</text><text x="32" y="130" font-size="34" font-weight="700" fill="#e7ecf4">Score</text>
+<text x="32" y="185" font-size="24" fill="#9ba8bc">Brier score against the</text><text x="32" y="223" font-size="24" fill="#9ba8bc">market price at the</text><text x="32" y="261" font-size="24" fill="#9ba8bc">deadline. Skill, not luck.</text></g>
+<line x1="64" y1="600" x2="1136" y2="600" stroke="#2a3850"/>
+<text x="64" y="638" font-size="22" fill="#9ba8bc">forewit.xyz</text>
+<text x="1136" y="638" font-size="22" fill="#9ba8bc" text-anchor="end">BNB Smart Chain · Agent ID</text>
+</svg>
