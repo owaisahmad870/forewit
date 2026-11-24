@@ -6,6 +6,7 @@
 //   seal      [--round <id>]                         sealRound right after the deadline (alerts if no baseline was set)
 //   finalize  --round <id>                           finalize every question resolved onchain; voidStale when allowed
 //   score     --round <id>                           scoreBatch and forfeitBatch over every committer (from logs)
+//   night     [--round <id>]                         wait for the baseline window, baseline, then seal (one job for GitHub Actions)
 //   status    --round <id>
 // Mainnet writes refuse to run unless LEDGER_MAINNET is set and KEEPER_CONFIRM_MAINNET=yes (Owais's per action yes).
 // Keys never print. Baseline salts are stored with agent/lib/secure_file.mjs before any commit transaction.
@@ -20,16 +21,16 @@ const args = Object.fromEntries(process.argv.slice(3).reduce((a, v, i, arr) => (
 const cmd = process.argv[2];
 const NET = {
   testnet: { chain: bscTestnet, rpc: process.env.BSC_TESTNET_RPC_URL || 'https://bsc-testnet-rpc.publicnode.com', ledger: process.env.LEDGER_TESTNET, api: 'https://api-testnet.predict.fun', ctfs: { std: '0x2827AAef52D71910E8FBad2FfeBC1B6C2DA37743', yb: '0x38BF1cbD66d174bb5F3037d7068E708861D68D7f', ybnr: '0x26e865CbaAe99b62fbF9D18B55c25B5E079A93D5' } },
-  mainnet: { chain: bsc, rpc: process.env.BSC_RPC_URL || 'https://bsc-rpc.publicnode.com', ledger: process.env.LEDGER_MAINNET, api: 'https://api.predict.fun', ctfs: { std: '0x22DA1810B194ca018378464a58f6Ac2B10C9d244', yb: '0x9400F8Ad57e9e0F352345935d6D3175975eb1d9F', ybnr: '0xF64b0b318AAf83BD9071110af24D24445719A07F' } },
+  mainnet: { chain: bsc, rpc: process.env.RPC_MAINNET_PRIMARY || process.env.BSC_RPC_URL || 'https://bsc-rpc.publicnode.com', rpc2: process.env.RPC_MAINNET_FALLBACK, ledger: process.env.LEDGER_MAINNET, api: 'https://api.predict.fun', ctfs: { std: '0x22DA1810B194ca018378464a58f6Ac2B10C9d244', yb: '0x9400F8Ad57e9e0F352345935d6D3175975eb1d9F', ybnr: '0xF64b0b318AAf83BD9071110af24D24445719A07F' } },
 }[args.network || 'testnet'];
 if (!NET) throw new Error('--network must be testnet or mainnet');
 const isMainnet = NET.chain.id === 56;
-// two RPC endpoints: the configured one first, publicnode as fallback (the baseline has a 15 minute window)
+// RPC endpoints in order: primary, keyed fallback (mainnet), publicnode last (the baseline has a 15 minute window)
 const SECOND_RPC = isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com';
-const transport = () => (NET.rpc === SECOND_RPC ? http(NET.rpc) : fallback([http(NET.rpc), http(SECOND_RPC)]));
-const pub = createPublicClient({ chain: NET.chain, transport: transport() });
+const transport = (first) => fallback([...new Set([first, NET.rpc2, SECOND_RPC].filter(Boolean))].map((u) => http(u)));
+const pub = createPublicClient({ chain: NET.chain, transport: transport(NET.rpc) });
 // event logs need an RPC that serves eth_getLogs ranges (the bnbchain dataseed endpoints refuse them); override with LOGS_RPC_URL
-const logsPub = createPublicClient({ chain: NET.chain, transport: http(process.env.LOGS_RPC_URL || (isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com')) });
+const logsPub = createPublicClient({ chain: NET.chain, transport: transport(process.env.LOGS_RPC_URL || SECOND_RPC) });
 // committed ABI so the keeper host needs no Foundry; CI fails if it drifts from contracts/out
 const ABI = JSON.parse(readFileSync(process.env.KEEPER_ABI || 'keeper/abi/ForecastLedger_v1_2.json', 'utf8'));
 const CTF_ABI = [parseAbiItem('function getOutcomeSlotCount(bytes32) view returns (uint256)'), parseAbiItem('function payoutDenominator(bytes32) view returns (uint256)')];
@@ -265,6 +266,27 @@ async function tick() {
   }
 }
 
+/** One job for the deadline (GitHub Actions starts late or drops runs, so the job starts early and waits):
+ *  baseline about 5 minutes before the commit deadline, then seal 20 s after it. A second start finds both done. */
+async function night() {
+  const r = await roundArg();
+  const round = await read('getRound', [r]);
+  const dl = Number(round.commitDeadline) * 1000;
+  if (dl - Date.now() > 3 * 3600 * 1000) throw new Error(`round ${r} deadline more than 3 hours away; night starts too early`);
+  const until = (t) => new Promise((res) => setTimeout(res, Math.max(0, t - Date.now())));
+  let err = null;
+  if (!round.baselineSet && Date.now() < dl) {
+    await until(dl - 5 * 60 * 1000);
+    await baseline(r).catch((e) => { err = e; });
+  }
+  if (!round.isSealed) {
+    await until(dl + 20 * 1000);
+    await seal(r);
+  }
+  if (err) throw err;
+  log(`round ${r}: night duties done`);
+}
+
 /** Daily at 03:00 UTC: select and open a daily round whose commit deadline is 23:00 UTC today. */
 async function daily() {
   const d = new Date();
@@ -303,9 +325,9 @@ async function watchdog() {
   process.exitCode = 1;
 }
 
-const cmds = { select, open, baseline, seal, finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
+const cmds = { select, open, baseline, seal, night, finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
 if (!cmds[cmd]) {
-  console.log('usage: select | open | baseline | seal | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
+  console.log('usage: select | open | baseline | seal | night | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
   process.exit(1);
 }
 const hc = process.env[`HC_PING_${cmd.toUpperCase()}`];
@@ -313,7 +335,7 @@ try {
   await cmds[cmd]();
   // publish real data to the site after every state changing job (needs the ledger's deploy block; PUBLISH=0 disables)
   const fromBlock = process.env[`INDEXER_FROM_BLOCK_${isMainnet ? 'MAINNET' : 'TESTNET'}`];
-  if (['open', 'baseline', 'seal', 'finalize', 'score', 'tick', 'daily'].includes(cmd) && process.env.PUBLISH !== '0' && fromBlock) {
+  if (['open', 'baseline', 'seal', 'night', 'finalize', 'score', 'tick', 'daily'].includes(cmd) && process.env.PUBLISH !== '0' && fromBlock) {
     const { publish } = await import('../indexer/publish.mjs');
     const p = await publish({ network: args.network || 'testnet', ledger: await ledger(), fromBlock, rpc: process.env.LOGS_RPC_URL }).catch(async (e) => { await alert(`publish failed: ${e.message.split('\n')[0]}`); return null; });
     if (p) log(`published ${p.rounds} rounds, ${p.files} round files to web/public/data`);
