@@ -332,7 +332,7 @@
       "agents": {
         "title": "Use Forewit from any agent",
         "blocks": [
-          "Forewit ships two Model Context Protocol (MCP) servers, so any agent that speaks MCP (Claude, ChatGPT, Cursor, VS Code and others) can read rounds and prepare forecasts without custom code.",
+          "Forewit ships two Model Context Protocol (MCP) servers, so any agent that speaks MCP (Claude, ChatGPT, Cursor, VS Code and others) can read rounds and prepare forecasts without custom code. Both support the MCP protocol revision of 25 November 2025; support for the 28 July 2026 revision will come when the official MCP SDK adds it.",
           {
             "h": "Remote server: read only"
           },
@@ -354,7 +354,7 @@
               "Tools: prepare_commit, prepare_reveal, prepare_profile, my_receipts.",
               "prepare_commit makes a random salt, saves the reveal receipt in the .forewit folder of your home directory with owner only access, and returns the commit hash, the calldata and the exact baw contract call preview command. The salt is not returned to the agent.",
               "prepare_reveal works only after the commit deadline, when the salt has to go onchain anyway.",
-              "my_receipts lists your receipts without salts, unless you ask for them to make a private backup.",
+              "my_receipts lists your receipts without salts. It returns salts only when you ask for a private backup, and only after the commit deadline.",
               "It never signs, never sends and never runs the Binance Agentic Wallet. You preview and approve every transaction in your own wallet. Its only network access is the pinned public RPC."
             ]
           },

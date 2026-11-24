@@ -4,10 +4,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import {
-  network, loadRound, commitPlan, revealPlan, parseProbabilities, findReceipts, receiptDir, bawPreview,
+  network, loadRound, chainNow, commitPlan, revealPlan, parseProbabilities, findReceipts, receiptDir, bawPreview,
 } from '../vendor/agent/forewit.mjs';
 import { selector, wordBool, wordUint } from '../vendor/agent/lib/keccak.mjs';
-import { DEFAULT_NETWORK, BAW_CHAIN_IDS, RISK_WARNING } from '../vendor/agent/config.mjs';
+import { NETWORKS, DEFAULT_NETWORK, BAW_CHAIN_IDS, RISK_WARNING } from '../vendor/agent/config.mjs';
 import { ok, guarded, paginate, cursorInput, address, roundId, VERSION } from './common.mjs';
 
 const ANNOTATIONS = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
@@ -43,7 +43,33 @@ function walletPart(net, from, data) {
   };
 }
 
+const hex = (bytes) => z.string().regex(new RegExp(`^0x[0-9a-fA-F]{${bytes * 2}}$`));
+const seconds = z.number().int().nonnegative();
+// Shape a receipt file must have to be listed; anything else is skipped with a warning.
+const receiptFile = z.object({
+  network: z.string(), chainId: z.number().int(), ledger: hex(20), roundId: z.number().int().positive(), forecaster: hex(20),
+  commitHash: hex(32), salt: hex(32), probabilitiesBps: z.array(z.number().int()).optional(),
+  commitDeadline: seconds.nullable(), revealDeadline: seconds.nullable().optional(), createdAt: z.string().optional(),
+});
+
 const roundInput = roundId.optional().describe('Round id, default the latest round on the ledger.');
+
+/**
+ * Salts never enter agent context before the commit deadline: with the salt and the forecast anyone could reveal or copy it.
+ * Checks chain time on each receipt's pinned network and throws (a tool error) if any round is still open or unverifiable.
+ */
+async function assertCommitsClosed(receipts) {
+  const nowByChain = new Map();
+  for (const r of receipts) {
+    const net = Object.values(NETWORKS).find((n) => n.chainId === r.chainId && n.ledger && n.ledger.toLowerCase() === r.ledger.toLowerCase());
+    if (!net) throw new Error(`round ${r.roundId}: receipt ledger is not a pinned Forewit ledger, so its commit deadline cannot be checked; salt not returned`);
+    if (!nowByChain.has(net.chainId)) nowByChain.set(net.chainId, await chainNow(net));
+    if (r.commitDeadline == null) throw new Error(`round ${r.roundId}: receipt has no commit deadline to check; salt not returned`);
+    if (nowByChain.get(net.chainId) < r.commitDeadline) {
+      throw new Error(`round ${r.roundId} is open for commits until ${iso(r.commitDeadline)}; salts stay local until then. Use prepare_reveal after the deadline, or filter with round_id.`);
+    }
+  }
+}
 
 /** `home` is the folder that holds .forewit/ (default: the user's home directory). It is not a tool input. */
 export function createLocalServer({ home } = {}) {
@@ -122,12 +148,12 @@ export function createLocalServer({ home } = {}) {
 
   tool('my_receipts', {
     title: 'My receipts',
-    description: 'Lists reveal receipts saved in ~/.forewit. Returns metadata and file paths; the salt only when include_salt is true. Paginated, newest first.',
+    description: 'Lists reveal receipts saved in ~/.forewit. Returns metadata and file paths. include_salt adds each salt, and is refused while any listed round is still open for commits (chain time). Files that are not valid receipts are listed in warnings. Paginated, newest first.',
     inputSchema: {
       from: address.optional(),
       round_id: roundId.optional(),
       network: networkInput,
-      include_salt: z.boolean().optional().describe('Include each salt, for a private backup. Default false.'),
+      include_salt: z.boolean().optional().describe('Include each salt, for a private backup after the commit deadline. Default false.'),
       ...cursorInput,
     },
     outputSchema: {
@@ -137,21 +163,32 @@ export function createLocalServer({ home } = {}) {
         commit_hash: z.string(), probabilities_bps: z.array(z.number().int()), commit_deadline: z.string().nullable(), reveal_deadline: z.string().nullable(),
         created_at: z.string().nullable(), salt: z.string().optional(),
       })),
+      warnings: z.array(z.object({ file: z.string(), reason: z.string() })),
       next_cursor: z.string().nullable(),
     },
   }, async ({ from, round_id, network: name, include_salt = false, cursor, limit }) => {
     const filter = { forecaster: from, roundId: round_id };
     if (name) filter.chainId = network(name).chainId;
-    const found = findReceipts(filter, home).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    const warnings = [];
+    const found = [];
+    for (const r of findReceipts(filter, home, warnings)) {
+      const parsed = receiptFile.safeParse(r);
+      if (parsed.success) found.push({ ...parsed.data, file: r.file });
+      else warnings.push({ file: r.file, reason: `not a valid receipt (fields: ${[...new Set(parsed.error.issues.map((i) => i.path.join('.')))].join(', ')})` });
+    }
+    for (const w of warnings) console.error(`forewit mcp: skipped ${w.file}: ${w.reason}`);
+    found.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     const { page, next_cursor } = paginate(found, { cursor, limit });
+    if (include_salt) await assertCommitsClosed(page);
     return ok({
       folder: receiptDir(home),
       receipts: page.map((r) => ({
-        file: r.file, network: String(r.network), chain_id: Number(r.chainId), ledger: String(r.ledger), round_id: Number(r.roundId),
-        forecaster: String(r.forecaster), commit_hash: String(r.commitHash), probabilities_bps: (r.probabilitiesBps ?? []).map(Number),
+        file: r.file, network: r.network, chain_id: r.chainId, ledger: r.ledger, round_id: r.roundId,
+        forecaster: r.forecaster, commit_hash: r.commitHash, probabilities_bps: r.probabilitiesBps ?? [],
         commit_deadline: iso(r.commitDeadline), reveal_deadline: iso(r.revealDeadline), created_at: r.createdAt ?? null,
-        ...(include_salt ? { salt: String(r.salt) } : {}),
+        ...(include_salt ? { salt: r.salt } : {}),
       })),
+      warnings,
       next_cursor,
     });
   }, { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false });

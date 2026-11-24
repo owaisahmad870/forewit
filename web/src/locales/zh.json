@@ -332,7 +332,7 @@
       "agents": {
         "title": "在任意智能体中使用 Forewit",
         "blocks": [
-          "Forewit 提供两个 Model Context Protocol（MCP）服务器。任何支持 MCP 的智能体（Claude、ChatGPT、Cursor、VS Code 等）都可以读取轮次并准备预测，无需编写额外代码。",
+          "Forewit 提供两个 Model Context Protocol（MCP）服务器。任何支持 MCP 的智能体（Claude、ChatGPT、Cursor、VS Code 等）都可以读取轮次并准备预测，无需编写额外代码。两者都支持 2025 年 11 月 25 日版 MCP 协议；官方 MCP SDK 加入 2026 年 7 月 28 日版后我们会随之支持。",
           {
             "h": "远程服务器：只读"
           },
@@ -354,7 +354,7 @@
               "工具：prepare_commit、prepare_reveal、prepare_profile、my_receipts。",
               "prepare_commit 生成随机 salt，把揭示凭证保存在你主目录下的 .forewit 文件夹中（仅所有者可访问），并返回提交哈希、调用数据和完整的 baw contract call preview 命令。salt 不会返回给智能体。",
               "prepare_reveal 只在提交截止之后可用，此时 salt 本来就要上链。",
-              "my_receipts 列出你的凭证但不含 salt，除非你为了私密备份而明确要求。",
+              "my_receipts 列出你的凭证但不含 salt。只有在你为私密备份明确要求、且提交截止之后，才会返回 salt。",
               "它从不签名、从不发送，也从不运行 Binance Agentic Wallet。每笔交易都由你在自己的钱包中预览并批准。它唯一的网络访问是固定的公共 RPC。"
             ]
           },
