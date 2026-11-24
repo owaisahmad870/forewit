@@ -12,7 +12,7 @@ import { revealCalldata, pack } from '../vendor/agent/forewit.mjs';
 import { NETWORKS } from '../vendor/agent/config.mjs';
 import { connect, call, fakeChain } from './helpers.mjs';
 
-const net = NETWORKS.testnet;
+const net = NETWORKS.mainnet; // the default network once the mainnet ledger is pinned
 const FROM = '0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5';
 const BIN = fileURLToPath(new URL('../bin/forewit.mjs', import.meta.url));
 
@@ -48,8 +48,8 @@ test('local server', async (t) => {
     assert.equal(data.transaction.to, net.ledger);
     assert.equal(data.transaction.value, '0');
     assert.ok(data.transaction.data.endsWith(data.commit_hash.slice(2)));
-    assert.equal(data.baw_preview_command, `baw contract-call preview --binanceChainId 97 --from ${FROM} --to ${net.ledger} --value 0 --inputData ${data.transaction.data} --json`);
-    assert.equal(data.baw_can_sign_this_network, false);
+    assert.equal(data.baw_preview_command, `baw contract-call preview --binanceChainId 56 --from ${FROM} --to ${net.ledger} --value 0 --inputData ${data.transaction.data} --json`);
+    assert.equal(data.baw_can_sign_this_network, true);
     const receipt = JSON.parse(readFileSync(data.receipt_file, 'utf8'));
     assert.match(receipt.salt, /^0x[0-9a-f]{64}$/);
     assert.ok(!JSON.stringify(result).includes(receipt.salt.slice(2)), 'salt not in the tool result');
@@ -57,7 +57,7 @@ test('local server', async (t) => {
 
   await t.test('prepare_commit validation errors are tool errors', async () => {
     for (const args of [{ from: FROM, probabilities_percent: [50, 50] }, { from: FROM, probabilities_percent: [101, 1, 1] }, { from: 'x', probabilities_percent: [1] },
-      { from: FROM, probabilities_percent: [1, 2, 3], home: '/tmp' }, { from: FROM, probabilities_percent: [1, 2, 3], network: 'mainnet' }]) {
+      { from: FROM, probabilities_percent: [1, 2, 3], home: '/tmp' }, { from: FROM, probabilities_percent: [1, 2, 3], network: 'sepolia' }]) {
       const { result } = await call(client, 'prepare_commit', args);
       assert.equal(result.isError, true, JSON.stringify(args));
     }

@@ -161,7 +161,7 @@ test('execute mode', async (t) => {
     assert.throws(() => checkPreview(reply.data, { ledger: '0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F', data: '0xdeadbeef' }), /selector/);
   });
 
-  await t.test('the CLI refuses a piped yes and a null mainnet ledger without running baw', () => {
+  await t.test('the CLI refuses a piped yes on testnet and on mainnet without running baw', () => {
     rmSync(process.env.FAKE_BAW_LOG, { force: true });
     const cli = fileURLToPath(new URL('../forewit.mjs', import.meta.url));
     const env = { ...process.env, HOME: dir, USERPROFILE: dir, FAKE_BAW_SCENARIO: 'happy' };
@@ -169,9 +169,9 @@ test('execute mode', async (t) => {
     const t1 = spawnSync(process.execPath, [cli, 'commit', '--network', 'testnet', '--execute', '--from', FROM, '--p', '50'], { env, encoding: 'utf8', input: 'yes\n' });
     assert.equal(t1.status, 1);
     assert.match(t1.stderr, /stdin is not a TTY/);
-    const t2 = spawnSync(process.execPath, [cli, 'reveal', '--network', 'mainnet', '--execute', '--from', FROM], { env, encoding: 'utf8' });
+    const t2 = spawnSync(process.execPath, [cli, 'reveal', '--network', 'mainnet', '--execute', '--from', FROM], { env, encoding: 'utf8', input: 'yes\n' });
     assert.equal(t2.status, 1);
-    assert.match(t2.stderr, /mainnet ledger is not deployed/);
+    assert.match(t2.stderr, /stdin is not a TTY/);
     assert.ok(!existsSync(process.env.FAKE_BAW_LOG), 'baw was never started');
     assert.ok(!existsSync(join(dir, '.forewit')), 'no salt was made');
   });

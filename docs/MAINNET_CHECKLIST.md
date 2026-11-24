@@ -27,6 +27,7 @@ Every onchain step needs Owais's explicit yes, given for that step, with the act
 * Human step: set LEDGER_TESTNET to instance E and INDEXER_FROM_BLOCK_TESTNET to its deploy block in .env; the keeper refuses the deprecated instances.
 
 ## 3. Deploy (Owais yes required)
+* DONE 24 Nov 2026: ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6, block 135450390, 3,574,338 gas, BscScan and Sourcify verified, roles read back (scripts/verify/mainnet_ledger_check.mjs). Run with scripts/deploy_mainnet.ps1.
 * On Owais's machine, with MAINNET_DEPLOYER, MAINNET_ADMIN and MAINNET_ROUND_MANAGER (addresses only) set in that shell; the deployer keystore password is typed at the prompt:
   `forge script script/DeployMainnet.s.sol --rpc-url bsc --keystore <forewit_keys>/deployer --sender <MAINNET_DEPLOYER> --broadcast --verify`
 * The script refuses any chain other than 56, windows below 2 h and 12 h, and role addresses that are not three distinct nonzero addresses; after the deploy it reads the roles back and fails if the deployer holds any (review MAINNET_DELTA L1, fixed 24 Nov 2026; fork dry run 4,646,639 gas).

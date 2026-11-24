@@ -1,11 +1,11 @@
 // Pinned network constants. The CLI only ever builds calls to these ledger addresses; there is no override flag.
-// Mainnet ledger is null until it is deployed and verified; while it is null the CLI refuses mainnet writes.
+// Mainnet ledger pinned 24 Nov 2026 after deploy and verification; mainnet is now the default network.
 
 export const NETWORKS = Object.freeze({
   mainnet: Object.freeze({
     name: 'mainnet',
     chainId: 56,
-    ledger: null,
+    ledger: '0xd11e67ff70ACD42E01d79130f280162b00Bb09B6', // ForecastLedger v1.2, deployed 24 Nov 2026 (block 135450390), verified on BscScan and Sourcify
     rpc: 'https://bsc-rpc.publicnode.com',
     explorer: 'https://bscscan.com',
   }),

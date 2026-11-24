@@ -35,11 +35,9 @@ test('CLI', async (t) => {
     assert.ok(r.stdout.includes(RISK_WARNING));
   });
 
-  await t.test('mainnet writes are refused while the ledger is null', () => {
-    assert.equal(NETWORKS.mainnet.ledger, null);
-    const r = cli(['commit', '--network', 'mainnet', '--from', FROM, '--p', '50'], home);
-    assert.equal(r.status, 1);
-    assert.match(r.stderr, /mainnet ledger is not deployed/);
+  await t.test('the mainnet ledger is pinned to the deployed, verified address', () => {
+    assert.equal(NETWORKS.mainnet.ledger, '0xd11e67ff70ACD42E01d79130f280162b00Bb09B6');
+    assert.equal(NETWORKS.mainnet.chainId, 56);
   });
 
   await t.test('bad input is rejected before any network access', () => {
