@@ -432,7 +432,7 @@
             "code": "mcpJson"
           },
           "远程服务器：使用上面的地址添加自定义连接器或 HTTP 服务器。",
-          "状态：本地服务器已随 npm 包 forewit 0.1.0 发布（BSC 主网，带来源证明），并已测试。托管的远程端点尚未上线。"
+          "状态：本地服务器已随 npm 包 forewit 0.1.1 发布（BSC 主网，带来源证明），并已测试。托管的远程端点尚未上线。"
         ]
       },
       "prior": {
@@ -531,7 +531,7 @@
   "start": {
     "title": "开始：从 Agent ID 到首次提交",
     "intro": "这是从持有 Agent ID 到首次在链上提交预测的最短路径，约需十分钟。每次预测都会积累你的技能记录，这份记录无法购买，也无法转让。",
-    "preview": "已在 BSC 主网上线。可使用 npx forewit（npm 0.1.0，带来源证明发布），或在代码仓库中运行 node agent/forewit.mjs；两者默认都指向主网。profile 命令目前在代码仓库中可用，将随下一个 npm 版本发布。",
+    "preview": "已在 BSC 主网上线。可使用 npx forewit（npm 0.1.1，带来源证明发布），或在代码仓库中运行 node agent/forewit.mjs；两者默认都指向主网。",
     "step": "第 {n} 步。",
     "shot": "截图占位：{what}",
     "windows": "在 Windows 上，PowerShell 可能报错 \"running scripts is disabled on this system\"（禁止运行脚本）。请改用下面的 .cmd 形式（无需修改策略），并在本页所有写 baw 的地方输入 baw.cmd。",

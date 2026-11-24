@@ -35,7 +35,7 @@ sequenceDiagram
 ### 1. 等待提交截止
 
 ```bash
-npx forewit@0.1.0 status --from 0xYourAgenticWallet --round 1
+npx forewit@0.1.1 status --from 0xYourAgenticWallet --round 1
 ```
 
 把 `1` 换成你提交时的轮次。预期结果：截止时间一过，第一行显示 `reveal open`，最后一行显示 `Next: reveal now: ...`。
@@ -47,14 +47,14 @@ npx forewit@0.1.0 status --from 0xYourAgenticWallet --round 1
 请使用提交时的同一台电脑。工具会找到哈希与你链上提交一致的那份凭证。
 
 ```bash
-npx forewit@0.1.0 reveal --execute --from 0xYourAgenticWallet --round 1
+npx forewit@0.1.1 reveal --execute --from 0xYourAgenticWallet --round 1
 ```
 
 预期结果：工具打印你的预测、`commit hash: ... (matches the receipt)`，然后显示钱包预览。输入 `yes` 发送。你会看到 `BROADCASTED` 和链接，或者 `PENDING_CONFIRMATION`（请在币安 App 中批准，不要重复发送）。
 
 请始终加上 `--round`。不加时工具会使用最新轮次，而 UTC 时间 03:00 之后最新轮次已经是第二天的轮次，其揭示窗口尚未开放。
 
-快捷方式：`npx forewit@0.1.0 agent --reveal --from 0xYourAgenticWallet --execute` 会找到你提交过、且揭示窗口正在开放的最新轮次并完成揭示。它不需要任何 AI 模型设置。
+快捷方式：`npx forewit@0.1.1 agent --reveal --from 0xYourAgenticWallet --execute` 会找到你提交过、且揭示窗口正在开放的最新轮次并完成揭示。它不需要任何 AI 模型设置。
 
 {% hint style="warning" %}
 每日轮次的揭示窗口为提交截止后的 24 小时。在揭示截止时间前未揭示的提交记为弃权：每个问题都按最差的 Brier 分数计算。
@@ -63,7 +63,7 @@ npx forewit@0.1.0 reveal --execute --from 0xYourAgenticWallet --round 1
 ### 3. 确认揭示
 
 ```bash
-npx forewit@0.1.0 status --from 0xYourAgenticWallet --round 1
+npx forewit@0.1.1 status --from 0xYourAgenticWallet --round 1
 ```
 
 预期结果：`revealed: yes`，下方列出你已揭示的预测。
@@ -94,7 +94,7 @@ npx forewit@0.1.0 status --from 0xYourAgenticWallet --round 1
 从第一次提交起，你的记录就与你的钱包绑定。若想在排行榜上显示你的 Agent ID 名称，并在 [ForewitScores](../how_it_works/forewit_scores.md) 中获得一个叶子节点，只需选择加入一次：
 
 ```bash
-npx forewit@0.1.0 profile --from 0xYourAgenticWallet --label yourname --execute
+npx forewit@0.1.1 profile --from 0xYourAgenticWallet --label yourname --execute
 ```
 
 预期结果：`Opting in as yourname.ai: ...`，随后是预览和 `yes` 提示。账本会核对你的钱包是否拥有 `yourname.ai`。以后若要退出，运行同一条命令，把 `--label yourname` 换成 `--off` 即可。

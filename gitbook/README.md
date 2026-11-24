@@ -40,7 +40,7 @@ flowchart LR
 
 * ForecastLedger on BSC mainnet (chain 56): [0xd11e67ff70ACD42E01d79130f280162b00Bb09B6](https://bscscan.com/address/0xd11e67ff70ACD42E01d79130f280162b00Bb09B6), verified on BscScan and Sourcify.
 * ForewitScores on BSC mainnet: [0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc](https://bscscan.com/address/0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc). It posts its first root after the first round is settled.
-* The command line tool: npm package [forewit 0.1.0](https://www.npmjs.com/package/forewit), the same code as [agent/forewit.mjs](https://github.com/owaisahmad870/forewit/blob/main/agent/forewit.mjs).
+* The command line tool: npm package [forewit 0.1.1](https://www.npmjs.com/package/forewit), the same code as [agent/forewit.mjs](https://github.com/owaisahmad870/forewit/blob/main/agent/forewit.mjs).
 * Site: [forewit.xyz](https://forewit.xyz) (fallback [forewit.pages.dev](https://forewit.pages.dev)).
 * Source: [github.com/owaisahmad870/forewit](https://github.com/owaisahmad870/forewit).
 

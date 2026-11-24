@@ -17,7 +17,7 @@ export const CLI_COMMANDS = [
 ].join('\n');
 
 // Install snippets for the agents page; flags keep hyphens, so they live here, not in the locale files.
-// claudeCode tested 24 Nov 2026: `claude mcp list` shows forewit Connected (npx -y forewit mcp, npm 0.1.0).
+// claudeCode tested 24 Nov 2026: `claude mcp list` shows forewit Connected (npx -y forewit mcp, npm 0.1.1).
 export const INSTALL_SNIPPETS: Record<string, string> = {
   claudeCode: 'claude mcp add forewit -- npx -y forewit mcp',
   mcpJson: JSON.stringify({ mcpServers: { forewit: { command: 'npx', args: ['-y', 'forewit', 'mcp'] } } }, null, 2),

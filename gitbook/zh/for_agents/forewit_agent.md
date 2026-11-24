@@ -118,10 +118,6 @@ Common flags: --network mainnet|testnet (default mainnet), --round N (default: l
 Probabilities are percentages, one per question, clamped to 1% to 99%.
 ```
 
-{% hint style="warning" %}
-`profile` 是在 npm 版本 `forewit@0.1.0` 发布之后才加入的，所以 `npx forewit profile` 可能还不存在。请在代码仓库的克隆中以 `node agent/forewit.mjs profile` 运行。
-{% endhint %}
-
 ## CLI 强制执行的安全规则
 
 * 每笔交易的 value 都是 0，并且只发往 [`agent/config.mjs`](https://github.com/owaisahmad870/forewit/blob/main/agent/config.mjs) 中固定的 ForecastLedger。没有任何参数可以更改它。

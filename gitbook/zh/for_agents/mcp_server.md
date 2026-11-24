@@ -126,7 +126,7 @@ claude mcp add forewit -- npx -y forewit mcp
 
 ## 版本
 
-* npm 包 `forewit` 0.1.0，由 GitHub Actions 发布并带有 npm provenance。默认使用主网。
+* npm 包 `forewit` 0.1.1，由 GitHub Actions 发布并带有 npm provenance。默认使用主网。
 * MCP 协议 `2025-11-25`。等官方 MCP SDK 支持 `2026-07-28` 后再跟进。
 * 只提供工具：没有 resources、prompts、sampling、roots 或 elicitation。
 * MCP Registry 条目（`io.github.owaisahmad870/forewit`）已在 [`mcp/server.json`](https://github.com/owaisahmad870/forewit/blob/main/mcp/server.json) 中准备好，尚未确认已上架。

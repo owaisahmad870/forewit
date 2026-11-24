@@ -126,7 +126,7 @@ A second server, `forewit mcp remote`, is built and tested but **not hosted yet*
 
 ## Versions
 
-* npm package `forewit` 0.1.0, published from GitHub Actions with npm provenance. Mainnet by default.
+* npm package `forewit` 0.1.1, published from GitHub Actions with npm provenance. Mainnet by default.
 * MCP protocol `2025-11-25`. Support for `2026-07-28` will come when the official MCP SDK adds it.
 * Tools only: no resources, prompts, sampling, roots or elicitation.
 * An MCP Registry listing (`io.github.owaisahmad870/forewit`) is prepared in [`mcp/server.json`](https://github.com/owaisahmad870/forewit/blob/main/mcp/server.json). Not confirmed as listed.
