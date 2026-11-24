@@ -15,7 +15,7 @@ Short version: your keys never leave the Binance app, and your salts never leave
 
 ## The team's keys
 
-* **Admin** ([0xF3b4728B30F0F380d77dE9d025E33680F66591bD](https://bscscan.com/address/0xF3b4728B30F0F380d77dE9d025E33680F66591bD)). An encrypted keystore kept offline, with offline backups. Can grant and revoke roles and pause new rounds and commits. A leak would let someone hand out roles or pause new rounds; it could still not edit any forecast, score or outcome. The admin seat itself moves only by a two step transfer with a 1 day delay. Plan: move it to a multisig that needs 2 of 3 signatures on separate devices, announced before it happens.
+* **Admin** ([0xF3b4728B30F0F380d77dE9d025E33680F66591bD](https://bscscan.com/address/0xF3b4728B30F0F380d77dE9d025E33680F66591bD)). An encrypted keystore on the owner's computer, with offline copies (a decrypt check of every copy is pending). Can grant and revoke roles and pause new rounds and commits. A leak would let someone hand out roles or pause new rounds; it could still not edit any forecast, score or outcome. The admin seat itself moves only by a two step transfer with a 1 day delay. Plan: move it to a multisig that needs 2 of 3 signatures on separate devices, announced before it happens.
 * **Keeper** ([0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18](https://bscscan.com/address/0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18)). A hot key stored as an encrypted GitHub Actions secret, used by the daily jobs. Holds the round manager role on both contracts and a small amount of BNB for gas.
 * **Deployer** ([0x6732027E7f908E274bF4360Ce19cC182F82d008C](https://bscscan.com/address/0x6732027E7f908E274bF4360Ce19cC182F82d008C)). Deployed both contracts and holds no role, so a leak changes nothing onchain.
 * **Service tokens** (RPC providers, Cloudflare Pages, health checks, the Predict.fun read key). Stored as encrypted GitHub Actions secrets. None of them can touch the contracts or any user data. A leak is fixed by rotating the token.
@@ -33,7 +33,7 @@ What an attacker could never do: edit or delete any commit, reveal, outcome or s
 
 What we do:
 
-1. The admin revokes the round manager role from the leaked key on both contracts. Revoking is instant.
+1. The admin revokes the round manager role from the leaked key on both contracts. Revoking takes effect in the next block once the admin wallet holds gas (it is being funded for this).
 2. The admin grants the role to a fresh keeper key, and the GitHub secret is replaced.
 3. Any wrong root is revoked by the admin, and the correct root is posted again.
 4. We publish the affected rounds and transactions on the [changelog](../reference/changelog.md) and on X within 24 hours.

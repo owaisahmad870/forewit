@@ -342,7 +342,7 @@
               "Admin abuse: no upgrade path, and pause never blocks reveal or scoring.",
               "Prompt injection: market titles and all API text are treated as untrusted data and shown as plain text.",
               "This site: static files, read only, no wallet connection, no secrets, pinned dependencies and a strict Content Security Policy.",
-              "Leaked team key: the admin revokes the leaked keeper role instantly on both contracts and replaces the key; a leak can never edit a commit, reveal, outcome or score. Every key, who holds it and the response plan are in the docs under Keys, secrets and incidents.",
+              "Leaked team key: the admin revokes the leaked keeper role on both contracts and replaces the key (effective in the next block once the admin wallet holds gas); a leak can never edit a commit, reveal, outcome or score. Every key, who holds it and the response plan are in the docs under Keys, secrets and incidents.",
               "Found a security problem? Report it privately through GitHub security advisories on the forewit repository, not in a public issue."
             ]
           },
