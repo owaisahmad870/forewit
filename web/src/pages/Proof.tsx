@@ -8,6 +8,7 @@ type ProofSnapshot = Snapshot & {
   agentId?: string | null;
   firstCommits?: Record<string, { tx: string | null; roundId: string; block: string }>;
   scoresRoots?: { roundId?: string | number; root: string; tx?: string | null }[];
+  adminLog?: { event: string; block: string; tx: string | null; role?: string; account?: string; by?: string; newAdmin?: string }[];
 };
 
 // Network label and explorer come from the dataset's chain id only, so the page switches to mainnet with the data.
@@ -118,6 +119,24 @@ export function Proof({ data }: { data: Dataset }) {
                 {s.roundId != null && <span className="text-muted">{t('round.title', { n: s.roundId })} </span>}
                 <span className="font-mono">{s.root}</span>
                 {s.tx && net && <> <a href={`${net.url}/tx/${s.tx}`} rel="noopener noreferrer" className={link}>{t('proof.tx')}</a></>}
+              </li>
+            ))}
+          </ol>
+        </Card>
+      )}
+
+      {Array.isArray(snap.adminLog) && (
+        <Card>
+          <h2 className="text-lg font-semibold">{t('proof.adminTitle', { n: snap.adminLog.length })}</h2>
+          <p className="mt-1 text-sm text-muted">{t('proof.adminNote')}</p>
+          <ol className="mt-3 space-y-1 text-sm">
+            {snap.adminLog.map((e, i) => (
+              <li key={`${e.tx}${i}`} className="flex min-h-11 flex-wrap items-center gap-x-2 border-t border-line">
+                <span className="font-semibold">{e.event}</span>
+                {e.role && <span>{e.role}</span>}
+                {(e.account ?? e.newAdmin) && <span className="font-mono">{short((e.account ?? e.newAdmin)!)}</span>}
+                <span className="text-muted">{t('proof.adminBlock', { n: e.block })}</span>
+                {e.tx && net && <a href={`${net.url}/tx/${e.tx}`} rel="noopener noreferrer" className={link}>{t('proof.tx')}</a>}
               </li>
             ))}
           </ol>

@@ -525,7 +525,10 @@
     "scoresTitle": "ForewitScores root history",
     "scoresNote": "Merkle roots of every Agent ID skill score, posted onchain after each round.",
     "tx": "Transaction",
-    "rebuild": "Anyone can rebuild this data from chain events with indexer/build.mjs."
+    "rebuild": "Anyone can rebuild this data from chain events with indexer/build.mjs.",
+    "adminTitle": "Team actions onchain ({n})",
+    "adminNote": "Every role grant or revoke, pause and admin seat change on ForecastLedger since deploy, read from the chain. The first entries are the deploy itself. Anything after them is a team action you can check on BscScan.",
+    "adminBlock": "block {n}"
   },
   "start": {
     "title": "Start: from Agent ID to your first commit",
