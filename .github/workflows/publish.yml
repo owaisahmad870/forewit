@@ -1,0 +1,31 @@
+# npm publish of the forewit package (mcp/) through trusted publishing (OIDC), with provenance.
+# Needs: the repository public, and on npmjs.com the package "forewit" set to trust this repository and this workflow file.
+# Runs only by hand, from a tag like v0.1.0 whose version matches mcp/package.json.
+name: publish
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: mcp
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          registry-url: https://registry.npmjs.org
+      - run: npm ci --no-audit --no-fund
+        working-directory: .
+      - run: npm ci --no-audit --no-fund
+      - run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+      - run: npm test
+      - run: npm publish --access public --provenance

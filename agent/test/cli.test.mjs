@@ -56,8 +56,9 @@ test('CLI', async (t) => {
     const r = cli(['receipt', '--from', FROM], home);
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.stdout, /SECRET until the commit deadline/);
-    assert.ok(r.stdout.includes(receipt.salt));
+    assert.ok(!r.stdout.includes(receipt.salt.slice(2)), 'salt hidden by default');
     assert.ok(r.stdout.includes(receipt.commitHash));
+    assert.ok(cli(['receipt', '--from', FROM, '--show-salt'], home).stdout.includes(receipt.salt));
     assert.match(cli(['receipt', '--round', '6'], home).stdout, /No receipts found/);
   });
 });

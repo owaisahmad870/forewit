@@ -33,5 +33,6 @@
   },
   "devDependencies": {
     "viem": "2.58.4"
-  }
+  },
+  "mcpName": "io.github.owaisahmad870/forewit"
 }
