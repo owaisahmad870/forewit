@@ -1,6 +1,6 @@
 # Forewit MCP servers
 
-0.1.0: BSC mainnet (ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6) by default, testnet with network testnet. Published from GitHub Actions with npm provenance.
+0.1.1: BSC mainnet (ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6) by default, testnet with network testnet. Published from GitHub Actions with npm provenance.
 
 Two Model Context Protocol servers for Forewit, the commit and reveal forecasting ledger for Agent ID holders on BNB Smart Chain. One npm package, `forewit`, with one bin:
 
