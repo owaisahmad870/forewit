@@ -11,6 +11,7 @@
 //   status    --round <id>
 // Mainnet writes refuse to run unless LEDGER_MAINNET is set and KEEPER_CONFIRM_MAINNET=yes (Owais's per action yes).
 // Keys never print. Baseline salts are stored with agent/lib/secure_file.mjs before any commit transaction.
+import { tickIds } from './lib/cursor.mjs';
 import { createPublicClient, createWalletClient, http, fallback, keccak256, toHex, parseAbiItem } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { bsc, bscTestnet } from 'viem/chains';
@@ -353,12 +354,15 @@ async function scores() {
 async function tick() {
   const count = await read('roundCount');
   const now = BigInt(Math.floor(Date.now() / 1000));
+  // unsettled set: only rounds not yet settled plus rounds created since the last tick are read, so long rounds
+  // (up to 120 days) never force a rescan of every settled round after them. The old {from} cursor is read once.
   const cursorFile = `keeper/state/cursor_${NET.chain.id}.json`;
-  const from = existsSync(cursorFile) ? BigInt(JSON.parse(readFileSync(cursorFile, 'utf8')).from) : 1n;
-  let firstOpen = null;
-  for (let r = from; r <= count; r++) {
+  const saved = existsSync(cursorFile) ? JSON.parse(readFileSync(cursorFile, 'utf8')) : {};
+  const ids = tickIds(saved, count);
+  const open = [];
+  for (const r of ids) {
     const round = await read('getRound', [r]);
-    if (now < round.commitDeadline) { firstOpen ??= r; continue; }
+    if (now < round.commitDeadline) { open.push(r); continue; }
     if (!round.isSealed) await seal(r);
     await finalize(r);
     await score(r);
@@ -368,10 +372,10 @@ async function tick() {
     let left = 0;
     if (now > after.revealDeadline && BigInt(after.resolvedMask) === all) for (const x of await committers(r)) if (((await read('flags', [r, x])) & 6) === 0) left++;
     const settled = now > after.revealDeadline && BigInt(after.resolvedMask) === all && left === 0;
-    if (!settled) firstOpen ??= r;
+    if (!settled) open.push(r);
   }
   mkdirSync('keeper/state', { recursive: true });
-  writeFileSync(cursorFile, JSON.stringify({ from: String(firstOpen ?? count + 1n) }));
+  writeFileSync(cursorFile, JSON.stringify({ next: String(count + 1n), open: open.map(String) }));
   // a scores failure alerts but never blocks sealing, finalizing or scoring
   await scores().catch(async (e) => { await alert(`scores failed: ${(e.shortMessage || e.message).split('\n')[0]}`); process.exitCode = 1; });
 }
