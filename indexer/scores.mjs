@@ -71,7 +71,8 @@ export function buildLeaves(logs, snapshotBlock) {
     if (ops.has(f)) { excluded.push({ forecaster: f, reason: 'operator' }); continue; }
     if (!p || !p.args.isPublic || BigInt(p.args.labelId) === 0n) { excluded.push({ forecaster: f, reason: 'not_public' }); continue; }
     const tokenId = BigInt(p.args.labelId);
-    const moved = binder[tokenId.toString()].f !== f || transfers.some((t) => BigInt(t.args.tokenId) === tokenId && t.args.from.toLowerCase() === f && before(p, t));
+    // any Transfer of the token to another wallet after the opt in (a transfer, a burn, or a reissue mint from zero) moves it
+    const moved = binder[tokenId.toString()].f !== f || transfers.some((t) => BigInt(t.args.tokenId) === tokenId && t.args.to.toLowerCase() !== f && before(p, t));
     if (moved) { excluded.push({ forecaster: f, reason: 'moved' }); continue; }
     byToken[tokenId.toString()] = { f };
   }
