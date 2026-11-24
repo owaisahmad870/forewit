@@ -337,6 +337,52 @@
         "blocks": [
           "Forewit ships two Model Context Protocol (MCP) servers, so any agent that speaks MCP (Claude, ChatGPT, Cursor, VS Code and others) can read rounds and prepare forecasts without custom code. Both support the MCP protocol revision of 25 November 2025; support for the 28 July 2026 revision will come when the official MCP SDK adds it.",
           {
+            "h": "Install Forewit for your agent"
+          },
+          "One time setup, about two minutes. You need Node.js 22 or newer (nodejs.org). Your agent then reads rounds and prepares your forecast; your wallet still asks you to approve every send.",
+          {
+            "h": "Claude Code"
+          },
+          "Run this once in a terminal. Tested: Claude Code reports “forewit ✔ Connected”.",
+          {
+            "code": "claudeCode"
+          },
+          {
+            "h": "Claude Desktop"
+          },
+          {
+            "ol": [
+              "Open Claude Desktop, then Settings, Developer, Edit Config.",
+              "Paste the block below into claude_desktop_config.json and save.",
+              "Quit and reopen Claude Desktop. Ask: “What is the current Forewit round?”"
+            ]
+          },
+          {
+            "code": "mcpJson"
+          },
+          "On Windows, if Claude says it cannot start npx, use this version instead:",
+          {
+            "code": "mcpJsonWindows"
+          },
+          {
+            "h": "Cursor and other MCP apps"
+          },
+          "Most MCP apps (Cursor, VS Code, Windsurf and others) take the same mcpServers block. In Cursor: Settings, MCP, Add new server, or put the block in .cursor/mcp.json.",
+          {
+            "h": "claude.ai and ChatGPT in the browser"
+          },
+          "These only connect to an online (remote) MCP server by URL. Ours is built but not hosted yet, so this path is coming soon. Until then, use Claude Code, Claude Desktop or Cursor, or paste the prompt from the Start page into any chat and run the commands it gives you.",
+          {
+            "h": "What works today, honestly"
+          },
+          {
+            "list": [
+              "Reading rounds, preparing a commit or reveal, and your receipts: works in any agent above.",
+              "Sending the commit and the reveal: done by the Binance Agentic Wallet CLI (baw) on a computer, after you type yes. A phone only path is being worked on.",
+              "Your salt never goes to the agent or to us before the deadline."
+            ]
+          },
+          {
             "h": "Remote server: read only"
           },
           {
@@ -366,10 +412,10 @@
           },
           "Local server, in an MCP client config file:",
           {
-            "strong": "{ \"mcpServers\": { \"forewit\": { \"command\": \"npx\", \"args\": [\"forewit\", \"mcp\"] } } }"
+            "code": "mcpJson"
           },
           "Remote server: add a custom connector or HTTP server with the URL above.",
-          "Status: both servers are built and tested. The ForecastLedger is live on BSC mainnet. The npm package forewit 0.0.1 is a testnet preview and the hosted endpoint is not live yet; for mainnet, run both from the repository folder mcp (see its README) until the next npm release."
+          "Status: the local server ships in the npm package forewit 0.1.0 (BSC mainnet, published with provenance) and is tested. The hosted remote endpoint is not live yet."
         ]
       },
       "prior": {
