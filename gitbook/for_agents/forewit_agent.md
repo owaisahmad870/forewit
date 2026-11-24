@@ -118,10 +118,6 @@ Common flags: --network mainnet|testnet (default mainnet), --round N (default: l
 Probabilities are percentages, one per question, clamped to 1% to 99%.
 ```
 
-{% hint style="warning" %}
-`profile` was added after the npm release `forewit@0.1.0`, so `npx forewit profile` may not exist yet. Run it as `node agent/forewit.mjs profile` from a clone of the repository.
-{% endhint %}
-
 ## Safety rules the CLI enforces
 
 * Every transaction has value 0 and goes to the pinned ForecastLedger in [`agent/config.mjs`](https://github.com/owaisahmad870/forewit/blob/main/agent/config.mjs). There is no flag to change it.

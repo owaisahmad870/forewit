@@ -6,6 +6,9 @@ description: What changed in Forewit and when, newest first.
 
 ## 24 Nov 2026
 
+* npm `forewit` 0.1.1 with the `profile` command, published with provenance.
+* GitHub secret scanning with push protection, Dependabot and private security reporting turned on; main and release tags protected.
+* New page: [Keys, secrets and incidents](../trust/keys_and_incidents.md).
 * ForewitScores live on BSC mainnet: [0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc](https://bscscan.com/address/0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc), verified on BscScan and Sourcify. Roles read back: the deployer holds none. No root posted yet.
 * ForewitScores review fixes: the keeper can revoke only the newest two epochs; `ForewitGate` also requires the caller's opted in profile; the indexer drops a leaf on any token move after opt in.
 * ForewitScores built and reviewed: 0 High, 0 Medium, 3 Low. Membership is opt in only.

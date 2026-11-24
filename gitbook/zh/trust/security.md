@@ -69,4 +69,4 @@ description: 审查了什么，发现了什么，修复了什么，还有哪些�
 
 ## 报告问题
 
-请在 [GitHub](https://github.com/owaisahmad870/forewit/issues) 上提交 issue。
+安全问题请通过 [GitHub 安全公告](https://github.com/owaisahmad870/forewit/security/advisories/new)私下报告。其他问题请在 [GitHub](https://github.com/owaisahmad870/forewit/issues) 上提交 issue。密钥泄露时我们怎么做：[密钥、秘密与事件处理](keys_and_incidents.md)。

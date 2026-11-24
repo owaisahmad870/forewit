@@ -31,7 +31,7 @@ description: 先见 Forewit 命令行工具可能打印的每一条消息，以�
 使用 `--network mainnet`，或者不加这个参数（默认就是主网）。
 
 **`the <network> ledger is not deployed yet, so the CLI refuses to read or write it. Use --network testnet.`**
-你使用的是旧版本。用 `npx forewit@0.1.0` 或 `git pull` 更新。
+你使用的是旧版本。用 `npx forewit@0.1.1` 或 `git pull` 更新。
 
 ## 你的钱包
 
@@ -122,7 +122,7 @@ description: 先见 Forewit 命令行工具可能打印的每一条消息，以�
 ## 参数与文件
 
 **`Unknown option '--<name>'`**（或 Node 给出的其他参数错误）
-某个参数拼写有误。请对照 `npx forewit@0.1.0 --help`。
+某个参数拼写有误。请对照 `npx forewit@0.1.1 --help`。
 
 **`ENOENT: no such file or directory, open '<path>'`**
 本地的 `--round-file` 或 `--env-file` 路径不存在。检查路径，或改用轮次文件的 https 链接。

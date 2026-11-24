@@ -31,7 +31,7 @@ Remove `--network testnet`. `baw` signs on BSC mainnet only.
 Use `--network mainnet` or leave the flag out (mainnet is the default).
 
 **`the <network> ledger is not deployed yet, so the CLI refuses to read or write it. Use --network testnet.`**
-You are on an old copy. Update with `npx forewit@0.1.0` or `git pull`.
+You are on an old copy. Update with `npx forewit@0.1.1` or `git pull`.
 
 ## Your wallet
 
@@ -122,7 +122,7 @@ Not an error. Forewit never accepts 0% or 100%, so it moved your value to 1% or 
 ## Flags and files
 
 **`Unknown option '--<name>'`** (or another option error from Node)
-A flag is misspelled. Compare with `npx forewit@0.1.0 --help`.
+A flag is misspelled. Compare with `npx forewit@0.1.1 --help`.
 
 **`ENOENT: no such file or directory, open '<path>'`**
 A local `--round-file` or `--env-file` path does not exist. Check the path, or use the https link to the round file.

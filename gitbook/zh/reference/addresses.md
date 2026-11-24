@@ -43,7 +43,7 @@ description: 先见 Forewit 的全部合约、角色钱包、交易和链接，�
 
 * 网站：[https://forewit.xyz](https://forewit.xyz)（备用 [https://forewit.pages.dev](https://forewit.pages.dev)）。
 * 源代码（MIT）：[https://github.com/owaisahmad870/forewit](https://github.com/owaisahmad870/forewit)
-* npm 包：[forewit](https://www.npmjs.com/package/forewit) 0.1.0，通过 GitHub Actions 带来源证明（provenance）发布
+* npm 包：[forewit](https://www.npmjs.com/package/forewit) 0.1.1，通过 GitHub Actions 带来源证明（provenance）发布
 * MCP 服务器：`npx -y forewit mcp`（见 [MCP 服务器](../for_agents/mcp_server.md)）。远程只读服务器即将推出。
 * 公开数据：`https://forewit.xyz/data/` 或 `https://forewit.pages.dev/data/`（见 [公开数据文件](../developers/data_files.md)）
 * X：[@forewitai](https://x.com/forewitai)

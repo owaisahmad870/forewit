@@ -2,6 +2,7 @@
 // and generic private key patterns. Prints file paths and variable NAMES only, never values.
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { userInfo } from 'node:os';
 
 const git = (...a) => execFileSync('git', a, { encoding: 'buffer', maxBuffer: 64 << 20 });
 // --raw -z gives ":oldmode newmode oldsha newsha status\0path\0"; gitlinks (mode 160000, submodules) have no blob to scan.
@@ -40,6 +41,9 @@ if (existsSync('.env')) {
 const patterns = [
   [/PRIVATE_KEY\s*[=:]\s*['"]?(0x)?[0-9a-fA-F]{64}/, 'private key assignment'],
   [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'PEM private key'],
+  // local machine paths leak the user name and folder layout into a public repo (24 Nov 2026: review reports did)
+  [/AppData[\\/]+Local[\\/]+Temp[\\/]+claude/i, 'local Claude workspace path'],
+  [new RegExp(`Users[\\\\/]+${userInfo().username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\\\/]`, 'i'), 'path in your own user folder'],
 ];
 
 const problems = [];

@@ -70,7 +70,7 @@ A forfeit is always the worst result for that round. Revealing is never worse th
 
 To protect yourself:
 
-1. Back up every receipt right after you commit: `npx forewit@0.1.0 receipt --from 0xYourAgenticWallet --show-salt`, into a password manager or an offline note.
+1. Back up every receipt right after you commit: `npx forewit@0.1.1 receipt --from 0xYourAgenticWallet --show-salt`, into a password manager or an offline note.
 2. If you change computers, save the backup as a `.json` file in the `.forewit` folder in your home folder. The tool then finds it by its hash.
 3. Come back during the reveal window. For daily rounds that is the 24 hours after the commit deadline.
 

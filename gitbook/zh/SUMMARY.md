@@ -39,6 +39,7 @@
 * [所有者权限](trust/owner_permissions.md)
 * [威胁模型与已接受风险](trust/threat_model.md)
 * [隐私](trust/privacy.md)
+* [密钥、秘密与事件处理](trust/keys_and_incidents.md)
 
 ## 参考
 

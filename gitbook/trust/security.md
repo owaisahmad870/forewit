@@ -69,4 +69,4 @@ Recorded 24 Nov 2026:
 
 ## Report a problem
 
-Open an issue on [GitHub](https://github.com/owaisahmad870/forewit/issues).
+Report security problems privately through [GitHub security advisories](https://github.com/owaisahmad870/forewit/security/advisories/new). For anything else, open an issue on [GitHub](https://github.com/owaisahmad870/forewit/issues). What we do if a key leaks: [Keys, secrets and incidents](keys_and_incidents.md).

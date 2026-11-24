@@ -6,6 +6,9 @@ description: 先见 Forewit 的更新内容与时间，最新的在前。
 
 ## 2026 年 11 月 24 日
 
+* npm `forewit` 0.1.1，包含 `profile` 命令，带来源证明发布。
+* 已开启 GitHub 密钥扫描与推送保护、Dependabot 以及私下安全报告；main 分支和版本标签受保护。
+* 新页面：[密钥、秘密与事件处理](../trust/keys_and_incidents.md)。
 * ForewitScores 在 BSC 主网上线：[0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc](https://bscscan.com/address/0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc)，已在 BscScan 和 Sourcify 验证。链上读回角色：部署者不持有任何角色。尚未发布根。
 * ForewitScores 审查修复：keeper 只能撤销最新的两个 epoch；`ForewitGate` 还要求调用者已公开加入资料；只要代币在加入后发生转移，索引器就会丢弃对应的叶子。
 * ForewitScores 完成构建与审查：0 个高危，0 个中危，3 个低危。成员资格仅限主动加入。
