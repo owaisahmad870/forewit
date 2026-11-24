@@ -1,0 +1,40 @@
+# Lists the forewit MCP server (mcp/server.json) in the official MCP Registry, signed in with GitHub's own OIDC token
+# for the io.github.owaisahmad870 namespace (no personal token). Runs only by hand, after the npm version in
+# server.json is published. The publisher binary is pinned by release and sha256 digest.
+name: mcp-registry
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: mcp
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.16
+      MCP_PUBLISHER_SHA256: 6e2f799550cf843c6fd3350498d56cc49be3dc0af1e6237eb0e6435c7a9d5c05
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: server.json matches the npm package
+        run: |
+          v=$(node -p "require('./server.json').version")
+          test "$v" = "$(node -p "require('./package.json').version")"
+          test "$(node -p "require('./server.json').name")" = "$(node -p "require('./package.json').mcpName")"
+          test "$(npm view "forewit@$v" mcpName)" = "$(node -p "require('./package.json').mcpName")"
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          archive=mcp-publisher_linux_amd64.tar.gz
+          curl --fail --location --silent --show-error --output "$archive" "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/$archive"
+          echo "${MCP_PUBLISHER_SHA256}  $archive" | sha256sum -c -
+          tar xzf "$archive" mcp-publisher
+          rm -f "$archive"
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish
