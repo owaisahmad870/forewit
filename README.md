@@ -5,7 +5,7 @@ A forecasting track record nobody can fake or buy. One Agent ID, one record, sco
 * Site: [forewit.xyz](https://forewit.xyz) (start here: [forewit.xyz/#/start](https://forewit.xyz/#/start), live proof: [forewit.xyz/#/proof](https://forewit.xyz/#/proof))
 * Docs: [gitbook/](gitbook/README.md) (GitBook source, English and [中文](gitbook/zh/README.md))
 * Use it from an agent: `npx -y forewit mcp` (MCP server) or `claude mcp add forewit -- npx -y forewit mcp` in Claude Code; see [For AI agents](gitbook/for_agents/mcp_server.md)
-* npm: [forewit](https://www.npmjs.com/package/forewit) (published from GitHub Actions with provenance)
+* npm: [forewit](https://www.npmjs.com/package/forewit) (published from GitHub Actions with provenance); MCP Registry: `io.github.owaisahmad870/forewit`
 
 Forecasting scores only. Not financial advice.
 
@@ -16,7 +16,35 @@ Forecasting scores only. Not financial advice.
 4. Agent IDs cannot be transferred, so a record cannot be bought, and the Agent ID Crowd cannot be stuffed with sock puppets.
 5. ForewitScores publishes a Merkle root of opted in scores, so any contract or agent can verify a Forewit skill onchain.
 
-Committing currently needs the Binance Agentic Wallet CLI (baw) on a computer; a phone only path is being worked on.
+## Quickstart
+* On a computer: install the Binance Agentic Wallet CLI, sign in, then `npx -y forewit@0.1.1 round` and `npx -y forewit@0.1.1 commit --execute --from <your Agentic Wallet> --p 60,40,50,30`. Every send shows a preview and waits for you to type yes. Full guide: [gitbook/getting_started/quickstart.md](gitbook/getting_started/quickstart.md).
+* From a phone or any browser: make a private copy of [forewit-agent-template](https://github.com/owaisahmad870/forewit-agent-template) and let your own cloud agent (Claude Code on the web, Codex cloud) do the typing: [gitbook/getting_started/play_from_phone.md](gitbook/getting_started/play_from_phone.md).
+* The next day: `npx -y forewit@0.1.1 reveal --execute --from <wallet> --round <n>`. A commit that is never revealed counts as a forfeit.
+
+## Architecture
+```
+ Predict.fun markets ──(rule v3.1, published)──> keeper (GitHub Actions, hot key: round manager only)
+        │ order books 5 min before the deadline              │ createRound, setBaseline, seal, finalize, score
+        ▼                                                    ▼
+ baseline (posted in clear, once) ───────────────> ForecastLedger (BSC, non upgradeable, holds no funds)
+                                                     ▲   commit: hash only, Agent ID holders only
+ you + your agent ── forewit CLI or MCP (prepares,   │   reveal: forecast + salt from your own device
+                     never signs) ── baw preview, you type yes ─┘
+ indexer (rebuilds everything from events) ──> forewit.xyz (/proof, leaderboard, crowd vs market)
+                                          └──> ForewitScores (Merkle roots of opted in scores; verify() onchain)
+```
+
+## Threats in one paragraph
+Copying others fails because commits are salted hashes until the deadline. Copying the market earns about zero skill, since skill is Brier against the market baseline. Not revealing is a forfeit with the worst score. Buying a record or running many wallets fails because only Agent ID holders can commit and an Agent ID cannot be transferred. The keeper cannot edit any forecast, outcome or score; the baseline is posted in clear inside a 15 minute window before any reveal exists. Accepted risks and every test: [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
+
+## Risk warning
+Forewit records forecasting skill only. It takes no deposits, pays nothing and is not financial advice. The only cost is network gas from your own wallet; keep only a little BNB for gas in the Agentic Wallet you use with any agent, and sign out after each session.
+
+## Prior art
+* Forecasting platforms (Metaculus, Good Judgment Open) score calibration well, but an account costs nothing to create, so a record can be farmed across many accounts or sold with the login.
+* Prediction market profiles rank profit, which rewards capital and timing as much as judgement.
+* Onchain reputation tokens can usually be transferred or bought.
+* Forewit combines a per person, non transferable identity (Agent ID) with commit and reveal and market relative Brier scoring, so the record is earned, private until the deadline, and owned by one person.
 
 ## Contracts (BSC mainnet, chain 56, verified on BscScan and Sourcify)
 * ForecastLedger: [0xd11e67ff70ACD42E01d79130f280162b00Bb09B6](https://bscscan.com/address/0xd11e67ff70ACD42E01d79130f280162b00Bb09B6) ([source](contracts/src/ForecastLedger.sol))
