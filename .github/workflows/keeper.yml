@@ -28,6 +28,7 @@ on:
 permissions:
   contents: write
   actions: write # night relays itself to a fresh run when started early
+  issues: write # alerts go to the ALERT_ISSUE_NUMBER issue as comments (GitHub emails the owner)
 
 concurrency:
   group: keeper
@@ -91,6 +92,8 @@ jobs:
           HC_PING_NIGHT: ${{ secrets.HC_PING_BASELINE }}
           HC_PING_TICK: ${{ secrets.HC_PING_TICK }}
           TOPIC_ROUNDS: ${{ vars.TOPIC_ROUNDS }}
+          ALERT_ISSUE_NUMBER: ${{ vars.ALERT_ISSUE_NUMBER }}
+          GITHUB_TOKEN: ${{ github.token }}
           TOPIC_SCORED_CAP: ${{ vars.TOPIC_SCORED_CAP }}
           TOPIC_OPEN_CAP: ${{ vars.TOPIC_OPEN_CAP }}
           TOPIC_OPTIONAL_CAP: ${{ vars.TOPIC_OPTIONAL_CAP }}

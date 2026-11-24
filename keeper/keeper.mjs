@@ -50,6 +50,9 @@ async function alert(msg) {
   log('ALERT', msg);
   const { TELEGRAM_BOT_TOKEN: tg, TELEGRAM_CHAT_ID: chat } = process.env;
   if (tg && chat) await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: chat, text: `Forewit keeper (${args.network || 'testnet'}): ${msg}` }) }).catch(() => log('telegram alert failed'));
+  // GitHub issue comment: GitHub emails the repository owner (set ALERT_ISSUE_NUMBER; the workflow passes GITHUB_TOKEN)
+  const { ALERT_ISSUE_NUMBER: issue, GITHUB_TOKEN: gh, GITHUB_REPOSITORY: repo } = process.env;
+  if (issue && gh && repo) await fetch(`https://api.github.com/repos/${repo}/issues/${issue}/comments`, { method: 'POST', headers: { authorization: `Bearer ${gh}`, accept: 'application/vnd.github+json', 'content-type': 'application/json' }, body: JSON.stringify({ body: `Keeper (${args.network || 'testnet'}): ${msg}` }) }).catch(() => log('issue alert failed'));
   if (process.env.ALERT_WEBHOOK_URL) await fetch(process.env.ALERT_WEBHOOK_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: `Forewit keeper: ${msg}` }) }).catch(() => log('alert webhook failed'));
 }
 
@@ -407,9 +410,30 @@ async function tick({ stopAt = Infinity } = {}) {
     mkdirSync('keeper/state', { recursive: true });
     writeFileSync(cursorFile, JSON.stringify({ next: String(count + 1n), open: open.map(String) }));
   }
+  await adminWatch().catch((e) => log(`admin watch failed: ${(e.shortMessage || e.message).split(String.fromCharCode(10))[0]}`));
   if (stopped) return; // scores waits for a pass after the deadline
   // a scores failure alerts but never blocks sealing, finalizing or scoring
   await scores().catch(async (e) => { await alert(`scores failed: ${(e.shortMessage || e.message).split('\n')[0]}`); process.exitCode = 1; });
+}
+
+/** Alert on every role, pause or admin seat event on the ledger and ForewitScores since the last check (read only).
+ *  These change who can run rounds or post roots, so the owner must hear about each one, planned or not. */
+async function adminWatch() {
+  const file = `keeper/state/adminwatch_${NET.chain.id}.json`;
+  const head = await logsPub.getBlockNumber();
+  const from = existsSync(file) ? BigInt(JSON.parse(readFileSync(file, 'utf8')).lastBlock) + 1n : head - 20000n; // first run: about 2.5 hours back
+  const names = ['RoleGranted', 'RoleRevoked', 'Paused', 'Unpaused', 'DefaultAdminTransferScheduled', 'DefaultAdminTransferCanceled', 'DefaultAdminDelayChangeScheduled', 'DefaultAdminDelayChangeCanceled', 'RootRevoked'];
+  const addrs = [await ledger(), isMainnet && process.env.SCORES_MAINNET].filter(Boolean);
+  // AccessControl events share one signature on both contracts; RootRevoked exists only on ForewitScores
+  const evs = [...ABI.filter((x) => x.type === 'event' && names.includes(x.name)), parseAbiItem('event RootRevoked(uint256 indexed epoch, string reason)')];
+  for (let a = from; a <= head; a += 5000n) {
+    const b = a + 4999n > head ? head : a + 4999n;
+    for (const l of await logsPub.getLogs({ address: addrs, events: evs, fromBlock: a, toBlock: b })) {
+      await alert(`ADMIN EVENT ${l.eventName} on ${l.address} block ${l.blockNumber} tx ${l.transactionHash} ${JSON.stringify(l.args, big)}`);
+    }
+  }
+  mkdirSync('keeper/state', { recursive: true });
+  writeFileSync(file, JSON.stringify({ lastBlock: String(head) }));
 }
 
 /** One job for the deadline (GitHub Actions starts late or drops runs, so the job starts early and waits):
@@ -624,7 +648,7 @@ const baselineCmd = async () => {
   for (const r of await dueAt(Number((await read('getRound', [await read('roundCount')])).commitDeadline) * 1000)) await baseline(r).catch((e) => errors.push(e));
   if (errors.length) throw errors[0];
 };
-const cmds = { select, open, topics, baseline: baselineCmd, seal, night, loop, scores, committers: async () => log(JSON.stringify(await committers(await roundArg()))), deadline: async () => console.log(String((await read('getRound', [await roundArg()])).commitDeadline)), finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
+const cmds = { adminwatch: adminWatch, select, open, topics, baseline: baselineCmd, seal, night, loop, scores, committers: async () => log(JSON.stringify(await committers(await roundArg()))), deadline: async () => console.log(String((await read('getRound', [await roundArg()])).commitDeadline)), finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
 if (!cmds[cmd]) {
   console.log('usage: select | open | baseline | seal | night | scores | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
   process.exit(1);
