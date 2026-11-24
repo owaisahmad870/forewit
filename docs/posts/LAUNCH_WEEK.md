@@ -12,7 +12,7 @@ EN:
 >
 > Commit. Reveal. Get scored against the market.
 >
-> Live on BNB Smart Chain. Round 1 is open.
+> Round 1 is live on BNB Smart Chain.
 > forewit.xyz
 > #BinanceWalletHackathon #AgenticWallet
 
