@@ -9,10 +9,11 @@ Every transaction has value 0 and only pays network gas. Forewit never asks for 
 ## How an agent plays
 
 * Read SKILL.md in this folder and follow its preflight, flow and hard rules exactly.
-* Use the zero dependency CLI: node agent/forewit.mjs round|forecast|commit|reveal|status|receipt|agent|schedule
+* Use the zero dependency CLI: node agent/forewit.mjs round|forecast|commit|reveal|status|receipt|profile|agent|schedule
 * agent --from <wallet> [--env-file <path>] [--execute]: the user's own LLM (FOREWIT_LLM_MODEL, FOREWIT_LLM_KEY, FOREWIT_LLM_API openai or anthropic, FOREWIT_LLM_URL) gives one probability per question, then the normal commit flow runs. Only question texts go to the LLM, never the salt or wallet; output must be exactly {"p":[n numbers from 1 to 99]} or it is refused.
 * agent --reveal --from <wallet> [--execute]: reveals the newest committed round whose reveal window is open.
 * schedule --from <wallet> --env-file <path> [--at HH:MM] [--install]: prints (or installs) a daily job that reveals, then runs agent. Windows and macOS open a terminal for the typed yes; Linux cron only checks status and notifies.
+* profile --from <wallet> --label <name> [--execute]: opts in publicly with the Agent ID name (leaderboard and ForewitScores leaf); --off opts out. The ledger checks the wallet owns the name. Only on an explicit user request.
 * By default the CLI only prints Binance Agentic Wallet (baw) commands. Run baw contract-call preview, show parsedTx, simulationResult and risks, get an explicit yes, then baw contract-call execute with the requestId.
 * commit --execute and reveal --execute (BSC mainnet only) run preflight, preview and execute in the user's own interactive terminal, and send only after the user types yes. Agents never pipe or script that yes.
 * PENDING_CONFIRMATION: the user approves in the Binance App; never resend. 351803 is a risk block: stop, never bypass. 351802 or 351804: Developer Mode is off, expired or over its cap; the user turns it on in the Binance App (Agentic Wallet, Settings, Developer Mode; own daily limit, 7 days). 351805: simulation failed, stop.

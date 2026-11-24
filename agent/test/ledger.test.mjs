@@ -26,6 +26,7 @@ const ABI = parseAbi([
   'function getCommit(uint256 roundId, address forecaster) view returns (bytes32)',
   'function getReveal(uint256 roundId, address forecaster) view returns (uint256 packed, uint8 status)',
   'function computeCommitHash(uint256 roundId, address forecaster, uint256 packed, bytes32 salt) view returns (bytes32)',
+  'function setPublicProfile(bool isPublic, string label)',
 ]);
 
 const GOLDEN = {
@@ -61,7 +62,7 @@ test('function selectors match viem', () => {
     const name = sig.slice(0, sig.indexOf('('));
     const item = ABI.find((x) => x.type === 'function' && x.name === name);
     assert.equal(selector(sig), toFunctionSelector(item), sig);
-    assert.equal(encodeFunctionData({ abi: ABI, functionName: name, args: item.inputs.map((inp) => (inp.type === 'address' ? randAddr() : inp.type === 'bytes32' ? randB32() : 1n)) }).slice(0, 10),
+    assert.equal(encodeFunctionData({ abi: ABI, functionName: name, args: item.inputs.map((inp) => (inp.type === 'address' ? randAddr() : inp.type === 'bytes32' ? randB32() : inp.type === 'bool' ? true : inp.type === 'string' ? 'x' : 1n)) }).slice(0, 10),
       toFunctionSelector('function ' + sig));
   }
 });
