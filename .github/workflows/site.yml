@@ -37,8 +37,10 @@ jobs:
         working-directory: web
       - name: Deploy to Cloudflare Pages
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          RAW_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          # the secret was stored from a Windows clipboard: drop a byte order mark and line endings
+          export CLOUDFLARE_API_TOKEN="$(printf '%s' "$RAW_TOKEN" | sed 's/^\xEF\xBB\xBF//' | tr -d '\r\n ')"
           npx --yes wrangler@4 pages project create forewit --production-branch main || true
           npx --yes wrangler@4 pages deploy web/dist --project-name forewit --branch main --commit-dirty=true
