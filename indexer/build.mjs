@@ -11,6 +11,13 @@ import { roundFlags, roleHolders, operators, commitTiming } from './lib/flags.mj
 const big = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
 const unpack = (packed, n) => Array.from({ length: n }, (_, i) => Number((BigInt(packed) >> BigInt(16 * i)) & 0xffffn));
 
+// /proof: each forecaster's first Committed log (logs in chain order), lowercased address to {tx, roundId, block}
+export function firstCommits(logs) {
+  const out = {};
+  for (const l of logs) if (l.eventName === 'Committed') out[l.args.forecaster.toLowerCase()] ??= { tx: l.transactionHash ?? null, roundId: String(l.args.roundId), block: String(l.blockNumber) };
+  return out;
+}
+
 export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, abiPath, rpc }) {
   const chain = network === 'mainnet' ? bsc : bscTestnet;
   // eth_getLogs ranges need a capable RPC (the bnbchain dataseed endpoints refuse them)
@@ -24,7 +31,9 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
 
   // incremental log cache: {lastBlock, logs:[{eventName, blockNumber, args}], blockTimes:{block: ts}}
   const cacheFile = `${dir}/logs_cache.json`;
-  const cache = existsSync(cacheFile) ? JSON.parse(readFileSync(cacheFile, 'utf8')) : { lastBlock: String(BigInt(fromBlock) - 1n), logs: [], blockTimes: {} };
+  let cache = existsSync(cacheFile) ? JSON.parse(readFileSync(cacheFile, 'utf8')) : null;
+  // caches written before transactionHash was kept are refetched once from fromBlock so /proof gets every commit tx
+  if (!cache || cache.logs.some((l) => l.eventName === 'Committed' && !l.transactionHash)) cache = { lastBlock: String(BigInt(fromBlock) - 1n), logs: [], blockTimes: cache?.blockTimes ?? {} };
   const head = await pub.getBlockNumber();
   let span = 5000n;
   for (let from = BigInt(cache.lastBlock) + 1n; from <= head; ) {
@@ -36,7 +45,7 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
       if (span > 50n && /limit|range|exceed/i.test(e.shortMessage || e.message)) { span /= 2n; continue; }
       throw e;
     }
-    for (const l of got) cache.logs.push(JSON.parse(JSON.stringify({ eventName: l.eventName, blockNumber: l.blockNumber, logIndex: l.logIndex, args: l.args }, big)));
+    for (const l of got) cache.logs.push(JSON.parse(JSON.stringify({ eventName: l.eventName, blockNumber: l.blockNumber, logIndex: l.logIndex, transactionHash: l.transactionHash, args: l.args }, big)));
     cache.lastBlock = String(to);
     from = to + 1n;
   }
@@ -132,6 +141,8 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
     profiles,
     operators: ops, // round manager, admin and pauser wallets: never ranked
     identityChanged, // committers whose Agent ID left their wallet after the ledger went live
+    agentId: agentIdAddr, // the Agent ID contract the ledger gates on (null if unreadable)
+    firstCommits: firstCommits(cache.logs), // /proof: first commit tx per distinct committer
   };
   writeFileSync(`${dir}/snapshot.json`, JSON.stringify(out, big, 2));
   return { out, dir };
