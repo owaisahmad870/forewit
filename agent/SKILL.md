@@ -1,6 +1,6 @@
 ---
 name: forewit
-description: Play Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID. Use when the user wants to see the current Forewit round, make or commit a forecast, reveal a forecast after the deadline, check their Forewit status, or back up a reveal receipt (salt).
+description: Play Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID. Use when the user wants to see the current Forewit round, make or commit a forecast, let their own LLM forecast a round, reveal a forecast after the deadline, set up a daily schedule, check their Forewit status, or back up a reveal receipt (salt).
 ---
 
 # Forewit
@@ -16,7 +16,7 @@ Every transaction Forewit prepares has value 0. It never asks for funds and pays
 All local work runs through the zero dependency CLI in this folder (Node 26 or newer):
 
 ```bash
-node agent/forewit.mjs round|forecast|commit|reveal|status|receipt [--network mainnet|testnet] [--round N] [--round-file <path or https URL>] [--from 0x...] [--p 72,15,50] [--execute]
+node agent/forewit.mjs round|forecast|commit|reveal|status|receipt|agent|schedule [--network mainnet|testnet] [--round N] [--round-file <path or https URL>] [--from 0x...] [--p 72,15,50] [--execute] [--reveal] [--env-file <path>] [--at HH:MM] [--install]
 ```
 
 By default the CLI never signs or sends anything: it prints the exact `baw` commands, which you run only as described below. With `--execute` (commit and reveal, BSC mainnet only) it runs the preview itself and sends only after the wallet owner types yes in an interactive terminal. Paths are relative to the Forewit repository root.
@@ -69,6 +69,20 @@ Check progress any time with `node agent/forewit.mjs status --from <wallet>`.
 ## Execute mode
 
 If the user prefers, they run steps 6 to 10 in one go in their own terminal: `node agent/forewit.mjs commit --execute --from <wallet> --p 72,15,50 --round-file <public round JSON>` (and `reveal --execute` later). The CLI refuses unless the network is BSC mainnet with a pinned ledger and stdin is an interactive terminal. It saves the salt first, runs the read only preflight (signed in, Agent ID claimed, Developer Mode on and not expired, wallet not locked, no pending transaction), runs the preview with value 0 to the pinned ledger, refuses if the preview's target, value or calldata differ from ours, prints parsedTx, the simulation result and the risks, and executes once only after the user types yes. Nothing skips that question. It handles `BROADCASTED` (prints the txHash), `PENDING_CONFIRMATION` (approve in the Binance App, never resend), 351802 and 351804 (Developer Mode), 351803 (risk block: stop, never bypass) and 351805 (simulation failed: stop). Every transaction must be confirmed by the user, and Developer Mode has its own daily limit.
+
+## Agent mode (the user's own LLM)
+
+`node agent/forewit.mjs agent --from <wallet> [--env-file <path>] [--execute]` does one round in a single run: it reads the open round (on mainnet the round file defaults to forewit.xyz/data/rounds/<latest>.json; pass `--round-file` otherwise), checks it against the chain, asks the user's own LLM for one probability per question, then runs the commit flow above (salt saved first; dry run, or with `--execute` the preview and the user's typed yes). It prints the reveal command at the end.
+
+* The LLM is configured by the user, never by you: `FOREWIT_LLM_MODEL` (required), `FOREWIT_LLM_KEY`, `FOREWIT_LLM_API` (`openai` for any OpenAI compatible chat completions endpoint, or `anthropic`), `FOREWIT_LLM_URL` (https, or http for localhost only), in the environment or in a file passed with `--env-file`. Never read, print or ask for the key.
+* Only the question texts, the time and the commit deadline go to the LLM. The salt does not exist yet when the LLM is asked, and the wallet address is never sent.
+* The model must reply exactly `{"p":[...]}`, one number from 1 to 99 per question. Anything else is refused and shown; nothing is saved or sent. Do not hand edit a refused reply into a forecast; ask the user.
+* `node agent/forewit.mjs agent --reveal --from <wallet> [--execute]` reveals the newest round with a saved receipt whose reveal window is open (chain time).
+* `--execute` follows the execute mode rules below: only in the user's own interactive terminal, never with a piped or scripted yes.
+
+## Daily schedule
+
+`node agent/forewit.mjs schedule --from <wallet> --env-file <path>` prints a daily job for this machine: `agent --reveal --execute`, then `agent --execute`, at `--at HH:MM` local time (default 12:00 UTC). Windows (Task Scheduler) and macOS (launchd) open a terminal so the user can type yes; Linux cron has no terminal, so it only runs `status` and notifies. Add `--install` only when the user asks for it; it writes the script under `~/.forewit/` and registers the job.
 
 ## Salts and receipts
 

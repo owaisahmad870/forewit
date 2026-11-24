@@ -8,6 +8,7 @@ export const NETWORKS = Object.freeze({
     ledger: '0xd11e67ff70ACD42E01d79130f280162b00Bb09B6', // ForecastLedger v1.2, deployed 24 Nov 2026 (block 135450390), verified on BscScan and Sourcify
     rpc: 'https://bsc-rpc.publicnode.com',
     explorer: 'https://bscscan.com',
+    roundFiles: 'https://forewit.xyz/data/rounds/', // public round JSON per round id, written by keeper open; agent uses it when --round-file is not given
   }),
   testnet: Object.freeze({
     name: 'testnet',
