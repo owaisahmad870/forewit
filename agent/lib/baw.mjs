@@ -26,7 +26,9 @@ export function bawCommand(env = process.env) {
   const bin = env.FOREWIT_BAW_BIN || 'baw';
   if (/\.m?js$/i.test(bin)) return { file: process.execPath, pre: [bin] };
   if (bin !== 'baw' || process.platform !== 'win32') return { file: bin, pre: [] };
-  for (const dir of (env.PATH ?? env.Path ?? '').split(delimiter).filter(Boolean)) {
+  // npm's default global folder too, for shells whose PATH lacks it
+  const dirs = [...(env.PATH ?? env.Path ?? '').split(delimiter), env.APPDATA && join(env.APPDATA, 'npm')].filter(Boolean);
+  for (const dir of dirs) {
     if (!existsSync(join(dir, 'baw.cmd'))) continue;
     const pkg = join(dir, 'node_modules', '@binance', 'agentic-wallet');
     try {
