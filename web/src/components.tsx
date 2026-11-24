@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useT } from './i18n';
+import { INSTALL_SNIPPETS } from './commands';
 import { bannerRounds, bins10, type Question, type Round } from './lib/data';
 import { fmtCountdown, fmtLocal, fmtPct, fmtUtc } from './lib/format';
 
@@ -130,7 +131,7 @@ export function Histogram({ q }: { q: Question }) {
   );
 }
 
-type Block = string | { h: string } | { list: string[] } | { ol: string[] } | { strong: string };
+type Block = string | { h: string } | { list: string[] } | { ol: string[] } | { strong: string } | { code: string };
 export function Blocks({ blocks }: { blocks: Block[] }) {
   return (
     <div className="max-w-[68ch] space-y-4 leading-relaxed">
@@ -138,6 +139,7 @@ export function Blocks({ blocks }: { blocks: Block[] }) {
         typeof b === 'string' ? <p key={i}>{b}</p>
         : 'h' in b ? <h2 key={i} className="pt-2 text-lg font-semibold">{b.h}</h2>
         : 'strong' in b ? <p key={i} className="rounded-lg border border-line bg-surface-2 p-3 font-semibold">{b.strong}</p>
+        : 'code' in b ? <CopyBlock key={i} text={INSTALL_SNIPPETS[b.code] ?? b.code} />
         : 'list' in b ? <ul key={i} className="list-disc space-y-2 pl-5">{b.list.map((x, j) => <li key={j}>{x}</li>)}</ul>
         : <ol key={i} className="list-decimal space-y-2 pl-5">{b.ol.map((x, j) => <li key={j}>{x}</li>)}</ol>,
       )}

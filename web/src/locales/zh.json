@@ -337,6 +337,52 @@
         "blocks": [
           "Forewit 提供两个 Model Context Protocol（MCP）服务器。任何支持 MCP 的智能体（Claude、ChatGPT、Cursor、VS Code 等）都可以读取轮次并准备预测，无需编写额外代码。两者都支持 2025 年 11 月 25 日版 MCP 协议；官方 MCP SDK 加入 2026 年 7 月 28 日版后我们会随之支持。",
           {
+            "h": "为你的智能体安装 Forewit"
+          },
+          "只需设置一次，大约两分钟。需要 Node.js 22 或更新版本（nodejs.org）。之后你的智能体可以读取每轮题目并帮你准备预测；每一次发送仍需你在钱包里亲自确认。",
+          {
+            "h": "Claude Code"
+          },
+          "在终端里运行一次即可。已实测：Claude Code 显示 “forewit ✔ Connected”。",
+          {
+            "code": "claudeCode"
+          },
+          {
+            "h": "Claude Desktop"
+          },
+          {
+            "ol": [
+              "打开 Claude Desktop，进入 设置，开发者，编辑配置（Edit Config）。",
+              "把下面的内容粘贴到 claude_desktop_config.json 并保存。",
+              "完全退出后重新打开 Claude Desktop，然后问：“当前的 Forewit 轮次是什么？”"
+            ]
+          },
+          {
+            "code": "mcpJson"
+          },
+          "在 Windows 上，如果 Claude 提示无法启动 npx，请改用下面这一版：",
+          {
+            "code": "mcpJsonWindows"
+          },
+          {
+            "h": "Cursor 及其他 MCP 应用"
+          },
+          "大多数 MCP 应用（Cursor、VS Code、Windsurf 等）都使用同样的 mcpServers 配置。在 Cursor 中：设置，MCP，添加新服务器，或把配置放进 .cursor/mcp.json。",
+          {
+            "h": "网页版 claude.ai 与 ChatGPT"
+          },
+          "网页版只能通过网址连接在线（远程）MCP 服务器。我们的远程服务器已开发完成，但尚未上线，因此这条路径即将推出。在此之前，请使用 Claude Code、Claude Desktop 或 Cursor，或把开始页面上的提示词粘贴到任意对话中，再运行它给出的命令。",
+          {
+            "h": "目前真实可用的功能"
+          },
+          {
+            "list": [
+              "读取轮次、准备提交或揭示、查看你的回执：以上任一智能体都可以。",
+              "发送提交与揭示：由电脑上的 Binance Agentic Wallet 命令行工具（baw）完成，需你输入 yes 确认。仅用手机的方式正在开发中。",
+              "截止前，你的 salt 不会交给智能体，也不会交给我们。"
+            ]
+          },
+          {
             "h": "远程服务器：只读"
           },
           {
@@ -366,10 +412,10 @@
           },
           "本地服务器，写入 MCP 客户端配置文件：",
           {
-            "strong": "{ \"mcpServers\": { \"forewit\": { \"command\": \"npx\", \"args\": [\"forewit\", \"mcp\"] } } }"
+            "code": "mcpJson"
           },
           "远程服务器：使用上面的地址添加自定义连接器或 HTTP 服务器。",
-          "状态：两个服务器均已构建并通过测试。ForecastLedger 已在 BSC 主网上线。npm 包 forewit 0.0.1 是测试网预览，托管地址尚未上线；在下一个 npm 版本发布前，主网请从代码仓库的 mcp 文件夹运行（见其 README）。"
+          "状态：本地服务器已随 npm 包 forewit 0.1.0 发布（BSC 主网，带来源证明），并已测试。托管的远程端点尚未上线。"
         ]
       },
       "prior": {
