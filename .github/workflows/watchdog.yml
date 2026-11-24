@@ -1,5 +1,5 @@
 # Independent missed duty watchdog: reads chain state only (no keys), every 30 minutes, alerts on Telegram.
-# Needs repository variable LEDGER_MAINNET and secrets TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (optional BSC_RPC_URL).
+# Needs repository variable LEDGER_MAINNET and secrets TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (RPC_MAINNET_PRIMARY and RPC_MAINNET_FALLBACK, HC_PING_WATCHDOG_GH).
 name: watchdog
 
 on:
@@ -24,7 +24,8 @@ jobs:
       - name: Check every duty of the recent rounds
         env:
           LEDGER_MAINNET: ${{ vars.LEDGER_MAINNET }}
-          BSC_RPC_URL: ${{ secrets.BSC_RPC_URL }}
+          RPC_MAINNET_PRIMARY: ${{ secrets.RPC_MAINNET_PRIMARY }}
+          RPC_MAINNET_FALLBACK: ${{ secrets.RPC_MAINNET_FALLBACK }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           HC_PING_WATCHDOG: ${{ secrets.HC_PING_WATCHDOG_GH }}
