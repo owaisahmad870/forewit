@@ -15,7 +15,7 @@ export const HORIZONS = [
 ];
 export const MIN_H = 6;
 // pre registered caps per day (v3.2): every scored round, open rounds capped so keeper gas and user load stay bounded
-export const CAPS = { scored: Infinity, open: 10 };
+export const CAPS = { scored: Infinity, open: 10, optional: 5 }; // optional boards (sports, elections) capped: day one has 294 sports rounds
 
 const tagSet = (cat) => new Set((cat?.tags ?? []).map((t) => t?.name ?? t));
 const any = (set, list) => list.some((t) => set.has(t));
@@ -74,7 +74,7 @@ export function planTopicRounds(markets, cats, deadlineMs, { asked = new Set(), 
   // order: scored before open, default topics before optional, soonest horizon first; then apply the daily caps
   const hIdx = (h) => HORIZONS.findIndex((x) => x.name === h);
   rounds.sort((a, b) => (a.board === b.board ? 0 : a.board === 'scored' ? -1 : 1) || a.optional - b.optional || hIdx(a.horizon) - hIdx(b.horizon) || TOPICS.indexOf(a.topic) - TOPICS.indexOf(b.topic));
-  const count = { scored: 0, open: 0 };
-  const kept = rounds.filter((r) => ++count[r.board] <= (caps[r.board] ?? Infinity));
+  const count = { scored: 0, open: 0, optional: 0 };
+  const kept = rounds.filter((r) => (r.optional ? ++count.optional <= (caps.optional ?? Infinity) : ++count[r.board] <= (caps[r.board] ?? Infinity)));
   return { rounds: kept, dropped: rounds.length - kept.length, skipped };
 }

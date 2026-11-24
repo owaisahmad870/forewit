@@ -27,7 +27,7 @@ for (const s of slugs) {
   cats[s] = (await get('/v1/categories/' + s).catch(() => ({ data: null }))).data;
   if (++calls % 200 === 0) await new Promise((r) => setTimeout(r, 60_000)); // stay under 250 requests a minute
 }
-const plan = planTopicRounds(markets, cats, deadline, { caps: { scored: Infinity, open: Infinity } });
+const plan = planTopicRounds(markets, cats, deadline, { caps: { scored: Infinity, open: Infinity, optional: Infinity } });
 const count = (f) => plan.rounds.filter(f).length;
 const qs = (f) => plan.rounds.filter(f).reduce((n, r) => n + r.questions.length, 0);
 const summary = {
