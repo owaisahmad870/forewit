@@ -1,4 +1,4 @@
-import { CopyBlock, DateLine, Card, Badge, ProbRule, QuestionTitle, SampleBadge, Tabs, useNow } from '../components';
+import { CopyBlock, DateLine, Card, Badge, Explain, NextLinks, ProbRule, QuestionTitle, SampleBadge, ScoresWhen, Tabs, useNow } from '../components';
 import { useT } from '../i18n';
 import { crowdVsMarket, liveRound, phase, type Dataset } from '../lib/data';
 import { fmtBrier, fmtCountdown, fmtUtc } from '../lib/format';
@@ -12,6 +12,8 @@ export function Headline({ data }: { data: Dataset }) {
       <Card>
         <h2 className="text-lg font-semibold">{t('home.headline')}</h2>
         <p className="mt-2 text-muted">{t('home.headlineEmpty')}</p>
+        <ScoresWhen rounds={data.rounds} />
+        <div className="mt-2"><Explain terms={['crowd', 'baseline', 'brier']} summary="help.whatTerms" /></div>
       </Card>
     );
   }
@@ -35,6 +37,7 @@ export function Headline({ data }: { data: Dataset }) {
         ))}
       </div>
       <p className="mt-3 text-sm text-muted">{t(verdict)} Brier: {t('ui.lowerBetter')}.</p>
+      <div className="mt-2"><Explain terms={['crowd', 'baseline', 'brier']} /></div>
     </Card>
   );
 }
@@ -50,6 +53,11 @@ export function Home({ data }: { data: Dataset }) {
       <header className="pt-2">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t('brand')}{t('brandLocal') && <span lang="zh-CN" className="ml-3 font-normal text-muted">{t('brandLocal')}</span>}</h1>
         <p className="mt-2 max-w-[40ch] text-lg text-muted">{t('tagline')}</p>
+        <p className="mt-3 max-w-[68ch]">{t('help.intro.home')}</p>
+        <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <a href="#/start" className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 font-semibold text-accent-ink">{t('help.go.start')}</a>
+          <a href="#/docs" className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('help.go.docs')}</a>
+        </p>
       </header>
 
       <Headline data={data} />
@@ -87,6 +95,7 @@ export function Home({ data }: { data: Dataset }) {
               <span className="text-muted">{t('home.statCommits')}: <span className="text-ink">{r.commitCount}</span></span>
               <a href={`#/round/${r.id}`} className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 font-semibold text-accent-ink">{t('home.openRound', { n: r.id })}</a>
             </div>
+            <div className="mt-2"><Explain terms={['commitsOpen', 'revealWindow', 'market', 'baseline', 'crowd', 'commits']} summary="help.whatTerms" /></div>
           </>
         )}
       </Card>
@@ -97,6 +106,7 @@ export function Home({ data }: { data: Dataset }) {
           <div><dt className="text-sm text-muted">{t('home.statCommitters')}</dt><dd className="text-2xl font-semibold">{data.snapshot.metrics.distinctCommitters}</dd></div>
           <div><dt className="text-sm text-muted">{t('home.statRounds')}</dt><dd className="text-2xl font-semibold">{data.snapshot.metrics.rounds}</dd></div>
         </dl>
+        <div className="mt-2"><Explain terms={['distinct', 'agentId']} /></div>
       </Card>
 
       <Card>
@@ -112,6 +122,7 @@ export function Home({ data }: { data: Dataset }) {
         </div>
         <a href="#/play" className="mt-3 inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('home.morePlay')}</a>
       </Card>
+      <NextLinks to={['start', 'rounds', 'leaderboard', 'docs']} />
     </div>
   );
 }

@@ -1,0 +1,54 @@
+---
+description: 先见 Forewit 团队对两个合约拥有的全部权限，以及任何人都无法做到的事。
+---
+
+# 所有者权限
+
+简而言之：团队可以运行轮次、发布分数根。任何人（包括团队）都无法修改预测、分数或结果，也无法动用任何人的资金。合约本身不持有任何资产。
+
+两个合约都不可升级：没有代理，没有 selfdestruct，没有 delegatecall，没有 payable 函数。
+
+## 谁持有哪个角色（链上读回，2026 年 11 月 24 日）
+
+* 管理员（Admin）：[0xF3b4728B30F0F380d77dE9d025E33680F66591bD](https://bscscan.com/address/0xF3b4728B30F0F380d77dE9d025E33680F66591bD)。两个合约的默认管理员，也是 ForecastLedger 的暂停者。目前是单一密钥，不是多签。
+* Keeper：[0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18](https://bscscan.com/address/0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18)。两个合约的轮次管理者。这是一把热密钥，通过 GitHub Actions 运行每日任务。
+* 部署者（Deployer）：[0x6732027E7f908E274bF4360Ce19cC182F82d008C](https://bscscan.com/address/0x6732027E7f908E274bF4360Ce19cC182F82d008C)。部署了两个合约，**不持有任何角色**。
+
+这些钱包属于“运营方”，永远不参与排名，也永远不会获得 ForewitScores 叶子。
+
+## ForecastLedger
+
+[0xd11e67ff70ACD42E01d79130f280162b00Bb09B6](https://bscscan.com/address/0xd11e67ff70ACD42E01d79130f280162b00Bb09B6)
+
+* 轮次管理者（keeper）可以：
+  * 创建轮次，按公开的选题规则挑选问题，并设定每轮的结算等待期（1 到 120 天，创建时固定）；
+  * 以明文发布市场基准，每轮一次，且只能在提交截止时间前的最后 15 分钟内。基准决定该轮每位预测者的预测技能（不影响其 Brier 分数）。
+* 暂停者（管理员）可以暂停新轮次和新提交。暂停永远不会阻止 reveal、revealFor、seal、finalize、voidStale、score 或 forfeit，因此不会有人被困住。
+* 管理员可以即时授予和撤销角色。只有管理员席位本身需要通过两步转移，并有 1 天延迟，暂停者角色随之一起转移。
+
+## ForewitScores
+
+[0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc](https://bscscan.com/address/0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc)
+
+* 轮次管理者（keeper）可以发布新根（只能追加），并且只能撤销最新的两个 epoch：一个错误的根，以及替代它的更正根。
+* 管理员可以撤销任意 epoch，并授予或撤销角色。同样采用 1 天延迟的两步管理员转移。
+* 没有暂停功能：没有什么需要暂停，错误数据由撤销来处理。
+* 撤销是永久的。被撤销的 epoch 永远无法再通过核验。
+
+## 任何人（包括管理员）都无法
+
+* 修改或删除提交、揭示、结果或分数；
+* 设定市场结果（结果只来自链上 Conditional Tokens 的赔付，或 Void）；
+* 修改或删除已发布的根（只能撤销）；
+* 转移任何资产，因为合约不持有资产，也不要求任何授权。
+
+## 部署时永久固定
+
+* ForecastLedger：Agent ID 合约、3 个 Predict.fun Conditional Tokens 合约组成的白名单，以及最短窗口（提交 2 小时、揭示 12 小时，在 BSC 主网强制执行）。最长窗口（7 天）、结算等待期上下限、最多 16 个问题、每批最多 100 个，以及提交哈希方案，均为编译期常量。
+* ForewitScores：`LEDGER`、`AGENT_ID`（部署时检查与账本一致）、`SHRINK_K` 20、`SCORE_VERSION` 1。
+
+## 计划
+
+黑客松结束后，将管理员迁移到多签，或放弃非必要的角色。实施前会提前公布。
+
+来源：[`docs/OWNER_PERMISSIONS.md`](https://github.com/owaisahmad870/forewit/blob/main/docs/OWNER_PERMISSIONS.md)、[`contracts/src/ForewitScores.sol`](https://github.com/owaisahmad870/forewit/blob/main/contracts/src/ForewitScores.sol)、[`docs/SCORES.md`](https://github.com/owaisahmad870/forewit/blob/main/docs/SCORES.md) 第 4 节。

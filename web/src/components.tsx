@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useT } from './i18n';
-import { bannerRounds, bins10, type Question, type Round } from './lib/data';
+import { INSTALL_SNIPPETS } from './commands';
+import { bannerRounds, bins10, phase, type Question, type Round } from './lib/data';
 import { fmtCountdown, fmtLocal, fmtPct, fmtUtc } from './lib/format';
 
 export function useNow(ms = 1000) {
@@ -130,7 +131,42 @@ export function Histogram({ q }: { q: Question }) {
   );
 }
 
-type Block = string | { h: string } | { list: string[] } | { ol: string[] } | { strong: string };
+// Plain language help: native details/summary, so it opens from the keyboard and reads well in screen readers without script.
+export function Explain({ terms, summary = 'help.what', open }: { terms: string[]; summary?: string; open?: boolean }) {
+  const { t } = useT();
+  const list = (
+    <dl className="max-w-[68ch] space-y-2">
+      {terms.map((k) => <div key={k}><dt className="font-semibold">{t(`help.terms.${k}.t`)}</dt><dd className="text-muted">{t(`help.terms.${k}.d`)}</dd></div>)}
+    </dl>
+  );
+  if (open) return <div className="text-sm">{list}</div>;
+  return (
+    <details className="text-sm">
+      <summary className="inline-flex min-h-11 cursor-pointer items-center text-accent">{t(summary)}</summary>
+      <div className="mt-1">{list}</div>
+    </details>
+  );
+}
+
+const GO: Record<string, string> = { start: '#/start', rounds: '#/rounds', docs: '#/docs', scoring: '#/docs/scoring', leaderboard: '#/leaderboard', proof: '#/proof', play: '#/play' };
+export function NextLinks({ to }: { to: string[] }) {
+  const { t } = useT();
+  return (
+    <nav aria-label={t('help.nextSteps')} className="flex flex-wrap gap-x-4 pt-2">
+      {to.map((k) => <a key={k} href={GO[k]} className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t(`help.go.${k}`)}</a>)}
+    </nav>
+  );
+}
+
+// Empty state timing: the earliest round not yet scored, and when its scores can appear (after its reveal deadline, once its markets settle).
+export function ScoresWhen({ rounds }: { rounds: Round[] }) {
+  const { t, lang } = useT();
+  const now = useNow(60000);
+  const r = [...rounds].sort((a, b) => a.id - b.id).find((x) => phase(x, now) !== 'scored');
+  return r ? <p className="mt-2 text-sm text-muted">{t('help.scoresWhen', { n: r.id, t: fmtUtc(r.revealDeadline, lang) })}</p> : null;
+}
+
+type Block = string | { h: string } | { list: string[] } | { ol: string[] } | { strong: string } | { code: string };
 export function Blocks({ blocks }: { blocks: Block[] }) {
   return (
     <div className="max-w-[68ch] space-y-4 leading-relaxed">
@@ -138,6 +174,7 @@ export function Blocks({ blocks }: { blocks: Block[] }) {
         typeof b === 'string' ? <p key={i}>{b}</p>
         : 'h' in b ? <h2 key={i} className="pt-2 text-lg font-semibold">{b.h}</h2>
         : 'strong' in b ? <p key={i} className="rounded-lg border border-line bg-surface-2 p-3 font-semibold">{b.strong}</p>
+        : 'code' in b ? <CopyBlock key={i} text={INSTALL_SNIPPETS[b.code] ?? b.code} />
         : 'list' in b ? <ul key={i} className="list-disc space-y-2 pl-5">{b.list.map((x, j) => <li key={j}>{x}</li>)}</ul>
         : <ol key={i} className="list-decimal space-y-2 pl-5">{b.ol.map((x, j) => <li key={j}>{x}</li>)}</ol>,
       )}
