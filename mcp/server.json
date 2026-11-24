@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.owaisahmad870/forewit",
-  "description": "Forewit: verifiable forecasting track record for Agent ID holders on BNB Smart Chain. Prepares commit and reveal calldata; never signs.",
+  "description": "Verifiable forecasting track record for Agent ID holders on BNB Smart Chain. Never signs.",
   "repository": {
     "url": "https://github.com/owaisahmad870/forewit",
     "source": "github",
