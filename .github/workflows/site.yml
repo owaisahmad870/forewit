@@ -1,0 +1,44 @@
+# Builds web/ and deploys it to Cloudflare Pages (project "forewit"), with the latest data the keeper published
+# on the keeper-state branch. Runs on site changes, after every keeper run, and by hand.
+name: site
+
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", ".github/workflows/site.yml"]
+  workflow_run:
+    workflows: [keeper]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+      - name: Latest keeper data
+        run: |
+          git fetch --depth 1 origin keeper-state && git worktree add ../state FETCH_HEAD || exit 0
+          [ -d ../state/web/public/data ] && cp -r ../state/web/public/data/. web/public/data/ || true
+      - run: npm ci --no-audit --no-fund
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@4 pages project create forewit --production-branch main || true
+          npx --yes wrangler@4 pages deploy web/dist --project-name forewit --branch main --commit-dirty=true
