@@ -120,6 +120,13 @@ test('leaves file carries proofs that verify against its root', () => {
   assert.equal(leavesFile({ chainId: 97, ledger: A, agentId: B, snapshotBlock: 1n, leaves: [], excluded: [] }).root, null);
 });
 
+test('a reissue mint from zero to another wallet, with no burn log, drops the old leaf (review delta D1)', () => {
+  const ZERO = '0x0000000000000000000000000000000000000000';
+  const logs = [profile(2, A, true, 'alice'), scored(10, A, 1, 21), transfer(11, ZERO, C, 'alice')];
+  assert.deepEqual(buildLeaves(logs, 12).excluded, [{ forecaster: A, reason: 'moved' }]);
+  assert.equal(buildLeaves(logs, 10).leaves.length, 1);
+});
+
 test('a later public binding by an unscored wallet supersedes a scored one', () => {
   const logs = [profile(2, A, true, 'alice'), scored(10, A, 1, 21), profile(11, C, true, 'alice')];
   assert.deepEqual(buildLeaves(logs, 12).excluded, [{ forecaster: A, reason: 'moved' }]);

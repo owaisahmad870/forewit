@@ -61,3 +61,41 @@
 * Code matches docs/SCORES.md sections 2 to 6 (option B membership, leaf and tree layout, contract surface, gate checks in order). The threat model is honest except T5 (L1) and the omissions in L2 and L3.
 
 Open High: 0, Open Medium: 0
+
+## Delta review 24 Nov 2026 (40a8373)
+
+### Scope and method
+* Diff 57e77e4 to 40a8373 on contracts/src, docs/SCORES.md and contracts/test/ForewitScores.t.sol: revokeRoot role rule (keeper limited to the newest two epochs, KeeperRevokeTooOld) and the ForewitGate opt in check (LEDGER.profileLabelId(msg.sender) == tokenId). Read together with the rest of ForewitScores.sol, ForewitGate.sol, ForecastLedger.setPublicProfile and indexer/scores.mjs buildLeaves. The L1 and L2 text above was read only after the view below was formed.
+* forge test from contracts/ with BSC_RPC_URL set to the primary mainnet RPC: 126 passed, 0 failed, 13 suites (fork suites included).
+* Throwaway PoCs in contracts/test/review_tmp/ (7 tests, one fuzz at 2,000 runs), all passed as described below, deleted after.
+* Read only chain checks: profileLabelId(address) answers on the mainnet ledger 0xd11e...09B6 (returns 0 for an unused address), so the gate wiring works against the deployed bytecode. Agent ID block 135270306 has a Transfer from zero to 0x4Db4...282C with the tokenId indexed (mint log confirmed). No transaction sent, .env not printed.
+* Slither 0.11.6 on each contract, counted by impact from --json. Raw: 1 High and 9 Medium, all in OpenZeppelin Math.sol (mulDiv, invMod), not reachable from our code. In scope (src only, deduplicated across both runs): 0 High, 0 Medium, 3 Low timestamp, 9 Informational naming. The new Low on revokeRoot line 105 (epoch + 1 < _epochs.length) is a false positive: no timestamp is involved. The runner printed exit 127 but both json files are fresh and cite the new line 105.
+
+### L2 status: fixed as designed
+* The check `!isAdmin && epoch + 1 < _epochs.length` lets the keeper revoke exactly epochs length minus 1 and length; no off by one. Fuzz testFuzz_keeperNeverBelowLenMinusOne (length 1 to 40, any epoch) agrees.
+* Sequences do not widen it: test_stolenKeeperBound posts 10 honest roots, the keeper revokes 10 and 9, then ten rounds of post junk and revoke junk; epochs 1 to 8 stay unrevoked and every keeper revoke of them reverts. Worst case for a stolen keeper key: the two newest honest epochs are lost to verifyAt for good, plus the usual fake or blocked latest root until the admin acts.
+* The admin path is unchanged and unrestricted. Epoch 0 and unknown ids still revert UnknownEpoch before the new check, so `epoch + 1` cannot overflow.
+* Correction flow (section 5) works when the keeper revokes right after posting the corrected root (bad epoch = length minus 1). test_correctionAfterInterveningPost: if any other post lands first (a later round, a second correction), the keeper gets KeeperRevokeTooOld and only the admin can revoke.
+
+### L1 status: narrowed, not closed (stays Low, documented residual)
+* claim now needs ownerOf(tokenId) == msg.sender and profileLabelId(msg.sender) == tokenId. test_reissue: after "alice" is burned and reminted to dave, alice gets NotHolder, dave gets NotOptedIn, and after one setPublicProfile(true, "alice") by dave the claim passes on alice's stale leaf. T5 states this residual.
+* That opt in emits ProfileUpdated for dave, and buildLeaves binds the label to the latest binder over every wallet (scored or not), so the next root drops alice's leaf. The gate window is therefore bounded by the next root after the new owner's opt in, and by MAX_AGE.
+* No new blocking: profileLabelId is keyed by msg.sender and only its owner can set it; setPublicProfile checks ownerOf, so nobody else can bind or clear a holder's name (test_holderNotBlockable). Every leaf holder had profileLabelId == tokenId at the snapshot, so legitimate claims still pass. A holder who later opts out or sets a public profile with no label is refused (test_privateWithLabelClears); that matches option B, since the next root drops them too.
+* No non holder can pass: the ownerOf check is unchanged and comes first. tokenId 0 would match an unset profile, but ownerOf(0) needs a label hashing to zero, so it is unreachable.
+* External call: LEDGER is immutable, read from SCORES.LEDGER() at deploy, and profileLabelId, ownerOf, verify, latestEpoch and getEpoch are all declared view, so claim makes only static calls before its single write. No reentrancy surface.
+
+### D1 (Info): T5 cites the wrong log as evidence
+* docs/SCORES.md T5 says the mint Transfer from zero lets the indexer see a reissue and drop the old leaf. indexer/scores.mjs:74 only marks a forecaster moved on a Transfer whose from is that forecaster, or when another wallet rebound the label later. A mint log to a new owner matches neither. Detection rests on the burn emitting Transfer(old holder, zero), which is still unverified on mainnet (R4), or on the new owner opting in.
+* If a reissue happens without a burn log and the new owner never opts in, the old leaf stays in every later root. The gate is safe in that case (old holder fails ownerOf, new owner fails NotOptedIn), but a direct verify consumer that checks only ownerOf is not.
+* Fix: in buildLeaves treat any Transfer of that tokenId after the opt in as moved (drop the from filter), and reword T5 to rest on that rule.
+
+### D2 (Info): docs not fully updated for the new rules
+* Sections 5 and 5.1 still say the keeper revokes the bad epoch; add that this needs the admin once another post has landed after the corrected root, so the keeper should revoke immediately after the corrected post.
+* T6 says the admin or the new keeper repairs a lost key's revokes by posting a fresh root. That restores the latest root only: the two revoked epochs never verify again under verifyAt, and postRoot is keeper only (the admin must first grant itself or a new key ROUND_MANAGER_ROLE).
+* Section 6 immutables omit LEDGER. Section 9 still says "keeper or admin revokes", 44 Foundry tests and Slither 2 Low and 8 Informational. The claim gas figure in section 8 (68,815) predates the extra static call.
+* The commit rewrote docs/SCORES.md from CRLF to LF, so a 12 line change shows as a 332 line diff; review with --ignore-cr-at-eol.
+
+### Unchanged
+* I1 to I6 above are not addressed by this commit and stay open as Informational. L3 is a keeper process change in docs/SCORES.md 5.1 (two providers); not code, not reviewed here.
+
+Delta: Open High: 0, Open Medium: 0
