@@ -1,0 +1,808 @@
+---
+description: ForecastLedger 的全部外部函数、事件和错误，由编译后的 ABI 和 NatSpec 自动生成。
+---
+
+# 合约参考：ForecastLedger
+
+本页由 [scripts/docs/contract_reference.mjs](https://github.com/owaisahmad870/forewit/blob/main/scripts/docs/contract_reference.mjs) 根据 [contracts/src/ForecastLedger.sol](https://github.com/owaisahmad870/forewit/blob/main/contracts/src/ForecastLedger.sol) 编译后的 ABI 和 NatSpec 自动生成，请勿手动编辑。以下函数、事件和错误列表保留英文原文。
+
+* Address on BNB Smart Chain (chain 56): [0xd11e67ff70ACD42E01d79130f280162b00Bb09B6](https://bscscan.com/address/0xd11e67ff70ACD42E01d79130f280162b00Bb09B6), verified on BscScan and Sourcify.
+
+## Functions
+
+### `acceptDefaultAdminTransfer()`
+
+* Kind: nonpayable
+* Details: Completes a `defaultAdmin` transfer previously started with `beginDefaultAdminTransfer`. After calling the function: `DEFAULT_ADMIN_ROLE` should be granted to the caller.; `DEFAULT_ADMIN_ROLE` should be revoked from the previous holder.; `pendingDefaultAdmin` should be reset to zero values. Requirements: Only can be called by the `pendingDefaultAdmin`'s `newAdmin`.; The `pendingDefaultAdmin`'s `acceptSchedule` should've passed.
+
+### `ADMIN_TRANSFER_DELAY()`
+
+* Kind: view
+* Returns:
+  * `uint48`
+
+### `AGENT_ID()`
+
+* Kind: view
+* Returns:
+  * `address`
+
+### `BASELINE_WINDOW()`
+
+* Kind: view
+* The market baseline is posted in clear, once, only in the last BASELINE_WINDOW before the commit deadline (security review M1, L4: no hindsight veto, no early or stale baseline).
+* Returns:
+  * `uint256`
+
+### `beginDefaultAdminTransfer(address)`
+
+* Kind: nonpayable
+* Details: Starts a `defaultAdmin` transfer by setting a `pendingDefaultAdmin` scheduled for acceptance after the current timestamp plus a `defaultAdminDelay`. Requirements: Only can be called by the current `defaultAdmin`. Emits a `DefaultAdminTransferScheduled` event.
+* Inputs:
+  * `address newAdmin`
+
+### `BPS()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `cancelDefaultAdminTransfer()`
+
+* Kind: nonpayable
+* Details: Cancels a `defaultAdmin` transfer previously started with `beginDefaultAdminTransfer`. A `pendingDefaultAdmin` not yet accepted can also be cancelled with this function. Requirements: Only can be called by the current `defaultAdmin`. May emit a `DefaultAdminTransferCanceled` event.
+
+### `changeDefaultAdminDelay(uint48)`
+
+* Kind: nonpayable
+* Details: Initiates a `defaultAdminDelay` update by setting a `pendingDefaultAdminDelay` scheduled for getting into effect after the current timestamp plus a `defaultAdminDelay`. This function guarantees that any call to `beginDefaultAdminTransfer` done between the timestamp this method is called and the `pendingDefaultAdminDelay` effect schedule will use the current `defaultAdminDelay` set before calling. The `pendingDefaultAdminDelay`'s effect schedule is defined in a way that waiting until the schedule and then calling `beginDefaultAdminTransfer` with the new delay will take at least the same as another `defaultAdmin` complete transfer (including acceptance). The schedule is designed for two scenarios: When the delay is changed for a larger one the schedule is `block.timestamp + newDelay` capped by `defaultAdminDelayIncreaseWait`.; When the delay is changed for a shorter one, the schedule is `block.timestamp + (current delay; new delay)`. A `pendingDefaultAdminDelay` that never got into effect will be canceled in favor of a new scheduled change. Requirements: Only can be called by the current `defaultAdmin`. Emits a `DefaultAdminDelayChangeScheduled` event and may emit a `DefaultAdminDelayChangeCanceled` event.
+* Inputs:
+  * `uint48 newDelay`
+
+### `commit(uint256,bytes32)`
+
+* Kind: nonpayable
+* Commit a hidden forecast. Caller must hold an Agent ID. Can be overwritten before the deadline.
+* Inputs:
+  * `uint256 roundId`
+  * `bytes32 commitHash`: computeCommitHash(roundId, msg.sender, packed, salt).
+
+### `COMMIT_TYPEHASH()`
+
+* Kind: view
+* Returns:
+  * `bytes32`
+
+### `commits(uint256,address)`
+
+* Kind: view
+* Inputs:
+  * `uint256 roundId`
+  * `address forecaster`
+* Returns:
+  * `bytes32`
+
+### `computeCommitHash(uint256,address,uint256,bytes32)`
+
+* Kind: view
+* The commit hash a forecaster must submit, bound to this chain, this contract, the round and the forecaster.
+* Inputs:
+  * `uint256 roundId`
+  * `address forecaster`
+  * `uint256 packed`
+  * `bytes32 salt`
+* Returns:
+  * `bytes32`
+
+### `createRound(tuple[],uint64,uint64,uint64)`
+
+* Kind: nonpayable
+* Inputs:
+  * `tuple[] questions`
+  * `uint64 commitDeadline`
+  * `uint64 revealDeadline`
+  * `uint64 resolutionWait`
+* Returns:
+  * `uint256 roundId`
+
+### `DEFAULT_ADMIN_ROLE()`
+
+* Kind: view
+* Returns:
+  * `bytes32`
+
+### `defaultAdmin()`
+
+* Kind: view
+* Details: Returns the address of the current `DEFAULT_ADMIN_ROLE` holder.
+* Returns:
+  * `address`
+
+### `defaultAdminDelay()`
+
+* Kind: view
+* Details: Returns the delay required to schedule the acceptance of a `defaultAdmin` transfer started. This delay will be added to the current timestamp when calling `beginDefaultAdminTransfer` to set the acceptance schedule. NOTE: If a delay change has been scheduled, it will take effect as soon as the schedule passes, making this function returns the new delay. See `changeDefaultAdminDelay`.
+* Returns:
+  * `uint48`
+
+### `defaultAdminDelayIncreaseWait()`
+
+* Kind: view
+* Details: Maximum time in seconds for an increase to `defaultAdminDelay` (that is scheduled using `changeDefaultAdminDelay`) to take effect. Default to 5 days. When the `defaultAdminDelay` is scheduled to be increased, it goes into effect after the new delay has passed with the purpose of giving enough time for reverting any accidental change (i.e. using milliseconds instead of seconds) that may lock the contract. However, to avoid excessive schedules, the wait is capped by this function and it can be overridden for a custom `defaultAdminDelay` increase scheduling. IMPORTANT: Make sure to add a reasonable amount of time while overriding this value, otherwise, there's a risk of setting a high new delay that goes into effect almost immediately without the possibility of human intervention in the case of an input error (eg. set milliseconds instead of seconds).
+* Returns:
+  * `uint48`
+
+### `finalizeQuestion(uint256,uint256)`
+
+* Kind: nonpayable
+* Record the onchain outcome of question `index`. Callable by anyone once the CTF has resolved.
+* Details: Yes when the Yes slot gets the full payout, No when it gets zero, Void for any split. A resolution observed before the commit deadline voids the question, since late committers could have seen it.
+* Inputs:
+  * `uint256 roundId`
+  * `uint256 index`
+
+### `flags(uint256,address)`
+
+* Kind: view
+* Inputs:
+  * `uint256 roundId`
+  * `address forecaster`
+* Returns:
+  * `uint8`
+
+### `forfeit(uint256,address)`
+
+* Kind: nonpayable
+* Apply the worst case score to a forecaster who committed but never revealed. Callable by anyone.
+* Inputs:
+  * `uint256 roundId`
+  * `address forecaster`
+
+### `forfeitBatch(uint256,address[])`
+
+* Kind: nonpayable
+* Forfeit up to MAX_BATCH non revealers. Skips anyone not eligible instead of reverting.
+* Inputs:
+  * `uint256 roundId`
+  * `address[] forecasters`
+* Returns:
+  * `uint256 processed`: Number of forecasters forfeited.
+
+### `getCommit(uint256,address)`
+
+* Kind: view
+* Commit hash of a forecaster for a round (zero if none).
+* Inputs:
+  * `uint256 roundId`
+  * `address forecaster`
+* Returns:
+  * `bytes32`
+
+### `getCtfAllowlist()`
+
+* Kind: view
+* The allowlisted CTFs (unused entries are zero).
+* Returns:
+  * `address[4]`
+
+### `getOutcome(uint256,uint256)`
+
+* Kind: view
+* Outcome of question `index`.
+* Inputs:
+  * `uint256 roundId`
+  * `uint256 index`
+* Returns:
+  * `uint8`
+
+### `getQuestions(uint256)`
+
+* Kind: view
+* The questions of a round.
+* Inputs:
+  * `uint256 roundId`
+* Returns:
+  * `tuple[] qs`
+
+### `getReveal(uint256,address)`
+
+* Kind: view
+* Revealed packed vector and status flags (1 revealed, 2 scored, 4 forfeited).
+* Inputs:
+  * `uint256 roundId`
+  * `address forecaster`
+* Returns:
+  * `uint256 packed`
+  * `uint8 status`
+
+### `getRoleAdmin(bytes32)`
+
+* Kind: view
+* Details: Returns the admin role that controls `role`. See `grantRole` and `revokeRole`. To change a role's admin, use `_setRoleAdmin`.
+* Inputs:
+  * `bytes32 role`
+* Returns:
+  * `bytes32`
+
+### `getRound(uint256)`
+
+* Kind: view
+* Round data. Reverts for an unknown round.
+* Inputs:
+  * `uint256 roundId`
+* Returns:
+  * `tuple`
+
+### `getStats(address)`
+
+* Kind: view
+* Cumulative stats of a forecaster.
+* Inputs:
+  * `address forecaster`
+* Returns:
+  * `tuple`
+
+### `grantRole(bytes32,address)`
+
+* Kind: nonpayable
+* Details: See {AccessControl grantRole}. Reverts for `DEFAULT_ADMIN_ROLE`.
+* Inputs:
+  * `bytes32 role`
+  * `address account`
+
+### `hasRole(bytes32,address)`
+
+* Kind: view
+* Details: Returns `true` if `account` has been granted `role`.
+* Inputs:
+  * `bytes32 role`
+  * `address account`
+* Returns:
+  * `bool`
+
+### `isAllowedCtf(address)`
+
+* Kind: view
+* True when `ctf` is one of the immutable allowlisted Conditional Tokens contracts.
+* Inputs:
+  * `address ctf`
+* Returns:
+  * `bool`
+
+### `MAINNET_MIN_COMMIT_WINDOW()`
+
+* Kind: view
+* Smallest windows a BSC mainnet (chain 56) deployment accepts.
+* Returns:
+  * `uint256`
+
+### `MAINNET_MIN_REVEAL_WINDOW()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `MAX_BATCH()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `MAX_BRIER()`
+
+* Kind: view
+* Brier of a worst case forecast on one question, in bps squared.
+* Returns:
+  * `uint256`
+
+### `MAX_COMMIT_WINDOW()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `MAX_CTFS()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `MAX_QUESTIONS()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `MAX_RESOLUTION_WAIT()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `MAX_REVEAL_WINDOW()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `MIN_COMMIT_WINDOW()`
+
+* Kind: view
+* Minimum commit and reveal windows, fixed at deploy (short only on test networks).
+* Returns:
+  * `uint256`
+
+### `MIN_RESOLUTION_WAIT()`
+
+* Kind: view
+* Bounds for the per round resolution wait chosen at createRound (7 days for daily rounds).
+* Returns:
+  * `uint256`
+
+### `MIN_REVEAL_WINDOW()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `owner()`
+
+* Kind: view
+* Details: Gets the address of the owner.
+* Returns:
+  * `address`
+
+### `pause()`
+
+* Kind: nonpayable
+* Pause new rounds and new commits. Never blocks reveal, finalize, score or forfeit.
+
+### `paused()`
+
+* Kind: view
+* Details: Returns true if the contract is paused, and false otherwise.
+* Returns:
+  * `bool`
+
+### `PAUSER_ROLE()`
+
+* Kind: view
+* Returns:
+  * `bytes32`
+
+### `pendingDefaultAdmin()`
+
+* Kind: view
+* Details: Returns a tuple of a `newAdmin` and an accept schedule. After the `schedule` passes, the `newAdmin` will be able to accept the `defaultAdmin` role by calling `acceptDefaultAdminTransfer`, completing the role transfer. A zero value only in `acceptSchedule` indicates no pending admin transfer. NOTE: A zero address `newAdmin` means that `defaultAdmin` is being renounced.
+* Returns:
+  * `address newAdmin`
+  * `uint48 schedule`
+
+### `pendingDefaultAdminDelay()`
+
+* Kind: view
+* Details: Returns a tuple of `newDelay` and an effect schedule. After the `schedule` passes, the `newDelay` will get into effect immediately for every new `defaultAdmin` transfer started with `beginDefaultAdminTransfer`. A zero value only in `effectSchedule` indicates no pending delay change. NOTE: A zero value only for `newDelay` means that the next `defaultAdminDelay` will be zero after the effect schedule.
+* Returns:
+  * `uint48 newDelay`
+  * `uint48 schedule`
+
+### `profileLabelId(address)`
+
+* Kind: view
+* Inputs:
+  * `address forecaster`
+* Returns:
+  * `uint256`
+
+### `publicProfile(address)`
+
+* Kind: view
+* Inputs:
+  * `address forecaster`
+* Returns:
+  * `bool`
+
+### `renounceRole(bytes32,address)`
+
+* Kind: nonpayable
+* Details: See {AccessControl renounceRole}. For the `DEFAULT_ADMIN_ROLE`, it only allows renouncing in two steps by first calling `beginDefaultAdminTransfer` to the `address(0)`, so it's required that the `pendingDefaultAdmin` schedule has also passed when calling this function. After its execution, it will not be possible to call `onlyRole(DEFAULT_ADMIN_ROLE)` functions. NOTE: Renouncing `DEFAULT_ADMIN_ROLE` will leave the contract without a `defaultAdmin`, thereby disabling any functionality that is only available for it, and the possibility of reassigning a non administrated role.
+* Inputs:
+  * `bytes32 role`
+  * `address account`
+
+### `reveal(uint256,uint256,bytes32)`
+
+* Kind: nonpayable
+* Reveal your own forecast after the commit deadline and at or before the reveal deadline.
+* Details: Agent ID is checked only at commit, so a burned or reissued Agent ID never forces a forfeit.
+* Inputs:
+  * `uint256 roundId`
+  * `uint256 packed`: 16 probabilities of 16 bits in bps; slot i is question i; unused slots are zero.
+  * `bytes32 salt`
+
+### `revealFor(uint256,address,uint256,bytes32)`
+
+* Kind: nonpayable
+* Reveal on behalf of a forecaster (opt in auto reveal). The hash binds the forecaster address, so a front runner can only perform the same reveal.
+* Inputs:
+  * `uint256 roundId`
+  * `address forecaster`
+  * `uint256 packed`
+  * `bytes32 salt`
+
+### `reveals(uint256,address)`
+
+* Kind: view
+* Inputs:
+  * `uint256 roundId`
+  * `address forecaster`
+* Returns:
+  * `uint256`
+
+### `revokeRole(bytes32,address)`
+
+* Kind: nonpayable
+* Details: See {AccessControl revokeRole}. Reverts for `DEFAULT_ADMIN_ROLE`.
+* Inputs:
+  * `bytes32 role`
+  * `address account`
+
+### `rollbackDefaultAdminDelay()`
+
+* Kind: nonpayable
+* Details: Cancels a scheduled `defaultAdminDelay` change. Requirements: Only can be called by the current `defaultAdmin`. May emit a `DefaultAdminDelayChangeCanceled` event.
+
+### `ROUND_MANAGER_ROLE()`
+
+* Kind: view
+* Returns:
+  * `bytes32`
+
+### `roundCount()`
+
+* Kind: view
+* Returns:
+  * `uint256`
+
+### `score(uint256,address)`
+
+* Kind: nonpayable
+* Score a revealed forecaster on a fully resolved round, after the reveal deadline. Callable by anyone.
+* Inputs:
+  * `uint256 roundId`
+  * `address forecaster`
+
+### `scoreBatch(uint256,address[])`
+
+* Kind: nonpayable
+* Score up to MAX_BATCH forecasters. Skips anyone not eligible instead of reverting.
+* Inputs:
+  * `uint256 roundId`
+  * `address[] forecasters`
+* Returns:
+  * `uint256 processed`: Number of forecasters scored.
+
+### `sealRound(uint256)`
+
+* Kind: nonpayable
+* Seal a round once its commit deadline has passed: every question already resolved onchain at this moment becomes Void, so nobody can score on an answer that was public while commits were open. Callable by anyone, once; the first reveal or finalize after the deadline also seals.
+* Inputs:
+  * `uint256 roundId`
+
+### `setBaseline(uint256,uint256)`
+
+* Kind: nonpayable
+* Post the market baseline (order book mid prices in bps) in clear. Round manager only, once, and only in the last BASELINE_WINDOW before the commit deadline: before any reveal or outcome exists, so it cannot be withheld or chosen with hindsight. A round without a baseline is scored with skill 0 for everyone (decided blind, flagged off chain).
+* Inputs:
+  * `uint256 roundId`
+  * `uint256 packed`
+
+### `setPublicProfile(bool,string)`
+
+* Kind: nonpayable
+* Opt in or out of a public profile, optionally binding your Agent ID name (label without ".ai").
+* Details: An empty label, or isPublic false, clears the binding (opting out always removes the public name). Off chain readers must recheck ownerOf before showing a name.
+* Inputs:
+  * `bool isPublic`
+  * `string label`
+
+### `supportsInterface(bytes4)`
+
+* Kind: view
+* Details: Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip 165#how interfaces are identified[ERC section] to learn more about how these ids are created. This function call must use less than 30 000 gas.
+* Inputs:
+  * `bytes4 interfaceId`
+* Returns:
+  * `bool`
+
+### `unpack(uint256,uint256)`
+
+* Kind: pure
+* Probability in bps of slot `index` in a packed vector.
+* Inputs:
+  * `uint256 packed`
+  * `uint256 index`
+* Returns:
+  * `uint256`
+
+### `unpause()`
+
+* Kind: nonpayable
+* Unpause.
+
+### `voidStale(uint256,uint256)`
+
+* Kind: nonpayable
+* Void a question still unresolved onchain resolutionWait seconds after the reveal deadline (set per round). Callable by anyone. Can only ever set Void.
+* Inputs:
+  * `uint256 roundId`
+  * `uint256 index`
+
+## Events
+
+### `BaselineSet(uint256,uint256)`
+
+* Fields:
+  * `uint256 indexed roundId`
+  * `uint256 packed`
+
+### `Committed(uint256,address,bytes32)`
+
+* Fields:
+  * `uint256 indexed roundId`
+  * `address indexed forecaster`
+  * `bytes32 commitHash`
+
+### `DefaultAdminDelayChangeCanceled()`
+
+
+### `DefaultAdminDelayChangeScheduled(uint48,uint48)`
+
+* Fields:
+  * `uint48 newDelay`
+  * `uint48 effectSchedule`
+
+### `DefaultAdminTransferCanceled()`
+
+
+### `DefaultAdminTransferScheduled(address,uint48)`
+
+* Fields:
+  * `address indexed newAdmin`
+  * `uint48 acceptSchedule`
+
+### `Forfeited(uint256,address,uint256,uint256,uint256,int256,bool)`
+
+* Fields:
+  * `uint256 indexed roundId`
+  * `address indexed forecaster`
+  * `uint256 questions`
+  * `uint256 brierSum`
+  * `uint256 baselineBrierSum`
+  * `int256 skillSum`
+  * `bool baselineUsed`
+
+### `Paused(address)`
+
+* Fields:
+  * `address account`
+
+### `ProfileUpdated(address,bool,uint256)`
+
+* Fields:
+  * `address indexed forecaster`
+  * `bool isPublic`
+  * `uint256 labelId`
+
+### `QuestionFinalized(uint256,uint256,uint8,bool,bool)`
+
+* Fields:
+  * `uint256 indexed roundId`
+  * `uint256 indexed index`
+  * `uint8 outcome`
+  * `bool early`
+  * `bool stale`
+
+### `Revealed(uint256,address,uint256,address)`
+
+* Fields:
+  * `uint256 indexed roundId`
+  * `address indexed forecaster`
+  * `uint256 packed`
+  * `address caller`
+
+### `RoleAdminChanged(bytes32,bytes32,bytes32)`
+
+* Fields:
+  * `bytes32 indexed role`
+  * `bytes32 indexed previousAdminRole`
+  * `bytes32 indexed newAdminRole`
+
+### `RoleGranted(bytes32,address,address)`
+
+* Fields:
+  * `bytes32 indexed role`
+  * `address indexed account`
+  * `address indexed sender`
+
+### `RoleRevoked(bytes32,address,address)`
+
+* Fields:
+  * `bytes32 indexed role`
+  * `address indexed account`
+  * `address indexed sender`
+
+### `RoundCreated(uint256,uint64,uint64,uint64,tuple[])`
+
+* Fields:
+  * `uint256 indexed roundId`
+  * `uint64 commitDeadline`
+  * `uint64 revealDeadline`
+  * `uint64 resolutionWait`
+  * `tuple[] questions`
+
+### `RoundSealed(uint256,uint16)`
+
+* Fields:
+  * `uint256 indexed roundId`
+  * `uint16 voidedMask`
+
+### `Scored(uint256,address,uint256,uint256,uint256,int256,bool)`
+
+* Fields:
+  * `uint256 indexed roundId`
+  * `address indexed forecaster`
+  * `uint256 questions`
+  * `uint256 brierSum`
+  * `uint256 baselineBrierSum`
+  * `int256 skillSum`
+  * `bool baselineUsed`
+
+### `Unpaused(address)`
+
+* Fields:
+  * `address account`
+
+## Errors
+
+### `AccessControlBadConfirmation()`
+
+
+### `AccessControlEnforcedDefaultAdminDelay(uint48)`
+
+* Inputs:
+  * `uint48 schedule`
+
+### `AccessControlEnforcedDefaultAdminRules()`
+
+
+### `AccessControlInvalidDefaultAdmin(address)`
+
+* Inputs:
+  * `address defaultAdmin`
+
+### `AccessControlUnauthorizedAccount(address,bytes32)`
+
+* Inputs:
+  * `address account`
+  * `bytes32 neededRole`
+
+### `AlreadyProcessed()`
+
+
+### `AlreadyResolved(uint256)`
+
+* Inputs:
+  * `uint256 index`
+
+### `AlreadyRevealed()`
+
+
+### `BadCtfList()`
+
+
+### `BadDeadlines()`
+
+
+### `BadIndex()`
+
+
+### `BadQuestionCount()`
+
+
+### `BadResolutionWait()`
+
+
+### `BadSlotCount(uint256)`
+
+* Inputs:
+  * `uint256 index`
+
+### `BadWindows()`
+
+
+### `BadYesSlot(uint256)`
+
+* Inputs:
+  * `uint256 index`
+
+### `BaselineAlreadySet()`
+
+
+### `BaselineWindow()`
+
+
+### `BatchTooLarge()`
+
+
+### `CommitClosed()`
+
+
+### `CtfNotAllowed(address)`
+
+* Inputs:
+  * `address ctf`
+
+### `DuplicateCondition(uint256)`
+
+* Inputs:
+  * `uint256 index`
+
+### `EnforcedPause()`
+
+
+### `ExpectedPause()`
+
+
+### `HashMismatch()`
+
+
+### `LabelNotOwned()`
+
+
+### `NoAgentID()`
+
+
+### `NoCode(address)`
+
+* Inputs:
+  * `address target`
+
+### `NoCommit()`
+
+
+### `NonCanonical()`
+
+
+### `NotResolvedOnchain()`
+
+
+### `NotRevealed()`
+
+
+### `QuestionAlreadyFinal()`
+
+
+### `RevealNotOpen()`
+
+
+### `RoundNotResolved()`
+
+
+### `SafeCastOverflowedUintDowncast(uint8,uint256)`
+
+* Inputs:
+  * `uint8 bits`
+  * `uint256 value`
+
+### `TooEarly()`
+
+
+### `UnknownRound()`
+
+
+### `ZeroAddress()`
+
+
+### `ZeroHash()`
+

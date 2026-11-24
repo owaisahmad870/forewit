@@ -1,4 +1,4 @@
-import { Card, SampleBadge } from '../components';
+import { Card, Explain, NextLinks, SampleBadge, ScoresWhen } from '../components';
 import { useT } from '../i18n';
 import { leaderboard, MIN_BASELINE_QUESTIONS, MIN_ROUNDS, type Dataset, type Row } from '../lib/data';
 import { fmtBrier, fmtShare, fmtSkill } from '../lib/format';
@@ -55,9 +55,10 @@ export function Leaderboard({ data }: { data: Dataset }) {
       <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="text-2xl font-semibold">{t('leaderboard.title')}</h1><SampleBadge show={data.manifest.sample} /></div>
       <p className="max-w-[68ch] text-muted">{t('leaderboard.intro')}</p>
       <p className="text-sm">{t('leaderboard.totals', { n: lb.forecasters, p: lb.publicCount })}</p>
-      {!lb.rows.length && <Card><p className="text-muted">{t('leaderboard.empty')}</p></Card>}
+      {!lb.rows.length && <Card><p className="text-muted">{t('leaderboard.empty')}</p><p className="mt-2 text-sm text-muted">{t('help.intro.profile')}</p><ScoresWhen rounds={data.rounds} /></Card>}
       {ranked.length > 0 && <Table rows={ranked} ranked />}
       <p className="text-sm text-muted">{t('leaderboard.formula')}</p>
+      <Explain terms={['skill', 'brier', 'calibration', 'questionsCol', 'participation', 'ranked', 'dagger']} />
       {unranked.length > 0 && (
         <>
           <h2 className="pt-2 text-lg font-semibold">{t('leaderboard.unranked')}</h2>
@@ -65,6 +66,7 @@ export function Leaderboard({ data }: { data: Dataset }) {
           <Table rows={unranked} ranked={false} />
         </>
       )}
+      <NextLinks to={['start', 'scoring', 'rounds']} />
     </div>
   );
 }
