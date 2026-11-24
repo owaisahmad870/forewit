@@ -114,3 +114,18 @@
 
 ## Assets (licence, provenance)
 * viem 2.58.4 (MIT), used for checks only so far.
+
+## Keeper VPS options (A1, official pages, accessed 24 Nov 2026)
+* Pick: Google Cloud e2-micro (us-east1, us-central1 or us-west1), free with no end date, no documented idle reclaim; non prepaid card needed, Pakistan card acceptance unverified. Egress 1 GB a month from North America: keeper plus indexer estimated about 0.2 GB a month (a few thousand small JSON calls a day), hypothesis until measured; watch it. Free external IPv4: unverified. Sources: docs.cloud.google.com/free/docs/free-cloud-features, docs.cloud.google.com/billing/docs/how-to/payment-methods.
+* Second: AWS Free plan (100 USD credit, ends after 6 months or when credits run out; t3.micro, t4g.micro, t4g.small). Covers the 9 Dec deadline. Card and Pakistan rules unverified. Source: docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/free-tier-plans.html.
+* Rejected: Oracle Always Free. Its idle rule (7 days with CPU p95 under 20%, network under 20%, memory under 20% on A1) matches a mostly idle keeper; reclaim has no stated notice. Source: docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm.
+* Rejected: Azure free account (must move to pay as you go within 30 days or the account is disabled). Source: azure.microsoft.com/en-us/pricing/purchase-options/azure-account.
+* Paid fallback (owner decision, not bought): Hetzner CX23, 2 vCPU, 4 GB, 5.99 EUR a month excl. VAT; CPX02 5.49 EUR. Source: hetzner.com/cloud/cost-optimized.
+* No free tier states an SLA; the GitHub Actions watchdog is the second, independent trigger, and systemd timers use Persistent=true.
+
+## Keyed BSC RPC options (A2, official pages, accessed 24 Nov 2026)
+* Pick: primary NodeReal MegaNode Free (10M CU a month, 150 CUPS, getLogs 50 CU, free archive on BSC, no card; nodereal.readme.io/docs/pricing-plan.md), fallback dRPC Free (50M CU per 30 days, 25 RPS, 2 s timeout, 10,000 logs per response; drpc.org/pricing). getLogs range limit of both: unverified, test one 5000 block call each with the real key before mainnet.
+* Usable third: Ankr Freemium (200M credits, about 30 rps, getLogs 1000 blocks on BSC; ankr.com/docs/rpc-service/service-plans).
+* Unusable for the indexer: Alchemy Free (getLogs 10 blocks), QuickNode trial (5 blocks), Chainstack Developer (100 blocks, overage billed). GetBlock and Infura BSC free limits unverified.
+* Code check: indexer/build.mjs and keeper.mjs committers() already halve the getLogs span on range errors (5000 down to 50), and publicnode stays last in the fallback chain, so a small provider range limit degrades speed, not correctness.
+* 24 Nov 2026 update: Google Cloud signup failed for Owais at billing; switched to Oracle Always Free (Owais choice). Pakistan is in Oracle's billing country list (seen on signup.cloud.oracle.com). Plan: A1 Flex (1 OCPU, 6 GB), Ubuntu 24.04, SSH key ~/.ssh/forewit_vps (ed25519, this machine only). Idle reclaim risk accepted with alarms: healthchecks.io dead man checks and the GitHub watchdog fire within 30 min if the VM stops. GitHub Actions schedule is not a primary trigger: runs can be delayed 5 to 30 min or dropped under load (secondary sources), which breaks the 15 min baseline window.

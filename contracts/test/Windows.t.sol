@@ -45,6 +45,20 @@ contract WindowsTest is Base {
         assertEq(ok.MIN_REVEAL_WINDOW(), 12 hours);
     }
 
+    function test_mainnetGuard_roles() public {
+        DeployMainnet s = new DeployMainnet();
+        (address d, address a, address m) = (address(1), address(2), address(3));
+        s.validateRoles(d, a, m);
+        vm.expectRevert(bytes("deployer must hold no role"));
+        s.validateRoles(d, d, m);
+        vm.expectRevert(bytes("deployer must hold no role"));
+        s.validateRoles(d, a, d);
+        vm.expectRevert(bytes("admin must differ from round manager"));
+        s.validateRoles(d, a, a);
+        vm.expectRevert(bytes("zero role address"));
+        s.validateRoles(d, address(0), m);
+    }
+
     function test_mainnetGuard_script() public {
         DeployMainnet s = new DeployMainnet();
         s.validate(56, 2 hours, 12 hours);

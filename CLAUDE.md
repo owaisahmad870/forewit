@@ -5,13 +5,16 @@ Metric: judges' rubric (Agent ID depth 30%, practicality 25%, completion 25%, in
 Deadline: 9 Dec 2026 08:00 UTC (internal target: filed by 8 Dec 2026 08:00 UTC).
 Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 
-## done_when (all at once; re read at every milestone)
-1. Contracts live on BSC mainnet (chain 56), verified on BscScan, repo public under MIT, README with an "Owner permissions" section.
-2. At least 30 distinct Agent ID holders have called commit during the submission period, counted from logs by our own dashboard. Stretch: 150.
-3. At least 7 daily rounds completed end to end (create, commit, reveal, resolve, score) with zero manual score edits.
-4. Public site live in English and Simplified Chinese, mobile first: rounds, opt in leaderboard, calibration charts, Agent ID Crowd versus Market.
-5. Submission filed at least 24 hours before the deadline, with demo video, docs and the Agent ID usage text.
-6. Independent security review with no open High or Medium, and Slither and Aderyn reports clean or fully triaged.
+## done_when (FOREWIT_LAUNCH_PROMPT.md 1 wins; re read at every milestone)
+1. ForecastLedger live on BSC mainnet, verified on BscScan and Sourcify.
+2. At least 30 distinct Agent ID holders committed on mainnet, counted live on /proof. Stretch: 100.
+3. At least 7 daily mainnet rounds finalized, so mainnet live by 29 Nov 2026 is a hard limit (Developer Mode lapses about 30 Nov).
+4. ForewitScores live with at least one successful onchain verify call.
+5. forewit.xyz in English and Chinese, Lighthouse 90+ for performance, accessibility, best practices.
+6. Repo public; npm forewit republished with provenance via trusted publishing; MCP Registry listing.
+7. Demo video done; submission filed at least 24 h before the deadline with every link checked.
+8. Independent review of the mainnet build clean (no open High or Medium); Slither and Aderyn triaged.
+* Kill rule (pre registered): fewer than 10 distinct holders committed by 3 Dec 2026 means no new features; all hours go to onboarding and distribution.
 
 ## What rank 1 must be doing (revisit at each milestone)
 * Agent ID so central the product cannot exist without it; a live product with real recurring users and real numbers; a 10 second story; polish; bilingual reach.
@@ -37,8 +40,8 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 * **Base / best**: 23 Nov 2026. Renamed to Forewit (forewit.xyz, X @forewitai, Chinese display name 先见). v1.2 Forewit build on testnet instance E 0xa497...12E1: END TO END OK via keeper.mjs; instances A to D deprecated. Repo private on GitHub (owaisahmad870/forewit, renamed 23 Nov 2026). 79 Solidity, 79 node, 27 mcp, 40 web tests and 15 golden vectors pass; CI green on main (24 Nov). Nothing on mainnet.
 * **Gap to rank 1**: 0 of 30 holders, 0 of 7 rounds, no deploy, no site. Owais holds owaisahmad.ai (wallet 0x4Db4...282C); Developer Mode on (until about 30 Nov unless used).
 * **MCP**: mcp/ package "forewit" (local stdio prepare tools, remote read only HTTP), protocol 2025-11-25 (2026-07-28 when the SDK adds it); 27 tests; salts never in agent context before the commit deadline. Published to npm 24 Nov 2026 as forewit@0.0.1 (account forewitai, "Preview, testnet only", no provenance, latest tag); remote server not hosted. Provenance republish at mainnet launch (needs public repo, CI publish workflow with id-token: write, mainnet ledger pinned in agent/config.mjs). Open: CLI receipt prints the salt at any time (not covered by the MCP salt rule); web/src/commands.ts still shows node agent/forewit.mjs; MCP Registry server.json not made; remote hosting needs a proxy rate limit.
-* **Running**: nothing (round 2 on A settled 24 Nov, END TO END OK).
-* **Blocked on**: mainnet needs Owais's yes, fresh offline backed keys, a keyed RPC and the organizer answers. .env LEDGER_TESTNET and INDEXER_FROM_BLOCK_TESTNET must move to instance E (Owais).
+* **Running**: launch prompt Track A (24 Nov). Accounts live: NodeReal, dRPC, healthchecks.io (4 checks), Cloudflare; Google Cloud waits at billing. Mainnet review: 0 High, 0 Medium; L1 fixed in the deploy script.
+* **Blocked on**: Owais: 3 keystores (cast wallet new, --eoa) and USB backup, RPC URLs into .env (RPC_MAINNET_PRIMARY, RPC_MAINNET_FALLBACK), Google billing, funding; organizer answers; fork test conditions refresh before deploy.
 * **Rules**: selection v3.1 (no sports, no politics; daily: all daily crypto plus liquid events, 6 to 72 h, cap 8 Dec, 3 to 8 questions, wait 7 days; long: allowlisted tags, liquid, 72 h to 100 days, wait 120 days); event question plus label everywhere; baseline in the last 5 min before the deadline. Pre registered 23 Nov.
 * **Next**: web MVP and agent execute mode (subagents running); security review (milestone 3); VPS setup by Owais (keeper/deploy/README.md). Contract frozen except review findings. Polish 6 to 7 Dec: screen reader pass and 4G load test.
 * **Human steps open**: move npm_recovery_codes.txt (untracked, D:\Agent ID root) to offline storage and delete it from the project folder; decide whether FOREWIT_LAUNCH_PROMPT.md (untracked) belongs in the repo; organizer questions now include Agent ID burn or reissue (review L2, L3); keyed RPC (current .env RPCs are public); organizer questions; name, domain, X; GitHub repo for CI. Done: Agent ID claimed, wallet signed in, Predict key verified.

@@ -1,0 +1,78 @@
+# Keeper on GitHub Actions (bridge until the Oracle VPS is up; same keeper.mjs commands as the systemd units).
+# Scheduled starts can be late or dropped, so timing critical duties never depend on the start time:
+# "night" starts about an hour early and waits inside the job for the baseline window, then seals.
+# Network comes from the repository variable KEEPER_NETWORK (testnet or mainnet); empty means off.
+# State (keeper/state, keeper/archive, indexer/out, web/public/data) lives on the keeper-state branch.
+name: keeper
+
+on:
+  schedule:
+    - cron: "7 3 * * *"     # daily: select and open (needs 3 h before 23:00 UTC, so lateness is harmless)
+    - cron: "52 21 * * *"   # night: waits for 22:55 UTC, baseline, seal at 23:00:20
+    - cron: "17 22 * * *"   # second night start in case the first is dropped; finds the work done
+    - cron: "23,53 * * * *" # tick: seal, finalize, score
+  workflow_dispatch:
+    inputs:
+      duty:
+        type: choice
+        options: [daily, night, tick, baseline, seal, finalize, score, status, watchdog]
+        default: tick
+      round:
+        default: latest
+      network:
+        type: choice
+        options: [testnet, mainnet]
+        default: testnet
+
+permissions:
+  contents: write
+
+concurrency:
+  group: keeper
+  cancel-in-progress: false
+
+jobs:
+  keeper:
+    if: github.event_name == 'workflow_dispatch' || vars.KEEPER_NETWORK != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      NETWORK: ${{ inputs.network || vars.KEEPER_NETWORK }}
+      DUTY: ${{ inputs.duty || (github.event.schedule == '7 3 * * *' && 'daily') || (github.event.schedule == '23,53 * * * *' && 'tick') || 'night' }}
+      ROUND: ${{ inputs.round || 'latest' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+      - run: npm ci --no-audit --no-fund
+      - name: Restore state
+        run: |
+          git fetch --depth 1 origin keeper-state && git worktree add ../state FETCH_HEAD || { git worktree add --detach ../state && git -C ../state switch --orphan keeper-state; }
+          for d in keeper/state keeper/archive indexer/out web/public/data; do [ -d "../state/$d" ] && mkdir -p "$d" && cp -r "../state/$d/." "$d/" || true; done
+      - name: Run duty
+        env:
+          LEDGER_TESTNET: ${{ vars.LEDGER_TESTNET }}
+          LEDGER_MAINNET: ${{ vars.LEDGER_MAINNET }}
+          INDEXER_FROM_BLOCK_TESTNET: ${{ vars.INDEXER_FROM_BLOCK_TESTNET }}
+          INDEXER_FROM_BLOCK_MAINNET: ${{ vars.INDEXER_FROM_BLOCK_MAINNET }}
+          KEEPER_CONFIRM_MAINNET: ${{ vars.KEEPER_CONFIRM_MAINNET }}
+          KEEPER_PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
+          MAINNET_KEEPER_PRIVATE_KEY: ${{ secrets.MAINNET_KEEPER_PRIVATE_KEY }}
+          PREDICT_API_KEY: ${{ secrets.PREDICT_API_KEY }}
+          RPC_MAINNET_PRIMARY: ${{ secrets.RPC_MAINNET_PRIMARY }}
+          RPC_MAINNET_FALLBACK: ${{ secrets.RPC_MAINNET_FALLBACK }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HC_PING_DAILY: ${{ secrets.HC_PING_DAILY }}
+          HC_PING_NIGHT: ${{ secrets.HC_PING_BASELINE }}
+          HC_PING_TICK: ${{ secrets.HC_PING_TICK }}
+        run: node keeper/keeper.mjs "$DUTY" --network "$NETWORK" --round "$ROUND"
+      - name: Save state
+        if: always()
+        run: |
+          for d in keeper/state keeper/archive indexer/out web/public/data; do [ -d "$d" ] && mkdir -p "../state/$d" && cp -r "$d/." "../state/$d/"; done
+          cd ../state
+          git config user.name "forewit keeper" && git config user.email "keeper@users.noreply.github.com"
+          git add -A && { git diff --cached --quiet || git commit -qm "keeper $DUTY $NETWORK $(date -u +%FT%TZ)"; }
+          git push origin HEAD:refs/heads/keeper-state
