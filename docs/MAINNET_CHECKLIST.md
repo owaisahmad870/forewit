@@ -9,6 +9,11 @@ Every onchain step needs Owais's explicit yes, given for that step, with the act
 * A keyed BSC RPC for the keeper (the .env RPC values are public endpoints).
 
 ## 1. Keys (Owais, offline)
+* Created 24 Nov 2026 as encrypted Foundry keystores in the forewit_keys folder of Owais's home (outside the repo, password typed at the prompt):
+  * DEPLOYER 0x6732027E7f908E274bF4360Ce19cC182F82d008C
+  * KEEPER 0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18
+  * ADMIN 0xF3b4728B30F0F380d77dE9d025E33680F66591bD
+* Backup verified: pending (two USB copies, SHA 256 compared with the originals).
 * Three fresh keys, never the testnet ones: DEPLOYER (deploys once), KEEPER (round manager, runs daily), ADMIN (default admin and pauser; a hardware wallet or multisig is better than a hot key).
 * Back each one up offline (paper or hardware) before funding. Write down only the public addresses for me.
 * Funding: deployer 0.002 BNB (deploy measured at about 0.00023 BNB at 0.05 gwei on a fork); keeper 0.02 BNB (a daily round costs well under 0.001 BNB); admin 0.001 BNB for pause or role transfers.

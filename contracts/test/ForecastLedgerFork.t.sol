@@ -78,20 +78,20 @@ contract ForecastLedgerForkTest is Test {
     function test_fork_fullRound() public {
         // Open conditions taken from ConditionPreparation logs on 23 Nov 2026 (block about 135270000).
         bytes32[6] memory std = [
-            bytes32(0x7659173665b35518e25cd92d3c86d70c3a9a1febc2972c873bf75af421d934e5),
-            0x766a78cf00dd2fceddbeec1c10801bd7164949d719105688eb90bac07338085f,
-            0x329f9fbf690b9274113b3b223097d3ea6c555c8dfd1532a5adc0a0236839d64e,
+            bytes32(0x17ee387775b7d70442c5c8cc1d5790f9ff938356cea54d0f438d5b94aa52f797),
+            0xe5b3e23ba93b542e5fd947ec950c6b7c742ccd7e22ff31cdbf04062457718f4e,
+            0x7989cde1d531586ee1650fbe4545e8a22833b172b2f086560d35d4da3c191ffe,
             0x8ae26f826b32ed571e041f63d521dc09f2cfb1e4013a4141ee3556db3f604dc9,
             0xd1fe625bc00558a27dcaa3e2012cdf47be69af0828fbf6c92fdfc5555e2b3b92,
             0x40feb871b36ebb7680ce245bd82befbc9a4c31794192a9ff97172ef0bbefa92d
         ];
         bytes32[6] memory yb = [
-            bytes32(0xf17b2dce6f20e706d2f488b138b535a583c73a03b2716b3f4e79c7a5a719f0d8),
-            0x914b51d9567a9afd7d4c5215431fec778aa12d01fb9b4fa8c1c387b583b161fa,
-            0x81a093be3d209c8688a72b34b89392657914206d105e16b765db3d49c3c6e7c9,
-            0xba8be57c4042ae9ce0b9408c855d57bc5fb309c50929ed9a1711d64cbd1a2d44,
-            0xf983e3f785499220136558e1689e62131e2a0540c56de1a5ff5024e67f9e45ef,
-            0x2ad6b0e09a2f8d7124b44181fae12dadf348a12574bfde1e56c7f0e77f3daf8e
+            bytes32(0xdd426617a2764705411c033903afbaff5339c1bb172d8c640de51f5c02ef50c7),
+            0x3b700331d4b21afc0a3533b14aae3765246c2c888a6e19e74720ac834c5a10bc,
+            0x52c39a38987b04d118d82003becf9734dcd4c2a4d3ecae298bb38ed667b41676,
+            0xe8bd54b20478c0c47436c271935f6fc780f0ed6410df466f1cdea06aa4e1276f,
+            0x0685b885eca8f2744d4726be03cd0af5fcc8c1d078e19e406cd72c33acdcf151,
+            0x69eba4d9197d8a824adad9ecd4f05338371553ed0e2cd16e6bddb2ca9c762ae4
         ];
         bytes32 c0 = _open(CTF, std);
         bytes32 c1 = _open(YB_CTF, yb);

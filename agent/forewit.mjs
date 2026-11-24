@@ -547,7 +547,9 @@ function cmdReceipt(o) {
     `${receiptDir(o.home)} and run reveal. Lost salt means no reveal, which counts as a forfeit.`,
     '',
   );
-  for (const { file, ...r } of found) say(`# ${file}`, JSON.stringify(r, null, 2), '');
+  // an agent running the CLI must not pull the salt into its context: the salt prints only with --show-salt
+  if (!o['show-salt']) say('Salts hidden. Add --show-salt to print them for your private backup, or copy the files above.', '');
+  for (const { file, ...r } of found) say(`# ${file}`, JSON.stringify(o['show-salt'] ? r : { ...r, salt: '(hidden)' }, null, 2), '');
 }
 
 const HELP = `Forewit CLI (dry run by default: prints baw commands; --execute sends only after you type yes)
@@ -561,7 +563,7 @@ ${CMD} <command> [flags]
             add --execute to commit or reveal to run baw preview, review it and send after typing yes
             (BSC mainnet only, interactive terminal only, never with a piped or scripted yes)
   status    --from 0x..           Commit, reveal and scoring status for a wallet
-  receipt   [--from 0x..]         Print saved reveal receipts so you can back them up
+  receipt   [--from 0x..] [--show-salt]  Print saved reveal receipts (salt only with --show-salt) so you can back them up
 
 Common flags: --network mainnet|testnet (default ${DEFAULT_NETWORK}), --round N (default: latest round),
   --round-file <path or https URL>  public round JSON: shows each event question and label, cross checked with the chain
@@ -571,7 +573,7 @@ export async function main(argv) {
   const { values: o, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
-    options: { network: { type: 'string' }, round: { type: 'string' }, 'round-file': { type: 'string' }, execute: { type: 'boolean' }, from: { type: 'string' }, p: { type: 'string' }, help: { type: 'boolean', short: 'h' } },
+    options: { network: { type: 'string' }, round: { type: 'string' }, 'round-file': { type: 'string' }, execute: { type: 'boolean' }, from: { type: 'string' }, p: { type: 'string' }, 'show-salt': { type: 'boolean' }, help: { type: 'boolean', short: 'h' } },
   });
   const cmds = { round: cmdRound, forecast: cmdForecast, commit: cmdCommit, reveal: cmdReveal, status: cmdStatus, receipt: cmdReceipt };
   const cmd = cmds[positionals[0]];

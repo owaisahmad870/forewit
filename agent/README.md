@@ -33,7 +33,7 @@ baw wallet address --json
 node agent/forewit.mjs commit --from 0xYourAgenticWallet --p 72,15,50
 
 # 5. Back up the reveal receipt somewhere private
-node agent/forewit.mjs receipt --from 0xYourAgenticWallet
+node agent/forewit.mjs receipt --from 0xYourAgenticWallet --show-salt
 
 # 6. After the commit deadline, before the reveal deadline
 node agent/forewit.mjs reveal --from 0xYourAgenticWallet
@@ -98,7 +98,7 @@ A restored receipt copied back into `~/.forewit/` by hand keeps whatever permiss
 
 ## Lost salt means forfeit
 
-Without the salt your commit cannot be revealed. A commit that is not revealed by the reveal deadline is scored as a forfeit: every non void question counts with the worst possible Brier score. Back up each receipt with `node agent/forewit.mjs receipt`, and come back during the reveal window.
+Without the salt your commit cannot be revealed. A commit that is not revealed by the reveal deadline is scored as a forfeit: every non void question counts with the worst possible Brier score. Back up each receipt with `node agent/forewit.mjs receipt --show-salt` (without the flag the salt stays hidden, so an agent running the CLI never sees it), and come back during the reveal window.
 
 ## Tests
 
