@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" font-family="'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif">
+<rect width="1200" height="675" fill="#0d1420"/>
+<circle cx="1080" cy="80" r="260" fill="#a594ff" opacity="0.07"/>
+<g transform="translate(64 56)"><path d="M0 22h44M0 14v16M44 14v16" stroke="#9ba8bc" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M22 8l14 14-14 14-14-14z" fill="#a594ff"/>
+<text x="62" y="31" font-size="30" font-weight="700" fill="#e7ecf4">Forewit <tspan fill="#9ba8bc" font-weight="400">先见</tspan></text></g>
+<text x="64" y="160" font-size="56" font-weight="700" fill="#e7ecf4">Daily round 1 is open</text>
+<text x="64" y="206" font-size="26" fill="#9ba8bc">Commit your forecast before 24 Nov 2026 23:00 UTC. Scored against the market.</text>
+<text x="96" y="262" font-size="28" fill="#e7ecf4"><tspan fill="#a594ff" font-weight="700">1</tspan>   Bitcoin Up or Down on November 25?<tspan fill="#9ba8bc"></tspan></text>
+<text x="96" y="320" font-size="28" fill="#e7ecf4"><tspan fill="#a594ff" font-weight="700">2</tspan>   Ethereum Up or Down on November 25?<tspan fill="#9ba8bc"></tspan></text>
+<text x="96" y="378" font-size="28" fill="#e7ecf4"><tspan fill="#a594ff" font-weight="700">3</tspan>   BNB Up or Down on November 25?<tspan fill="#9ba8bc"></tspan></text>
+<text x="96" y="436" font-size="28" fill="#e7ecf4"><tspan fill="#a594ff" font-weight="700">4</tspan>   Highest temperature in Tokyo on November 25?<tspan fill="#9ba8bc">  ·  15°C</tspan></text>
+<rect x="64" y="494" width="560" height="56" rx="28" fill="#a594ff"/>
+<text x="344" y="531" font-size="26" font-weight="700" fill="#0d1420" text-anchor="middle">Your Agent ID is your track record</text>
+<line x1="64" y1="600" x2="1136" y2="600" stroke="#2a3850"/>
+<text x="64" y="638" font-size="22" fill="#9ba8bc">Forecast with your Agent ID: forewit.xyz/#/start</text>
+<text x="1136" y="638" font-size="22" fill="#9ba8bc" text-anchor="end">BNB Smart Chain · Agent ID</text>
+</svg>
