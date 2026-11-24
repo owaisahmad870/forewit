@@ -341,7 +341,9 @@
               "Baseline manipulation: the baseline is posted in clear, once, only in the last 15 minutes before the deadline, the raw order books are archived, and the same baseline applies to everyone. Commits made after it was posted are recorded and can be flagged on the leaderboard.",
               "Admin abuse: no upgrade path, and pause never blocks reveal or scoring.",
               "Prompt injection: market titles and all API text are treated as untrusted data and shown as plain text.",
-              "This site: static files, read only, no wallet connection, no secrets, pinned dependencies and a strict Content Security Policy."
+              "This site: static files, read only, no wallet connection, no secrets, pinned dependencies and a strict Content Security Policy.",
+              "Leaked team key: the admin revokes the leaked keeper role instantly on both contracts and replaces the key; a leak can never edit a commit, reveal, outcome or score. Every key, who holds it and the response plan are in the docs under Keys, secrets and incidents.",
+              "Found a security problem? Report it privately through GitHub security advisories on the forewit repository, not in a public issue."
             ]
           },
           "Status: independent reviews of the mainnet build and of ForewitScores (with its delta review) found no open High or Medium issue; the accepted residual risks are listed in the threat model. Both contracts are live on BSC mainnet and verified on BscScan and Sourcify."

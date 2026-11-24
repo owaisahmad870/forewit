@@ -39,6 +39,7 @@
 * [Owner permissions](trust/owner_permissions.md)
 * [Threat model and accepted risks](trust/threat_model.md)
 * [Privacy](trust/privacy.md)
+* [Keys, secrets and incidents](trust/keys_and_incidents.md)
 
 ## Reference
 
