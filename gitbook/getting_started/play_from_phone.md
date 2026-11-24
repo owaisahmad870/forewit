@@ -35,3 +35,8 @@ Your receipts hold the salt. Keep your copy of the template private, and never p
 * The wallet session: your cloud sandbox only, signed out at the end of each session.
 * Your salt and receipts: your private repository.
 * Forewit: nothing.
+
+## Safety and compliance
+* Keep only a little BNB for gas in the Agentic Wallet you use here, and let the agent sign out at the end of every session.
+* The sign in link and pairing code come from the official Binance Agentic Wallet CLI running in your own sandbox and are shown only to you. Forewit never sees them, never hosts a login page and never stores a wallet session; this is the same flow as running the CLI on your own computer.
+* The template pins the forewit version, so a new release never runs beside your signed in wallet without review.

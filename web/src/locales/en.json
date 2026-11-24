@@ -606,7 +606,7 @@
         "Give your probabilities, read the preview, type yes. Come back after the deadline to reveal."
       ],
       "cta": "Open the Forewit agent template",
-      "note": "Keep your copy private: it stores your salts until each reveal. A chat window alone (claude.ai, ChatGPT) cannot sign; it needs the cloud agent."
+      "note": "Keep your copy private: it stores your salts until each reveal. A chat window alone (claude.ai, ChatGPT) cannot sign; it needs the cloud agent. For safety: keep only a little BNB for gas in that Agentic Wallet, and let the agent sign out at the end of every session."
     }
   },
   "banner": {

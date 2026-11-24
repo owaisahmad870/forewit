@@ -12,3 +12,8 @@ keeper/state/
 indexer/out/
 keeper/archive/
 screenshots/
+
+# never commit (owner moves it offline)
+npm_recovery_codes.txt
+FOREWIT_LAUNCH_PROMPT.md
+prompts/
