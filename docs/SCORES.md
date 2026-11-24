@@ -1,4 +1,4 @@
-# ForewitScores spec (v1, draft before code)
+# ForewitScores spec (v1)
 
 **Summary (read first):**
 * ForewitScores is a small separate contract: no funds, not upgradeable, AccessControlDefaultAdminRules like ForecastLedger. ForecastLedger stays untouched.
@@ -6,7 +6,8 @@
 * skill is the leaderboard score made exact for integers: sumSkill / (baselineQuestions + 20), truncated toward zero, in bps squared per question. n is baselineQuestions. Both come from ForecastLedger events only.
 * Every root is recomputable from BSC logs alone (no archive state needed). The indexer publishes the leaves; a script rebuilds them from chain logs and checks the onchain root.
 * Roots are append only. A wrong root is replaced by a newer corrected entry, then revoked; nothing is overwritten.
-* Status 24 Nov 2026: spec only. No code, no deploy. Open owner decisions at the end.
+* Status 24 Nov 2026: built and tested, not deployed. Membership is option B (decided 24 Nov 2026 by Owais): only holders who opted in with a public label get a leaf. Code: contracts/src/ForewitScores.sol, contracts/src/examples/ForewitGate.sol, contracts/script/DeployScoresMainnet.s.sol and DeployScoresTestnet.s.sol, indexer/scores.mjs (build and recompute), tests in contracts/test/ForewitScores*.t.sol and indexer/test/scores.test.mjs.
+* Spec changes made while building are marked CHANGE 24 Nov 2026 below.
 
 ## 1. What a score is
 
@@ -33,24 +34,24 @@
 
 ### 2.1 Snapshot
 * Every root has a snapshotBlock. Leaves are built only from logs with blockNumber at or below snapshotBlock.
-* The keeper uses the latest finalized block (BSC fast finality) at build time, so no reorg can change a posted snapshot. HYPOTHESIS: the "finalized" block tag works on our RPCs (unverified; fallback: head minus 15 blocks).
+* The keeper uses the latest finalized block (BSC fast finality) at build time, so no reorg can change a posted snapshot. Verified 24 Nov 2026 on bsc-rpc.publicnode.com (mainnet): the "finalized" tag answers, 2 blocks behind head. Unverified on the keyed RPCs; indexer/scores.mjs falls back to head minus 15 blocks when the tag fails.
 * Score and forfeit are permissionless and per forecaster, so "the round is scored" is not one chain state. The snapshot block, not the round, defines the data. roundId is recorded only as the reason for the post.
 * No historical state calls (getStats or ownerOf at a past block): our RPCs keep no archive state (CLAUDE.md, Rejected). Logs only.
 
-### 2.2 Membership (default, see open decision 1)
+### 2.2 Membership (option B, decided 24 Nov 2026 by Owais)
 A forecaster address gets a leaf when all hold at snapshotBlock:
-* at least one Scored or Forfeited event on the mainnet ForecastLedger;
-* not an operator: holds no ForecastLedger role per RoleGranted and RoleRevoked events (same rule as the leaderboard, review L1);
-* a tokenId is known for the address by the rule of section 2.3, and that token has no Transfer out of the address.
-* Option B only (open decision 1): the forecaster's last ProfileUpdated event at or before snapshotBlock has isPublic true and labelId nonzero.
-Excluded forecasters are listed in the leaves file with a reason: operator, no_id, moved, multiple_ids (and not_public under option B).
+* at least one Scored or Forfeited event on the ForecastLedger;
+* not an operator: holds no ForecastLedger role per RoleGranted and RoleRevoked events (same rule as the leaderboard, review L1); the log scan starts at the ledger deploy block so the constructor grants are seen;
+* its last ProfileUpdated event has isPublic true and labelId nonzero;
+* the token labelId has no Transfer out of the address after that ProfileUpdated (ordered by block, then log index).
+Excluded forecasters are listed in the leaves file with a reason: operator, not_public, moved. The excluded list carries the address and the reason only, never a tokenId or labelId. Scored forecasters always equal leaves plus excluded.
+* CHANGE 24 Nov 2026: two forecasters bound to one tokenId (reachable on testnet, where the mock burns and remints without events). The forecaster with the later ProfileUpdated keeps the leaf, because the ledger proved ownerOf for it more recently; the other is excluded as moved. Deterministic from logs, so the recompute agrees. buildTree still refuses a repeated tokenId as a last guard.
 
 ### 2.3 tokenId to holder
 * Agent ID tokenId = uint256(keccak256(bytes(label))), label without ".ai" (notes/knowledge.md, verified on 4 of 4 holders). Agent ID is not enumerable, so the mapping comes from logs.
 * The ledger only lets a wallet commit with Agent ID balanceOf above zero, so every scored forecaster held a token when it committed.
-* Option B rule (one canonical rule): tokenId = labelId of the forecaster's last ProfileUpdated event. The ledger checked ownerOf(labelId) == forecaster in that same transaction, so the binding is proven onchain at that block. Moves after it: Agent ID Transfer logs filtered by that tokenId (indexed topic) up to snapshotBlock. This works on testnet too.
-* Option A rule (one canonical rule): tokenId = the tokenId of the Agent ID Transfer event with from = 0x0 and to = forecaster, found by a to filtered log scan from the Agent ID deploy block (to be recorded in notes/knowledge.md) to snapshotBlock. Two mints to one wallet means no leaf (multiple_ids). The leaves file may carry the mint tx hash as a convenience hint, but the recompute script always runs the full scan, so both paths build the same set.
-* HYPOTHESIS under option A: the real Agent ID mint emits a standard ERC721 Transfer from 0x0 (implied by the holder counts in notes/knowledge.md, not checked on a mint receipt). Verify on one receipt before building. contracts/src/mocks/MockAgentID.sol emits no events at all, so option A cannot be tested on testnet instance E without a new mock and a new ledger instance (AGENT_ID is immutable); option B can.
+* Rule: tokenId = labelId of the forecaster's last ProfileUpdated event. The ledger checked ownerOf(labelId) == forecaster in that same transaction, so the binding is proven onchain at that block. Moves after it: Agent ID Transfer logs filtered by that tokenId (indexed topic) up to snapshotBlock. This works on testnet too (the mock emits no Transfer, so a mock burn is not seen; testnet only).
+* Option A (every scored holder, mint log scan) was not chosen: privacy (T10), an unverified mint event, and no testnet path.
 * One token per wallet is the issuer's rule (one claim per user).
 * Agent ID transfers and approve revert (simulation evidence). Burn or reissue by the issuer is unverified (THREAT_MODEL R4, organizer question); the mock allows burn. A token that moved gets no leaf from the next root on.
 * The leaf has no address and no label. Binding to the current holder is the consumer's job: AGENT_ID.ownerOf(tokenId) == msg.sender (section 6).
@@ -71,13 +72,14 @@ Excluded forecasters are listed in the leaves file with a reason: operator, no_i
 * Inherits AccessControlDefaultAdminRules (same admin delay as ForecastLedger). No Pausable: there is nothing to pause, and revoke covers bad data.
 * ROUND_MANAGER_ROLE = keccak256("ROUND_MANAGER_ROLE"), granted to the mainnet keeper (the same keeper wallet as the ledger's round manager).
 * Immutables: LEDGER (the mainnet ForecastLedger), AGENT_ID (checked equal to LEDGER.AGENT_ID() in the constructor).
-* Constants: SHRINK_K = 20, SCORE_VERSION = 1 (documentation for consumers; not used in verify).
+* Constants: SHRINK_K = 20, SCORE_VERSION = 1 (documentation for consumers; not used in verify), ADMIN_TRANSFER_DELAY = 1 day (same as the ledger).
 * Storage: Epoch[] with fields root (bytes32), snapshotBlock (uint64), roundId (uint64), leafCount (uint32), postedAt (uint48), revoked (bool). Two slots per epoch. Epoch ids start at 1; the latest epoch is the last one appended.
-* constructor(address admin, address keeper, address ledger)
+* constructor(address admin, address keeper, address ledger, address agentId). CHANGE 24 Nov 2026: agentId added. With three arguments the "agent id mismatch reverts" check of section 9 could not exist; now the constructor reverts with AgentIdMismatch unless ledger.AGENT_ID() == agentId, which catches a wrong ledger address at deploy. Also reverts on a zero address or a ledger without code.
 * postRoot(uint64 roundId, uint64 snapshotBlock, bytes32 root, uint32 leafCount), only ROUND_MANAGER_ROLE. Reverts when root is zero, leafCount is zero, snapshotBlock >= block.number, or snapshotBlock is not strictly greater than the previous epoch's snapshotBlock. Appends; emits RootPosted(epoch indexed, roundId indexed, root, snapshotBlock, leafCount).
 * revokeRoot(uint256 epoch, string reason), ROUND_MANAGER_ROLE or DEFAULT_ADMIN_ROLE. Reverts on an unknown or already revoked epoch. Irreversible. Emits RootRevoked(epoch indexed, reason).
+* Value: no payable function and no receive or fallback, so any call with value reverts (tested).
 * latestEpoch() view returns the epoch id (0 before the first post).
-* getEpoch(uint256 epoch) view returns the record.
+* getEpoch(uint256 epoch) view returns the record; reverts UnknownEpoch for 0 or an id above latestEpoch. verify and verifyAt never revert on an unknown epoch, they return false.
 * verify(uint256 tokenId, int256 skill, uint256 n, bytes32[] calldata proof) view returns bool: true only if the latest epoch exists, is not revoked, and the proof matches its root. It never falls back to an older epoch.
 * verifyAt(uint256 epoch, uint256 tokenId, int256 skill, uint256 n, bytes32[] calldata proof) view returns bool: same check against one named epoch (history, audits). False if revoked or unknown.
 * leafHash(uint256 tokenId, int256 skill, uint256 n) pure returns bytes32, for tooling.
@@ -86,10 +88,18 @@ Excluded forecasters are listed in the leaves file with a reason: operator, no_i
 ## 5. Keeper flow, correction and recompute
 * Trigger: after the keeper finishes a round's settlement (every revealer scored, every non revealer forfeited), it builds the tree at the finalized block, runs the recompute check on its own output, then posts.
 * After the post it reads RootPosted and compares it to the published leaves file. A mismatch pages via healthchecks.io.
-* Leaves file: web/public/data/scores/<epoch>.json and latest.json, with chainId, ledger, scores address, agentId, epoch, roundId, snapshotBlock, root, method string ("forewit scores v1: skill = sumSkill / (baselineQuestions + 20), truncated toward zero"), leaves [{tokenId, forecaster, skill, n, mintTx, proof}] and excluded [{forecaster, reason}].
-* Recompute script (scripts/scores/recompute.mjs, later): input network and epoch. It reads the epoch onchain, rebuilds every leaf from ForecastLedger and Agent ID logs up to snapshotBlock by the canonical rule of section 2.3 (no leaves file needed), checks that scored forecasters = leaves plus excluded, rebuilds the tree, and exits 0 only if the root equals the onchain root. Optionally diffs against the published file.
+* Leaves file: web/public/data/scores/<epoch>.json and latest.json, with chainId, ledger, scores address, agentId, epoch, roundId, snapshotBlock, root, method string ("forewit scores v1: skill = sumSkill / (baselineQuestions + 20), truncated toward zero"), leafCount, leaves [{tokenId, forecaster, skill, n, proof}] and excluded [{forecaster, reason}]. Numbers are decimal strings. CHANGE 24 Nov 2026: no mintTx (option B needs no mint scan); epoch is null in the built file and the keeper fills it after the post.
+* Recompute script: node indexer/scores.mjs recompute --network mainnet --scores <address> [--epoch n] [--file leaves.json] (CHANGE 24 Nov 2026: lives in indexer/scores.mjs next to the builder, not scripts/scores/recompute.mjs). Input network and epoch (default latest); the ledger deploy block is built in for mainnet (135450390), --from-block elsewhere. It reads the epoch onchain, rebuilds every leaf from ForecastLedger and Agent ID logs up to snapshotBlock by the canonical rule of section 2.3 (no leaves file needed), checks that scored forecasters = leaves plus excluded, rebuilds the tree, and exits 0 only if the root equals the onchain root. Optionally diffs against the published file.
 * Wrong root (keeper error): the keeper first posts a corrected root with a newer snapshotBlock, which becomes latest, so honest holders keep verifying; then the keeper or the admin calls revokeRoot(bad epoch, reason) so verifyAt on it fails too. Revoke first only when no corrected root can be built yet (for example a stolen key, T2); then verify returns false until the repost (fail closed). Earlier correct epochs and verifyAt on them are unaffected. Consumers that stored an epoch id recheck getEpoch(epoch).revoked. Actions consumers already took on a revoked root cannot be undone by us; section 6 gives them an optional delay.
 * /proof shows the root history: epoch, roundId, snapshotBlock, leaf count, revoked flag and the recompute status.
+
+### 5.1 Keeper integration (to wire in keeper/keeper.mjs; not done here)
+* After the settlement of a round (every revealer scored, every non revealer forfeited), call build({ network, ledger, roundId }) from indexer/scores.mjs. It picks the finalized block, fetches ledger logs from the deploy block (FROM_BLOCK) and Agent ID Transfer logs for the opted in tokenIds, and returns the leaves file object.
+* If root is null (no opted in holder yet), skip the post and log it; postRoot refuses an empty set anyway.
+* If the latest onchain epoch already has this root and leafCount, skip (nothing changed). Otherwise call postRoot(roundId, snapshotBlock, root, leafCount) with the keeper key (ROUND_MANAGER_ROLE on ForewitScores). snapshotBlock must exceed the previous epoch's, which a later finalized block always does unless two posts share a block: then wait one block.
+* After the receipt: read RootPosted, set epoch in the file, write web/public/data/scores/<epoch>.json and latest.json, then run recompute({ network, scores, epoch }) and alert through healthchecks.io unless ok is true.
+* Watchdog: a settled round with no root after 2 hours alerts (T3).
+* Correction: post the corrected root first, then revokeRoot(bad epoch, reason) (section 5).
 
 ## 6. Example consumer (ForewitGate, signatures and checks only)
 * Purpose: gate something on a minimum Forewit skill, for example a non transferable "Calibrated" badge or an allowlist. Holds no funds.
@@ -100,6 +110,7 @@ Excluded forecasters are listed in the leaves file with a reason: operator, no_i
   * skill >= MIN_SKILL and n >= MIN_N;
   * the latest epoch's postedAt is at most MAX_AGE old;
   * then records passed[tokenId] = latest epoch and emits an event.
+* Built: contracts/src/examples/ForewitGate.sol, the basic variant above (MIN_SKILL, MIN_N, MAX_AGE; passed[tokenId] = epoch, event Passed). CHANGE 24 Nov 2026: the MIN_AGE variant below is specified but not built; its tests in section 9 are therefore open.
 * With MIN_AGE set, claim takes an epoch argument and uses SCORES.verifyAt(epoch, ...) instead: the epoch's postedAt must be at least MIN_AGE and at most MAX_AGE old, and no newer unrevoked epoch may already be MIN_AGE old (so a holder cannot pick an older, better score). This keeps gates open right after each post instead of locking everyone out for MIN_AGE.
 * An agent off chain does the same with one eth_call to verify plus ownerOf. The site's "verify onchain" button does exactly this.
 
@@ -113,22 +124,32 @@ Excluded forecasters are listed in the leaves file with a reason: operator, no_i
 * T7 Second preimage and type confusion: double hashed 96 byte leaves versus 64 byte internal nodes; fixed types (uint256, int256, uint256).
 * T8 Score gaming: inputs are the ledger's own scores; one Agent ID per user; operators excluded; forfeits count; shrinkage toward zero for small samples. Same limits as the leaderboard (THREAT_MODEL.md).
 * T9 Data availability: if the leaves file is lost, anyone rebuilds it from logs; the root alone is enough to verify a rebuilt proof.
-* T10 Privacy (red line 9): leaves are keyed by tokenId = keccak256(label), so anyone can hash a name and find its score. Under option A the published leaves file also lists the forecaster address (and the mint hint) next to each tokenId, so hashing a name returns a wallet: that is Agent ID packaged as a name to wallet lookup, red line 9 almost word for word. Dropping the address from the file does not fix it, because the recompute needs it and logs reveal it. Option B limits the file to holders who published their name themselves. See open decision 1. The site and MCP never offer name search for holders who have not opted in.
+* T10 Privacy (red line 9): leaves are keyed by tokenId = keccak256(label), so anyone can hash a name and find its score. Under option A the published leaves file also lists the forecaster address (and the mint hint) next to each tokenId, so hashing a name returns a wallet: that is Agent ID packaged as a name to wallet lookup, red line 9 almost word for word. Dropping the address from the file does not fix it, because the recompute needs it and logs reveal it. Option B, chosen 24 Nov 2026 (decision 1), limits the file to holders who published their name themselves. The site and MCP never offer name search for holders who have not opted in.
 * T11 Gas griefing: verify is a view with a caller supplied proof; the caller pays its own calldata. postRoot cost is constant in the number of leaves.
 
-## 8. Gas and cost (PREDICTION, not measured; BSC gas price 0.05 gwei per notes/knowledge.md)
+## 8. Gas and cost
+Prediction (before code, BSC gas price 0.05 gwei per notes/knowledge.md):
 * Deploy: about 1.0M to 1.4M gas, about 0.00006 BNB.
 * postRoot: about 80,000 gas steady state (21,000 base, 2 new slots 44,200, role check and previous epoch reads about 4,200, calldata about 2,300, event about 2,500, overhead); about 97,000 for the first post. About 0.000004 BNB per post.
 * revokeRoot: about 35,000 gas.
 * verify as a view, 100 leaves (7 proof steps): about 8,000 gas (3 cold reads 6,300, hashing about 1,000). Inside a consumer transaction about 15,000 gas including the external call and about 3,600 gas of proof calldata. Each doubling of leaves adds one step, about 650 gas.
-* Measure with forge snapshot and log predicted versus observed in notes/ledger.md.
+
+Observed 24 Nov 2026 (forge test --gas-report, same figures with --isolate; solc 0.8.39, optimizer 200 runs; cold storage, the measured call alone in its test):
+* Deploy: 1,467,881 gas, 7,077 bytes, slightly above the predicted range. Basis: forge's Deployment Cost, which tracked the real ledger deploy closely (report 3,570,621 versus 3,574,338 gas used onchain), so expect about 1.47M to 1.48M in the real transaction, about 0.00007 BNB at 0.05 gwei.
+* postRoot: 79,804 steady, 94,483 first. Basis: gas inside the call; a gasleft probe around an external call gave 84,513, which agrees once the cold account access is added. A transaction adds 21,000 base and about 1,500 calldata, so about 102,000 steady and 117,000 first, about 25% above the prediction. About 0.000005 BNB per post.
+* revokeRoot: 34,371 (prediction 35,000, same basis caveat: plus 21,000 as a transaction).
+* verify as a view, 100 leaves, 7 steps: 9,827 (prediction 8,000).
+* ForewitGate.claim with a 2 step proof: 68,815 (writes passed, emits Passed). ForewitGate deploy 489,417.
+* Logging predicted versus observed in notes/ledger.md is left to the orchestrator.
 
 ## 9. Test plan
 * Unit (Foundry): constructor (agent id mismatch reverts); roles (only the keeper posts; keeper or admin revokes; others revert); postRoot guards (zero root, zero count, future or current block, non increasing snapshotBlock); epoch records and events; verify true for every leaf of a golden tree; false for wrong tokenId, skill, n or proof; false before the first post; false when the latest epoch is revoked (no fallback); verifyAt on old, revoked and unknown epochs; revoke twice and unknown epoch revert; admin two step transfer.
 * Golden vectors: a JavaScript script builds trees of 1, 2, 3 and 100 leaves with @openzeppelin/merkle-tree and prints roots and proofs; Foundry tests check the same values (same pattern as scripts/golden_vectors.mjs). Score golden vectors from section 1.2 in both languages.
 * Fuzz: random leaf sets of 1 to 64 leaves built by a Solidity test helper with the same layout; every leaf verifies, any one bit change in tokenId, skill, n or a proof element fails. Invariant: epoch count only grows, snapshotBlock strictly increases, a revoked epoch never verifies.
 * Recompute equals onchain root: on testnet instance E, run a round with the keeper, post a root, run the recompute script from logs only, require an exact match; repeat on mainnet after every post (keeper job plus a CI check on the public repo).
-* Consumer: ForewitGate unit tests (wrong holder, low skill, low n, stale root; with MIN_AGE: too fresh epoch, older epoch while a newer one is old enough, revoked epoch) and one BSC fork test against the real Agent ID ownerOf with a known holder.
+* Consumer: ForewitGate unit tests (wrong holder, low skill, low n, stale root, revoked root: done; with MIN_AGE: open, variant not built) and one BSC fork test against the real Agent ID ownerOf with a known holder (open).
+* Status 24 Nov 2026: 44 Foundry tests (37 unit including golden roots, a logs fixture root, deploy guards and gas; 6 fuzz at 2,000 runs; 1 invariant suite with 2 invariants) and 11 node tests in indexer/test/scores.test.mjs pass. Golden roots for 1, 2, 3 and 100 leaves and the logs fixture root are asserted with the same constants in both languages, plus one library proof checked by verify. Coverage 100% lines, statements, branches and functions for ForewitScores and ForewitGate. Slither 0.11.6: 0 High, 0 Medium on the new files (2 Low timestamp, both false or intended; 8 Informational naming, same style as the ledger). Aderyn not run. The indexer tests are not in CI yet (no workflow step runs indexer/test).
+* Live smoke 24 Nov 2026 (read only): build on mainnet from the deploy block found the constructor RoleGranted logs and no scored forecaster yet (empty set, no root). On testnet, bsc-testnet-rpc.publicnode.com silently returns no logs for instance E's blocks (144466773 on), and the other public testnet RPCs refuse; fetchLogs now throws when no RoleGranted is found instead of building an empty set. The cached instance E logs (2 scored, both operator wallets) decode to 2 operator exclusions. A testnet recompute needs a keyed testnet RPC.
 * Static analysis: Slither (counted by impact from --json) and Aderyn in CI, every finding triaged in docs/SECURITY.md; 100% line coverage; then an independent review with no open High or Medium before deploy.
 * Deploy only after ForecastLedger is live on mainnet and only with Owais's explicit yes (action, cost, addresses shown first).
 
@@ -138,7 +159,7 @@ Excluded forecasters are listed in the leaves file with a reason: operator, no_i
 * Pausable: nothing to pause; revoke is enough.
 
 ## 11. Open decisions for the owner
-1. Membership. Option A (written as the default in section 2.2 because it is the launch prompt wording): every scored Agent ID holder gets a leaf. Option B: only forecasters whose last ProfileUpdated has isPublic true and a label. A makes the reputation portable for everyone, but the leaves file then maps hashed names to wallets for people who never opted in (T10), which is red line 9 and the MASTER_PROMPT rule "no search by arbitrary name"; it also rests on an unverified mint event and cannot be tested on instance E. B is privacy safe, needs no Agent ID log scan (the ledger already proved ownerOf at opt in), and works on testnet; gates only work for opted in users. Recommended: B for v1; opting in is one transaction we already have.
+1. Membership. DECIDED 24 Nov 2026 by Owais: option B (section 2.2). Original note: option A (written as the default in section 2.2 because it is the launch prompt wording): every scored Agent ID holder gets a leaf. Option B: only forecasters whose last ProfileUpdated has isPublic true and a label. A makes the reputation portable for everyone, but the leaves file then maps hashed names to wallets for people who never opted in (T10), which is red line 9 and the MASTER_PROMPT rule "no search by arbitrary name"; it also rests on an unverified mint event and cannot be tested on instance E. B is privacy safe, needs no Agent ID log scan (the ledger already proved ownerOf at opt in), and works on testnet; gates only work for opted in users. Recommended: B for v1; opting in is one transaction we already have.
 2. Whether verify should also accept a live path (getStats based) for holders not yet in a root. Recommended: no for v1 (keep one definition of truth).
-3. New dev dependency @openzeppelin/merkle-tree for the keeper and recompute script (pinned, about 1 package). Recommended: yes, it is the reference layout that OpenZeppelin MerkleProof expects.
+3. New dev dependency @openzeppelin/merkle-tree for the keeper and recompute script. DONE 24 Nov 2026: 1.0.8 pinned as a root devDependency; it brings 31 packages with its transitive dependencies (not 1 as estimated). npm warns that its uuid 9 dependency is deprecated.
 4. What happens if ForewitScores is late. done_when item 4 needs it live on mainnet with one verify call. The pre registered line in notes/ledger.md stops new scope if there is no testnet root with a recompute match by 1 Dec 2026; whether to then skip the mainnet deploy is Owais's call, not pre decided.
