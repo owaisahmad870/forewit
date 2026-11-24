@@ -353,6 +353,8 @@ async function loop() {
   const ping = async (k) => { if (process.env[k]) await fetch(process.env[k]).catch(() => {}); };
   const guard = async (name, fn) => { try { await fn(); } catch (e) { await alert(`loop ${name} failed: ${(e.shortMessage || e.message).split('\n')[0]}`); } };
   while (Date.now() < end) {
+    let wakeForDeadline = Infinity;
+    try {
     const now = new Date();
     const count = await read('roundCount');
     const latest = count > 0n ? await read('getRound', [count]) : null;
@@ -365,7 +367,8 @@ async function loop() {
     } else {
       await guard('tick', async () => { await tick(); await ping('HC_PING_TICK'); });
     }
-    const wakeForDeadline = latest && !latest.isSealed && dl - 19 * 60 * 1000 > Date.now() ? dl - 19 * 60 * 1000 : Infinity;
+    if (latest && !latest.isSealed && dl - 19 * 60 * 1000 > Date.now()) wakeForDeadline = dl - 19 * 60 * 1000;
+    } catch (e) { await alert(`loop pass failed: ${(e.shortMessage || e.message).split(String.fromCharCode(10))[0]}`); } // RPC down: next pass in 15 minutes
     const next = Math.min(Date.now() + 15 * 60 * 1000, wakeForDeadline, end);
     if (next > Date.now()) await new Promise((res) => setTimeout(res, next - Date.now()));
   }
