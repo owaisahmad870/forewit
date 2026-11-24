@@ -20,8 +20,8 @@ Every transaction has value 0 and only pays network gas. Forewit never asks for 
 
 ## Contract
 
+* ForecastLedger, BSC mainnet (chain 56): 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6 (default network)
 * ForecastLedger, BSC testnet (chain 97): 0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1
-* BSC mainnet (chain 56): not deployed yet. The CLI refuses mainnet until the address is pinned.
 * commit(uint256 roundId, bytes32 commitHash), before the commit deadline, caller must hold an Agent ID.
 * reveal(uint256 roundId, uint256 packed, bytes32 salt), from the commit deadline until the reveal deadline.
 * Commit hash: keccak256(abi.encode(COMMIT_TYPEHASH, chainId, ledger, roundId, forecaster, packed, salt)) with COMMIT_TYPEHASH = keccak256("ForewitCommit(uint256 chainId,address ledger,uint256 roundId,address forecaster,uint256 packed,bytes32 salt)").
