@@ -10,6 +10,7 @@ on:
     - cron: "7 3 * * *"     # daily: select and open (needs 3 h before 23:00 UTC, so lateness is harmless)
     - cron: "52 21 * * *"   # night: waits for 22:55 UTC, baseline, seal at 23:00:20
     - cron: "17 22 * * *"   # second night start in case the first is dropped; finds the work done
+    - cron: "37 22 * * *"   # third night start: healthchecks cannot alert on a check that never pinged
     - cron: "23,53 * * * *" # tick: seal, finalize, score
   workflow_dispatch:
     inputs:
