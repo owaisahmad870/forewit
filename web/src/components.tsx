@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useT } from './i18n';
-import { bins10, type Question } from './lib/data';
-import { fmtLocal, fmtPct, fmtUtc } from './lib/format';
+import { bannerRounds, bins10, type Question, type Round } from './lib/data';
+import { fmtCountdown, fmtLocal, fmtPct, fmtUtc } from './lib/format';
 
 export function useNow(ms = 1000) {
   const [now, setNow] = useState(() => Date.now());
@@ -196,5 +196,39 @@ export function Tabs({ tabs }: { tabs: { id: string; label: string; body: ReactN
         </div>
       ))}
     </div>
+  );
+}
+
+// C5: reveal due and commit countdowns for every live round. Screen readers hear only the phase text (it changes when a
+// window opens or closes); the per second timers stay silent. Rendered once data is loaded, so it never pushes content down.
+export function RoundBanner({ rounds, showCommit = true }: { rounds: Round[]; showCommit?: boolean }) {
+  const { t, lang } = useT();
+  const now = useNow();
+  const { reveal, commit } = bannerRounds(rounds, now);
+  const c = showCommit ? commit : null;
+  const revealText = (r: Round) => t('banner.reveal', { n: r.id, t: fmtUtc(r.revealDeadline, lang) });
+  const timer = (ms: number) => <span role="timer" aria-live="off" className="font-semibold tabular-nums">{fmtCountdown(ms, t('ui.dayUnit'))}</span>;
+  return (
+    <>
+      <p aria-live="polite" className="sr-only">{[...reveal.map(revealText), c ? t('banner.commit', { n: c.id }) : ''].join(' ')}</p>
+      {(reveal.length > 0 || c) && (
+        <div className="mb-5 space-y-2">
+          {reveal.map((r) => (
+            <div key={r.id} className="rounded-lg border-2 border-accent bg-surface-2 p-3">
+              <p className="font-semibold">{revealText(r)}</p>
+              <p className="mt-1 flex flex-wrap items-center gap-x-3 text-sm">
+                <span><span className="text-muted">{t('banner.revealIn')}</span> {timer(r.revealDeadline.getTime() - now)}</span>
+                <a href="#/start" className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('banner.how')}</a>
+              </p>
+            </div>
+          ))}
+          {c && (
+            <p className="flex min-h-11 flex-wrap items-center gap-x-2 rounded-lg border border-line px-3 text-sm">
+              <a href={`#/round/${c.id}`} className="text-accent underline underline-offset-4">{t('banner.commit', { n: c.id })}</a> {timer(c.commitDeadline.getTime() - now)}
+            </p>
+          )}
+        </div>
+      )}
+    </>
   );
 }

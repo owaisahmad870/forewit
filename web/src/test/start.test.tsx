@@ -3,34 +3,39 @@ import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import en from '../locales/en.json';
-import { EXECUTE_COMMAND, START_COMMANDS, Start } from '../pages/Start';
+import { START_COMMANDS, Start, WINDOWS_COMMANDS } from '../pages/Start';
 
 const read = (p: string) => readFileSync(new URL(p, import.meta.url), 'utf8');
 const cli = read('../../../agent/forewit.mjs');
 const bin = read('../../../mcp/bin/forewit.mjs');
+const bawLib = read('../../../agent/lib/baw.mjs');
 const docs = [read('../../../docs/QUICKSTART.md'), read('../../../docs/QUICKSTART.zh.md')];
 
-const lines = [...START_COMMANDS.flat(), EXECUTE_COMMAND, ...docs.flatMap((d) => d.split('\n'))].filter((l) => /^npx forewit /.test(l));
+// mainnet runs from the repository (node agent/forewit.mjs); npm forewit 0.0.1 is testnet only
+const CLI = /^(npx forewit|node agent\/forewit\.mjs) /;
+const lines = [...START_COMMANDS.flat(), ...docs.flatMap((d) => d.split('\n'))].filter((l) => CLI.test(l));
 
 describe('start commands', () => {
   it('has one command group per step', () => expect(START_COMMANDS).toHaveLength(en.start.steps.length));
   it('every npx forewit subcommand and flag exists in the CLI', () => {
     expect(lines.length).toBeGreaterThan(8);
     for (const l of lines) {
-      const sub = l.split(' ')[2];
+      const sub = l.replace(CLI, '').split(' ')[0];
       if (sub === 'mcp') expect(bin).toContain("cmd === 'mcp'");
       else expect(cli, l).toMatch(new RegExp(`\\b${sub}: cmd`, 'i'));
       for (const [, flag] of l.matchAll(/ --([a-z-]+)/g)) expect(cli, `${l}: --${flag}`).toMatch(new RegExp(`'?${flag}'?: \\{ type:`));
     }
   });
   it('every baw command shown is one the CLI prints or runs', () => {
-    for (const l of [...START_COMMANDS.flat(), ...docs.flatMap((d) => d.split('\n'))].filter((x) => x.startsWith('baw '))) {
-      expect(cli, l).toContain(l.split(' --')[0]); // the CLI prints these exact lines in its preflight and help
-    }
+    const shown = [...START_COMMANDS.flat(), ...WINDOWS_COMMANDS, ...docs.flatMap((d) => d.split('\n'))].filter((x) => /^baw(\.cmd)? /.test(x));
+    expect(shown).toContain('baw.cmd auth signin');
+    // the CLI prints these exact lines in its preflight, help and sign in hint (baw 1.12.0 has no wallet-status or login)
+    for (const l of shown) expect(cli + bawLib, l).toContain(l.replace(/^baw\.cmd /, 'baw ').split(' --')[0]);
   });
   it('renders the steps, commands and screenshot placeholders', () => {
     const out = renderToStaticMarkup(<Start />);
-    expect(out).toContain('npx forewit commit --from 0xYourAgenticWallet');
+    expect(out).toContain('node agent/forewit.mjs commit --execute --from 0xYourAgenticWallet');
+    expect(out).toContain('npm.cmd install -g @binance/agentic-wallet@1.12.0');
     expect(out).toContain('Screenshot placeholder');
   });
 });

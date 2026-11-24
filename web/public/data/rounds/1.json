@@ -1,59 +1,73 @@
 {
-  "network": 97,
-  "ledger": "0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1",
+  "network": 56,
+  "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
   "roundId": "1",
   "kind": "daily",
-  "rule": "e2e harness",
-  "commitDeadline": "2026-11-23T20:17:48.000Z",
-  "revealDeadline": "2026-11-23T20:23:48.000Z",
-  "resolutionWaitSeconds": "86400",
+  "rule": "QUESTION_SELECTION v3.1",
+  "commitDeadline": "2026-11-24T23:00:00.000Z",
+  "revealDeadline": "2026-11-25T23:00:00.000Z",
+  "resolutionWaitSeconds": "604800",
   "questions": [
     {
       "index": 0,
-      "marketId": "437",
-      "conditionId": "0x6bea497e7cf3c50376a0aefd2a6340fae2e51e0a0896753d128625f386e19941",
-      "ctf": "0x9a0283bb4e20789993c14ec6ce1db7a984b49a54",
-      "eventQuestion": "Testnet mock question 1 (resolved by the test harness, not a real market)",
-      "label": "Mock outcome 1",
-      "marketQuestion": null,
-      "endsAt": null,
+      "marketId": "4752900",
+      "conditionId": "0xf80d29e2a7387653e2fdeb5cd533440601d3b1187573c037ec29657fb9fa68a9",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "Bitcoin Up or Down on November 25?",
+      "label": "Bitcoin Up or Down on November 25?",
+      "marketQuestion": "Bitcoin Up or Down on November 25?",
+      "endsAt": "2026-11-25T17:00:00.000Z",
       "tags": [
-        "Testnet",
-        "Mock"
-      ],
-      "marketPrice": 0.35
+        "Crypto",
+        "BTC",
+        "Up/Down",
+        "Daily"
+      ]
     },
     {
       "index": 1,
-      "marketId": "434",
-      "conditionId": "0x821c670ed24d05cfb259a03c9d937f0c34016389eb71a78eafa990d72bc03985",
-      "ctf": "0x9a0283bb4e20789993c14ec6ce1db7a984b49a54",
-      "eventQuestion": "Testnet mock question 2 (resolved by the test harness, not a real market)",
-      "label": "Mock outcome 2",
-      "marketQuestion": null,
-      "endsAt": null,
+      "marketId": "4752901",
+      "conditionId": "0xf07060dc08edd037a813426fa574acf0a915f42f60fceaf9a543b66c8889340a",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "Ethereum Up or Down on November 25?",
+      "label": "Ethereum Up or Down on November 25?",
+      "marketQuestion": "Ethereum Up or Down on November 25?",
+      "endsAt": "2026-11-25T17:00:00.000Z",
       "tags": [
-        "Testnet",
-        "Mock"
-      ],
-      "marketPrice": 0.635
+        "Crypto",
+        "ETH",
+        "Up/Down",
+        "Daily"
+      ]
     },
     {
       "index": 2,
-      "marketId": "433",
-      "conditionId": "0xa65c1bc8f7b571bd6d655df0df537d7a43e11de43f8341c07307c9c3867ae54b",
-      "ctf": "0x9a0283bb4e20789993c14ec6ce1db7a984b49a54",
-      "eventQuestion": "Testnet mock question 3 (resolved by the test harness, not a real market)",
-      "label": "Mock outcome 3",
-      "marketQuestion": null,
-      "endsAt": null,
+      "marketId": "4752902",
+      "conditionId": "0xc8f737a292d8f9d834826b2442f7273e0ff00f9a5ef913de3c92d926fed0f301",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "BNB Up or Down on November 25?",
+      "label": "BNB Up or Down on November 25?",
+      "marketQuestion": "BNB Up or Down on November 25?",
+      "endsAt": "2026-11-25T17:00:00.000Z",
       "tags": [
-        "Testnet",
-        "Mock"
-      ],
-      "marketPrice": 0.315
+        "Crypto",
+        "Up/Down",
+        "Daily",
+        "BNB"
+      ]
+    },
+    {
+      "index": 3,
+      "marketId": "4745063",
+      "conditionId": "0xe6d00e967b4d84f56817c46cc4cd8c899cc9a0b083eacc5410dedfd2ffc31e7d",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "Highest temperature in Tokyo on November 25?",
+      "label": "15°C",
+      "marketQuestion": "Will the highest temperature in Tokyo be 15°C on November 25?",
+      "endsAt": "2026-11-25T12:00:00.000Z",
+      "tags": [
+        "Weather"
+      ]
     }
-  ],
-  "marketPriceAt": "2026-11-23T20:14:55.048Z",
-  "windowMovePts": 0
+  ]
 }

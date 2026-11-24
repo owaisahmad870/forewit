@@ -369,7 +369,7 @@
             "strong": "{ \"mcpServers\": { \"forewit\": { \"command\": \"npx\", \"args\": [\"forewit\", \"mcp\"] } } }"
           },
           "远程服务器：使用上面的地址添加自定义连接器或 HTTP 服务器。",
-          "状态：两个服务器均已构建并通过测试。托管地址和 npm 包尚未上线；在此之前，请从代码仓库的 mcp 文件夹运行（见其 README）。主网尚未部署，因此目前它们指向 BSC 测试网账本。"
+          "状态：两个服务器均已构建并通过测试。ForecastLedger 已在 BSC 主网上线。npm 包 forewit 0.0.1 是测试网预览，托管地址尚未上线；在下一个 npm 版本发布前，主网请从代码仓库的 mcp 文件夹运行（见其 README）。"
         ]
       },
       "prior": {
@@ -468,10 +468,10 @@
   "start": {
     "title": "开始：从 Agent ID 到首次提交",
     "intro": "这是从持有 Agent ID 到首次在链上提交预测的最短路径，约需十分钟。每次预测都会积累你的技能记录，这份记录无法购买，也无法转让。",
-    "preview": "预览：主网合约尚未上线，npx forewit 目前指向 BSC 测试网。Agentic Wallet 只在 BSC 主网签名，因此在测试网上 CLI 会打印原始交易（to、value 0、data），请用任意测试网钱包发送。上线后，同样的命令将通过 Agentic Wallet 完成。",
+    "preview": "已在 BSC 主网上线。请在代码仓库中用 node agent/forewit.mjs 运行 CLI，它默认指向主网。npm 包（npx forewit，版本 0.0.1）在下一个版本发布前仍是测试网预览，暂时不要用它在主网提交。",
     "step": "第 {n} 步。",
     "shot": "截图占位：{what}",
-    "oneStep": "想在主网上一步完成？这种形式的 commit 命令会检查钱包、显示预览，只有在你输入 yes 后才发送。请在 PowerShell 或普通终端中运行。",
+    "windows": "在 Windows 上，PowerShell 可能报错 \"running scripts is disabled on this system\"（禁止运行脚本）。请改用下面的 .cmd 形式（无需修改策略），并在本页所有写 baw 的地方输入 baw.cmd。",
     "toProof": "在证明页查看你的提交是否已计入",
     "steps": [
       {
@@ -480,13 +480,18 @@
           {
             "list": [
               "在币安 App 中已领取的 Agent ID。",
-              "Binance Agentic Wallet 命令行工具 baw，并已登录钱包。",
-              "Node.js 22 或更高版本，用于 npx。",
+              "Node.js 26 或更高版本，以及 git，用于从代码仓库获取 Forewit CLI。",
               "少量 BNB 用作网络手续费。每笔 Forewit 交易金额均为 0；Forewit 从不索要资金，也不支付任何款项。"
             ]
           }
         ],
         "shot": "币安 App 中显示的 Agent ID"
+      },
+      {
+        "h": "安装并登录 baw",
+        "blocks": [
+          "安装 Binance Agentic Wallet 命令行工具 baw，然后检查 status 是否为 CONNECTED。如果不是，请登录：该命令会显示二维码，用币安 App 扫描即可。"
+        ]
       },
       {
         "h": "开启开发者模式",
@@ -498,37 +503,43 @@
               "它有单独的每日限额，钱包余额必须低于其上限。"
             ]
           },
-          "然后在终端中检查：status 必须为 CONNECTED，agent id 必须显示你已领取的 Agent ID，settings 必须显示开发者模式已开启。"
+          "然后在终端中检查：agent id 必须显示你已领取的 Agent ID，settings 必须显示开发者模式已开启。"
         ],
         "shot": "Agentic Wallet 设置中的开发者模式开关"
       },
       {
-        "h": "运行 npx forewit",
+        "h": "查看轮次",
         "blocks": [
-          "查看当前轮次并检查你的概率。轮次文件是 forewit.xyz 上 data/rounds 目录中的公开轮次 JSON，例如 data/rounds/1.json；它提供每个事件问题和标签，并与链上数据核对。概率为百分比，每题一个，取值 1 到 99。"
+          "轮次文件是代码仓库 web/public/data/rounds 目录中的公开轮次 JSON（先运行 git pull 获取最新轮次）；它提供每个事件问题和标签，并与链上数据核对。概率为百分比，每题一个，取值 1 到 99。第 1 轮有 4 道题，因此需要 4 个数字。"
         ],
-        "shot": "npx forewit round 输出的问题列表"
+        "shot": "round 输出的问题列表"
       },
       {
         "h": "完成首次提交",
         "blocks": [
-          "使用 binanceChainId 为 56 的条目中的地址作为钱包地址。commit 命令会生成随机盐值，把揭示凭据保存在你主目录下的 .forewit 文件夹中，并打印 baw 预览命令。",
+          "使用 binanceChainId 为 56 的条目中的地址作为钱包地址。commit 命令会生成随机盐值，把揭示凭据保存在你主目录下的 .forewit 文件夹中，显示钱包预览，只有在你输入 yes 后才发送。请在 PowerShell 或普通终端中运行。",
           {
             "ol": [
-              "运行打印出的预览命令，阅读 parsedTx、模拟结果和每一项风险。",
-              "只有在你同意时，才运行打印出的执行命令。如果钱包要求，请在币安 App 中批准，不要重复发送。",
+              "阅读预览：parsedTx、模拟结果和每一项风险。只有在你同意时才输入 yes。",
+              "如果钱包要求，请在币安 App 中批准，不要重复发送。",
               "把揭示凭据私密备份。没有盐值就无法揭示，该轮将记为弃权。"
             ]
           }
         ],
-        "shot": "baw 预览以及币安 App 中的批准"
+        "shot": "预览以及币安 App 中的批准"
       },
       {
         "h": "截止后揭示",
         "blocks": [
-          "在提交截止之后、揭示截止之前揭示你的预测，你的分数随即计入你的记录。随时可以查看状态。"
+          "在提交截止之后、揭示截止之前，在同一台电脑上揭示；盐值保存在你的凭据中。你的分数随即计入你的记录。揭示窗口开放期间，网站会显示待揭示提醒。"
         ]
       }
     ]
+  },
+  "banner": {
+    "commit": "第 {n} 轮已开放。提交截止倒计时",
+    "reveal": "第 {n} 轮待揭示。如果你已提交，请在窗口关闭前揭示，否则该轮记为弃权。揭示开放至 {t}。",
+    "revealIn": "揭示截止倒计时",
+    "how": "如何揭示"
   }
 }

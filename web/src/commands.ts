@@ -8,9 +8,9 @@ export const SKILL_COMMANDS = [
 
 export const CLI_COMMANDS = [
   'node agent/forewit.mjs round --round-file <URL of the public round JSON>',
-  'node agent/forewit.mjs forecast --p 72,15,50',
+  'node agent/forewit.mjs forecast --p 60,40,50,30',
   'baw wallet address --json',
-  'node agent/forewit.mjs commit --from 0xYourAgenticWallet --p 72,15,50',
+  'node agent/forewit.mjs commit --from 0xYourAgenticWallet --p 60,40,50,30',
   'node agent/forewit.mjs receipt --from 0xYourAgenticWallet',
   'node agent/forewit.mjs reveal --from 0xYourAgenticWallet',
   'node agent/forewit.mjs status --from 0xYourAgenticWallet',

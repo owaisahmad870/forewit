@@ -8,6 +8,7 @@ import { Leaderboard } from './pages/Leaderboard';
 import { Crowd, DocPage, DocsIndex, Play, Profile } from './pages/Static';
 import { Proof } from './pages/Proof';
 import { Start } from './pages/Start';
+import { RoundBanner } from './components';
 
 const store = {
   get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -121,6 +122,12 @@ function Page({ route, data, error }: { route: string[]; data: Dataset | null; e
   if (head === 'profile') return <Profile />;
   if (error) return <p className="text-muted">{t('ui.loadError')}</p>;
   if (!data) return <p className="text-muted">{t('ui.loading')}</p>;
+  // the home page already shows the live commit countdown, so its banner shows reveal reminders only
+  return <><RoundBanner rounds={data.rounds} showCommit={!!head} /><DataPage head={head} arg={arg} data={data} /></>;
+}
+
+function DataPage({ head, arg, data }: { head?: string; arg?: string; data: Dataset }) {
+  const { t } = useT();
   if (!head) return <Home data={data} />;
   if (head === 'rounds') return <Rounds data={data} />;
   if (head === 'round') return <RoundPage data={data} id={Number(arg)} />;

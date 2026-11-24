@@ -1,20 +1,20 @@
 {
-  "network": 97,
-  "ledger": "0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1",
-  "builtAt": "2026-11-23T20:24:05.683Z",
-  "headBlock": "144468174",
+  "network": 56,
+  "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
+  "builtAt": "2026-11-24T11:28:46.832Z",
+  "headBlock": "135454942",
   "metrics": {
-    "distinctCommitters": 2,
+    "distinctCommitters": 1,
     "rounds": 1,
     "perDay": {
-      "2026-11-23": {
-        "commits": 2,
-        "reveals": 1
+      "2026-11-24": {
+        "commits": 1,
+        "reveals": 0
       }
     },
     "windowMove": {
-      "rounds": 1,
-      "avgPts": 0,
+      "rounds": 0,
+      "avgPts": null,
       "thresholdPts": 0.5,
       "active": false
     }
@@ -24,99 +24,68 @@
       "roundId": "1",
       "questions": [
         {
-          "conditionId": "0x6bea497e7cf3c50376a0aefd2a6340fae2e51e0a0896753d128625f386e19941",
-          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
+          "conditionId": "0xf80d29e2a7387653e2fdeb5cd533440601d3b1187573c037ec29657fb9fa68a9",
+          "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
           "yesSlot": 0,
-          "marketId": "437"
+          "marketId": "4752900"
         },
         {
-          "conditionId": "0x821c670ed24d05cfb259a03c9d937f0c34016389eb71a78eafa990d72bc03985",
-          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
+          "conditionId": "0xf07060dc08edd037a813426fa574acf0a915f42f60fceaf9a543b66c8889340a",
+          "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
           "yesSlot": 0,
-          "marketId": "434"
+          "marketId": "4752901"
         },
         {
-          "conditionId": "0xa65c1bc8f7b571bd6d655df0df537d7a43e11de43f8341c07307c9c3867ae54b",
-          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
+          "conditionId": "0xc8f737a292d8f9d834826b2442f7273e0ff00f9a5ef913de3c92d926fed0f301",
+          "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
           "yesSlot": 0,
-          "marketId": "433"
+          "marketId": "4752902"
+        },
+        {
+          "conditionId": "0xe6d00e967b4d84f56817c46cc4cd8c899cc9a0b083eacc5410dedfd2ffc31e7d",
+          "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+          "yesSlot": 0,
+          "marketId": "4745063"
         }
       ],
       "committers": [
-        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a",
-        "0xdcde642b2da60be15048f14ecb801578098b2e5f"
+        "0x4db416baf0127adca78e7571038b763868ff282c"
       ],
-      "revealed": [
-        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a"
-      ],
-      "forecasts": {
-        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a": "38654902280000"
-      },
-      "scored": {
-        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a": {
-          "questions": "2",
-          "brier": "13000000",
-          "baseline": "82572500",
-          "skill": "69572500",
-          "baselineUsed": true,
-          "at": 1795465442
-        }
-      },
-      "forfeited": {
-        "0xdcde642b2da60be15048f14ecb801578098b2e5f": {
-          "questions": "2",
-          "brier": "200000000",
-          "baseline": "82572500",
-          "skill": "-117427500",
-          "baselineUsed": true,
-          "at": 1795465444
-        }
-      },
-      "outcomes": {
-        "0": "Yes",
-        "1": "No",
-        "2": "Void"
-      },
-      "baseline": "13529563139500",
-      "commitDeadline": "1795465068",
-      "revealDeadline": "1795465428",
-      "resolutionWait": "86400",
-      "createdBlock": "144466921",
-      "baselineAt": 1795464898,
-      "crowd": {
-        "method": "crowd v1: log odds pooling, equal weight below 3 resolved rounds, then 0.1 + skill/mean skill, no extremizing",
-        "bps": [
-          8000,
-          3000,
-          9000
-        ],
-        "simpleBps": [
-          8000,
-          3000,
-          9000
-        ]
-      },
+      "revealed": [],
+      "forecasts": {},
+      "scored": {},
+      "forfeited": {},
+      "outcomes": {},
+      "baseline": null,
+      "commitDeadline": "1795561200",
+      "revealDeadline": "1795647600",
+      "resolutionWait": "604800",
+      "createdBlock": "135452634",
+      "crowd": null,
       "flags": [],
       "commitTiming": {
-        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a": {
-          "at": 1795464886,
+        "0x4db416baf0127adca78e7571038b763868ff282c": {
+          "at": 1795519164,
           "afterBaseline": false,
-          "gapSec": -12
-        },
-        "0xdcde642b2da60be15048f14ecb801578098b2e5f": {
-          "at": 1795464889,
-          "afterBaseline": false,
-          "gapSec": -9
+          "gapSec": null
         }
       },
-      "commitCount": 2,
-      "revealRate": 0.5
+      "commitCount": 1,
+      "revealRate": 0
     }
   ],
   "profiles": {},
   "operators": [
-    "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a",
-    "0xdcde642b2da60be15048f14ecb801578098b2e5f"
+    "0x8d7e7c7f104a4ef26b67c7f74e4629fc90b0bc18",
+    "0xf3b4728b30f0f380d77de9d025e33680f66591bd"
   ],
-  "identityChanged": {}
+  "identityChanged": {},
+  "agentId": "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F",
+  "firstCommits": {
+    "0x4db416baf0127adca78e7571038b763868ff282c": {
+      "tx": "0x219b9e344611b1bae3dc0387d953851d7d4d4ee6987ebb6dea240ef18b162d9a",
+      "roundId": "1",
+      "block": "135453697"
+    }
+  }
 }

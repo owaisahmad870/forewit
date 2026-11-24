@@ -369,7 +369,7 @@
             "strong": "{ \"mcpServers\": { \"forewit\": { \"command\": \"npx\", \"args\": [\"forewit\", \"mcp\"] } } }"
           },
           "Remote server: add a custom connector or HTTP server with the URL above.",
-          "Status: both servers are built and tested. The hosted endpoint and the npm package are not live yet; until they are, run both from the repository folder mcp (see its README). Mainnet is not deployed yet, so today they target the BSC testnet ledger."
+          "Status: both servers are built and tested. The ForecastLedger is live on BSC mainnet. The npm package forewit 0.0.1 is a testnet preview and the hosted endpoint is not live yet; for mainnet, run both from the repository folder mcp (see its README) until the next npm release."
         ]
       },
       "prior": {
@@ -467,10 +467,10 @@
   "start": {
     "title": "Start: from Agent ID to your first commit",
     "intro": "This is the short path from holding an Agent ID to your first forecast committed onchain. It takes about ten minutes. Each forecast builds a track record of your skill that nobody can buy or transfer.",
-    "preview": "Preview: the mainnet ledger is not live yet, so npx forewit targets BSC testnet for now. The Agentic Wallet signs on BSC mainnet only, so on testnet the CLI prints the raw transaction (to, value 0, data) for you to send from any testnet wallet. At launch the same commands work through the Agentic Wallet.",
+    "preview": "Live on BSC mainnet. Run the CLI from the repository with node agent/forewit.mjs; it targets mainnet by default. The npm package (npx forewit, version 0.0.1) is still a testnet preview until the next release, so do not use it for mainnet commits yet.",
     "step": "Step {n}.",
     "shot": "Screenshot placeholder: {what}",
-    "oneStep": "Prefer one step on mainnet? This form of the commit command checks your wallet, shows the preview and sends only after you type yes. Run it in PowerShell or a normal terminal.",
+    "windows": "On Windows, PowerShell may refuse with \"running scripts is disabled on this system\". Use the .cmd forms below instead (no policy change needed), and type baw.cmd wherever this page says baw.",
     "toProof": "See your commit counted on the proof page",
     "steps": [
       {
@@ -479,13 +479,18 @@
           {
             "list": [
               "An Agent ID, claimed in the Binance App.",
-              "The Binance Agentic Wallet CLI, baw, signed in to your wallet.",
-              "Node.js 22 or newer, for npx.",
+              "Node.js 26 or newer, and git, to get the Forewit CLI from the repository.",
               "A little BNB for network gas. Every Forewit transaction has value 0; Forewit never asks for funds and pays nothing out."
             ]
           }
         ],
         "shot": "Agent ID shown in the Binance App"
+      },
+      {
+        "h": "Install and sign in to baw",
+        "blocks": [
+          "Install baw, the Binance Agentic Wallet CLI, then check that status shows CONNECTED. If it does not, sign in: the command shows a QR code to scan with the Binance App."
+        ]
       },
       {
         "h": "Turn on Developer Mode",
@@ -497,37 +502,43 @@
               "It has its own daily limit, and your wallet balance must be under its cap."
             ]
           },
-          "Then check from your terminal: status must be CONNECTED, agent id must show your claimed Agent ID, and settings must show Developer Mode enabled."
+          "Then check from your terminal: agent id must show your claimed Agent ID, and settings must show Developer Mode enabled."
         ],
         "shot": "Developer Mode switch in Agentic Wallet settings"
       },
       {
-        "h": "Run npx forewit",
+        "h": "Read the round",
         "blocks": [
-          "Read the open round and check your probabilities. The round file is the public round JSON on forewit.xyz under data/rounds, for example data/rounds/1.json; it adds each event question and label and is checked against the chain. Probabilities are percentages, one per question, from 1 to 99."
+          "The round file is the public round JSON in web/public/data/rounds of the repository (run git pull first for the latest round); it adds each event question and label and is checked against the chain. Probabilities are percentages, one per question, from 1 to 99. Round 1 has 4 questions, so it takes 4 numbers."
         ],
-        "shot": "npx forewit round output with the questions"
+        "shot": "Round output with the questions"
       },
       {
         "h": "Make your first commit",
         "blocks": [
-          "Use the address of the binanceChainId 56 entry as your wallet. The commit command makes a random salt, saves your reveal receipt in the .forewit folder in your home folder, and prints a baw preview command.",
+          "Use the address of the binanceChainId 56 entry as your wallet. The commit command makes a random salt, saves your reveal receipt in the .forewit folder in your home folder, shows the wallet preview and sends only after you type yes. Run it in PowerShell or a normal terminal.",
           {
             "ol": [
-              "Run the printed preview and read parsedTx, the simulation result and every risk.",
-              "Only if you agree, run the printed execute command. If the wallet asks, approve it in the Binance App and do not send it again.",
+              "Read the preview: parsedTx, the simulation result and every risk. Type yes only if you agree.",
+              "If the wallet asks, approve it in the Binance App and do not send it again.",
               "Back up the reveal receipt somewhere private. Without the salt you cannot reveal, and the round counts as a forfeit."
             ]
           }
         ],
-        "shot": "baw preview and the approval in the Binance App"
+        "shot": "The preview and the approval in the Binance App"
       },
       {
         "h": "Reveal after the deadline",
         "blocks": [
-          "After the commit deadline and before the reveal deadline, reveal your forecast. Your score then joins your track record. Check your status any time."
+          "After the commit deadline and before the reveal deadline, reveal from the same machine; the salt is in your receipt. Your score then joins your track record. The site shows a reveal due banner while a reveal window is open."
         ]
       }
     ]
+  },
+  "banner": {
+    "commit": "Round {n} is open. Commits close in",
+    "reveal": "Reveal due for round {n}. If you committed, reveal before the window closes or the round counts as a forfeit. Reveal open until {t}.",
+    "revealIn": "Reveal closes in",
+    "how": "How to reveal"
   }
 }
