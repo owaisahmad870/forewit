@@ -112,4 +112,5 @@ jobs:
         run: |
           npm ci --no-audit --no-fund
           npm test
+          npm ci --prefix .. --no-audit --no-fund
           node --test ../agent/test/

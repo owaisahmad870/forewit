@@ -125,11 +125,15 @@ test('local server', async (t) => {
     writeFileSync(join(dir, 'broken.json'), '{ not json');
     writeFileSync(join(dir, 'odd.json'), JSON.stringify({ roundId: 'one', salt: 42 }));
     writeFileSync(join(dir, 'list.json'), '[]');
+    // A valid receipt from a deprecated (unpinned) ledger: its salt is withheld, other backups still work.
+    const old = { ...JSON.parse(readFileSync(commit.receipt_file, 'utf8')), ledger: '0x' + '11'.repeat(20), createdAt: '2000-01-01T00:00:00.000Z' };
+    writeFileSync(join(dir, 'old_instance.json'), JSON.stringify(old));
     const { result, data } = await call(client, 'my_receipts', { include_salt: true });
     assert.equal(result.isError, undefined, result.content?.[0]?.text);
-    assert.equal(data.receipts.length, 1);
+    assert.equal(data.receipts.length, 2);
     assert.match(data.receipts[0].salt, /^0x[0-9a-f]{64}$/);
-    assert.deepEqual(data.warnings.map((w) => basename(w.file)).sort(), ['broken.json', 'list.json', 'odd.json']);
+    assert.equal(data.receipts[1].salt, undefined, 'unpinned ledger: salt withheld');
+    assert.deepEqual(data.warnings.map((w) => basename(w.file)).sort(), ['broken.json', 'list.json', 'odd.json', 'old_instance.json']);
     assert.ok(data.warnings.every((w) => w.reason.length > 0));
   });
 
