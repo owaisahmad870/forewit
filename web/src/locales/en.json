@@ -93,6 +93,7 @@
     },
     "rule": "Selection rule",
     "resolutionWait": "Resolution wait",
+    "day": "{n} day",
     "days": "{n} days",
     "commits": "Commits",
     "reveals": "Reveal progress",

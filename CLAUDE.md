@@ -36,7 +36,7 @@ Spec: MASTER_PROMPT.md. It overrides Aurum defaults where they conflict.
 ## Now (update at every step)
 * **Base / best**: 23 Nov 2026. Renamed to Forewit (forewit.xyz, X @forewitai, Chinese display name 先见). v1.2 Forewit build on testnet instance E 0xa497...12E1: END TO END OK via keeper.mjs; instances A to D deprecated. Repo private on GitHub (owaisahmad870/forewit, renamed 23 Nov 2026). 79 Solidity, 77 node, 40 web tests pass. Nothing on mainnet.
 * **Gap to rank 1**: 0 of 30 holders, 0 of 7 rounds, no deploy, no site. Owais holds owaisahmad.ai (wallet 0x4Db4...282C); Developer Mode on (until about 30 Nov unless used).
-* **Running**: round 2 on instance A: settle job at 24 Nov 04:14 UTC (reveal job at 16:09 UTC). Rule v1 census and keeper select smoke test (background).
+* **Running**: nothing (round 2 on A settled 24 Nov, END TO END OK).
 * **Blocked on**: mainnet needs Owais's yes, fresh offline backed keys, a keyed RPC and the organizer answers. .env LEDGER_TESTNET and INDEXER_FROM_BLOCK_TESTNET must move to instance E (Owais).
 * **Rules**: selection v3.1 (no sports, no politics; daily: all daily crypto plus liquid events, 6 to 72 h, cap 8 Dec, 3 to 8 questions, wait 7 days; long: allowlisted tags, liquid, 72 h to 100 days, wait 120 days); event question plus label everywhere; baseline in the last 5 min before the deadline. Pre registered 23 Nov.
 * **Next**: web MVP and agent execute mode (subagents running); security review (milestone 3); VPS setup by Owais (keeper/deploy/README.md). Contract frozen except review findings. Polish 6 to 7 Dec: screen reader pass and 4G load test.
