@@ -52,7 +52,9 @@ async function alert(msg) {
   if (tg && chat) await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: chat, text: `Forewit keeper (${args.network || 'testnet'}): ${msg}` }) }).catch(() => log('telegram alert failed'));
   // GitHub issue comment: GitHub emails the repository owner (set ALERT_ISSUE_NUMBER; the workflow passes GITHUB_TOKEN)
   const { ALERT_ISSUE_NUMBER: issue, GITHUB_TOKEN: gh, GITHUB_REPOSITORY: repo } = process.env;
-  if (issue && gh && repo) await fetch(`https://api.github.com/repos/${repo}/issues/${issue}/comments`, { method: 'POST', headers: { authorization: `Bearer ${gh}`, accept: 'application/vnd.github+json', 'content-type': 'application/json' }, body: JSON.stringify({ body: `Keeper (${args.network || 'testnet'}): ${msg}` }) }).catch(() => log('issue alert failed'));
+  // the issue is public and GitHub does not mask secrets in API bodies: drop URLs (a keyed RPC) and long tokens other than tx hashes and addresses
+  const pubMsg = msg.replace(/https?:\/\/\S+/g, '<url>').replace(/(?!0x)[A-Za-z0-9_-]{32,}/g, '<redacted>');
+  if (issue && gh && repo) await fetch(`https://api.github.com/repos/${repo}/issues/${issue}/comments`, { method: 'POST', headers: { authorization: `Bearer ${gh}`, accept: 'application/vnd.github+json', 'content-type': 'application/json' }, body: JSON.stringify({ body: `Keeper (${args.network || 'testnet'}): ${pubMsg}` }) }).catch(() => log('issue alert failed'));
   if (process.env.ALERT_WEBHOOK_URL) await fetch(process.env.ALERT_WEBHOOK_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: `Forewit keeper: ${msg}` }) }).catch(() => log('alert webhook failed'));
 }
 
@@ -422,8 +424,12 @@ async function tick({ stopAt = Infinity } = {}) {
  *  These change who can run rounds or post roots, so the owner must hear about each one, planned or not. */
 async function adminWatch() {
   const file = `keeper/state/adminwatch_${NET.chain.id}.json`;
-  const head = await logsPub.getBlockNumber();
-  const from = existsSync(file) ? BigInt(JSON.parse(readFileSync(file, 'utf8')).lastBlock) + 1n : head - 20000n; // first run: about 2.5 hours back
+  // confirmed blocks only, and a rescan overlap with duplicates skipped, so one empty read near the tip loses nothing
+  const head = (await logsPub.getBlockNumber()) - CONFIRMATIONS;
+  const saved = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+  const from = saved ? BigInt(saved.lastBlock) + 1n - OVERLAP : head - 20000n; // first run: about 2.5 hours back
+  const seen = new Set(saved?.seen ?? []);
+  const now = [];
   const names = ['RoleGranted', 'RoleRevoked', 'Paused', 'Unpaused', 'DefaultAdminTransferScheduled', 'DefaultAdminTransferCanceled', 'DefaultAdminDelayChangeScheduled', 'DefaultAdminDelayChangeCanceled', 'RootRevoked'];
   const addrs = [await ledger(), isMainnet && process.env.SCORES_MAINNET].filter(Boolean);
   // AccessControl events share one signature on both contracts; RootRevoked exists only on ForewitScores
@@ -431,11 +437,14 @@ async function adminWatch() {
   for (let a = from; a <= head; a += 5000n) {
     const b = a + 4999n > head ? head : a + 4999n;
     for (const l of await logsPub.getLogs({ address: addrs, events: evs, fromBlock: a, toBlock: b })) {
+      const key = `${l.transactionHash}:${l.logIndex}`;
+      now.push(key);
+      if (seen.has(key)) continue;
       await alert(`ADMIN EVENT ${l.eventName} on ${l.address} block ${l.blockNumber} tx ${l.transactionHash} ${JSON.stringify(l.args, big)}`);
     }
   }
   mkdirSync('keeper/state', { recursive: true });
-  writeFileSync(file, JSON.stringify({ lastBlock: String(head) }));
+  writeFileSync(file, JSON.stringify({ lastBlock: String(head), seen: [...new Set([...seen, ...now])].slice(-500) }));
 }
 
 /** One job for the deadline (GitHub Actions starts late or drops runs, so the job starts early and waits):
