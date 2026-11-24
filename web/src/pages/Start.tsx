@@ -1,4 +1,4 @@
-import { Blocks, Card, CopyBlock } from '../components';
+import { Blocks, Card, CopyBlock, Explain } from '../components';
 import { useT } from '../i18n';
 
 type Block = Parameters<typeof Blocks>[0]['blocks'][number];
@@ -38,6 +38,7 @@ export function Start() {
     <article className="space-y-5">
       <h1 className="text-2xl font-semibold">{t('start.title')}</h1>
       <p className="max-w-[68ch]">{t('start.intro')}</p>
+      <Explain terms={['agentId', 'forecast', 'commit', 'salt', 'reveal', 'forfeit']} summary="help.whatTerms" />
       <p className="max-w-[68ch] rounded-lg border border-accent bg-surface-2 p-3 font-semibold">{t('start.preview')}</p>
       <ol className="space-y-4">
         {steps.map((s, i) => (
@@ -56,6 +57,7 @@ export function Start() {
         <a href="#/proof" className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('start.toProof')}</a>
         <a href="#/docs/agents" className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('docs.pages.agents.title')}</a>
         <a href="#/play" className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('play.title')}</a>
+        <a href="#/rounds" className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('help.go.rounds')}</a>
       </p>
     </article>
   );

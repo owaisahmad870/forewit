@@ -1,4 +1,4 @@
-import { Badge, Card } from '../components';
+import { Badge, Card, Explain, NextLinks } from '../components';
 import { useT } from '../i18n';
 import type { Dataset, Snapshot } from '../lib/data';
 import { fmtUtc } from '../lib/format';
@@ -75,6 +75,7 @@ export function Proof({ data }: { data: Dataset }) {
           {stat(f.rounds, t('proof.rounds'))}
           {stat(`${f.resolved} / ${f.questions}`, t('proof.resolved', { void: f.voided }))}
         </dl>
+        <div className="mt-2"><Explain terms={['holders', 'resolvedCount', 'void']} /></div>
       </section>
 
       <Card>
@@ -84,6 +85,7 @@ export function Proof({ data }: { data: Dataset }) {
           {snap.agentId && <Addr a={snap.agentId} label={t('proof.agentId')} />}
           {f.ctfs.map((c) => <Addr key={c} a={c} label={t('proof.ctf')} />)}
         </dl>
+        <Explain terms={['ledger', 'agentId', 'ctf']} summary="help.whatTerms" />
       </Card>
 
       <Card>
@@ -123,6 +125,7 @@ export function Proof({ data }: { data: Dataset }) {
       )}
 
       <p className="text-sm text-muted">{t('ui.builtAt', { date: fmtUtc(new Date(snap.builtAt), lang) })}. {t('proof.rebuild')}</p>
+      <NextLinks to={['start', 'rounds', 'docs']} />
     </div>
   );
 }

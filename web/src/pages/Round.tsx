@@ -1,4 +1,4 @@
-import { Badge, Card, DateLine, Histogram, OutcomeBadge, ProbRule, QuestionTitle, useNow } from '../components';
+import { Badge, Card, DateLine, Explain, Histogram, NextLinks, OutcomeBadge, ProbRule, QuestionTitle, useNow } from '../components';
 import { useT } from '../i18n';
 import { phase, type Dataset, type Round } from '../lib/data';
 import { fmtShare, fmtUtc } from '../lib/format';
@@ -9,7 +9,9 @@ export function Rounds({ data }: { data: Dataset }) {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">{t('round.all')}</h1>
-      {!data.rounds.length && <p className="text-muted">{t('round.noRounds')}</p>}
+      <p className="max-w-[68ch]">{t('help.intro.rounds')}</p>
+      <Explain terms={['commitsOpen', 'revealWindow', 'resolving', 'scored', 'commits']} summary="help.whatTerms" />
+      {!data.rounds.length && <p className="text-muted">{t('round.noRounds')} {t('home.noRound')}</p>}
       <ul className="space-y-2">
         {data.rounds.map((r) => (
           <li key={r.id}>
@@ -26,6 +28,7 @@ export function Rounds({ data }: { data: Dataset }) {
           </li>
         ))}
       </ul>
+      <NextLinks to={['start', 'leaderboard', 'docs']} />
     </div>
   );
 }
@@ -34,7 +37,7 @@ export function RoundPage({ data, id }: { data: Dataset; id: number }) {
   const { t, lang } = useT();
   const now = useNow();
   const r: Round | undefined = data.rounds.find((x) => x.id === id);
-  if (!r) return <p className="text-muted">{t('round.notFound', { n: id })}</p>;
+  if (!r) return <><p className="text-muted">{t('round.notFound', { n: id })}</p><NextLinks to={['rounds']} /></>;
   const visible = r.questions.filter((q) => q.title);
   const ph = phase(r, now);
   const kind = r.kind === 'long' ? 'long' : 'daily';
@@ -44,6 +47,8 @@ export function RoundPage({ data, id }: { data: Dataset; id: number }) {
         <h1 className="text-2xl font-semibold">{t('round.title', { n: r.id })}</h1>
         <Badge tone={ph === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${ph}`)}</Badge>
       </div>
+      <p className="max-w-[68ch]">{t('help.intro.round')}</p>
+      {ph === 'commit' && <p className="max-w-[68ch] text-sm text-muted">{t('help.intro.roundHidden')}</p>}
       <Card>
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div><dt className="text-muted">{t('home.commitDeadline')}</dt><dd><DateLine d={r.commitDeadline} /></dd></div>
@@ -62,6 +67,7 @@ export function RoundPage({ data, id }: { data: Dataset; id: number }) {
           <div><dt className="text-muted">{t('round.rule')}</dt><dd>{t(`round.kinds.${kind}`)}{r.rule && <span className="block text-muted">{r.rule}</span>}</dd></div>
         </dl>
         {r.crowdMethod && <p className="mt-3 text-sm text-muted">{t('round.crowdMethod', { m: r.crowdMethod })}</p>}
+        <div className="mt-2"><Explain terms={[ph === 'commit' ? 'commitsOpen' : ph === 'reveal' ? 'revealWindow' : ph, 'commits', 'revealProgress', 'forfeit', 'resolutionWait', 'selectionRule']} /></div>
       </Card>
 
       <h2 className="pt-2 text-lg font-semibold">{t('round.questions')}</h2>
@@ -81,6 +87,8 @@ export function RoundPage({ data, id }: { data: Dataset; id: number }) {
           </li>
         ))}
       </ol>
+      <Explain terms={['forecast', 'market', 'baseline', 'crowd', 'histogram', 'void']} summary="help.whatTerms" />
+      <NextLinks to={['start', 'scoring', 'rounds']} />
     </div>
   );
 }

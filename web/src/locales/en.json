@@ -79,7 +79,7 @@
     "aiProPrompt": "Use the Forewit skill. Show me today's Forewit round: every question with its event question, option and market price. Help me think through my own probability for each one. Then prepare a commit from my Agent ID wallet, show me the full preview with risks, and wait for my explicit yes before sending anything. Remind me to reveal after the commit deadline.",
     "skillIntro": "The skill file agent/SKILL.md teaches Claude Code the preflight checks, the round flow and the hard rules. Install it in a clone of the repository, then ask Claude to play.",
     "cliIntro": "The zero dependency CLI (Node 26) never signs or sends anything. It prints the exact wallet commands, and you confirm each transaction yourself.",
-    "repoPending": "The repository link is published at launch.",
+    "repoPending": "Source code: github.com/owaisahmad870/forewit (public, MIT).",
     "morePlay": "Read the full guide, including Developer Mode",
     "stats": "Totals",
     "statCommitters": "Distinct forecasters",
@@ -329,7 +329,7 @@
               "This site: static files, read only, no wallet connection, no secrets, pinned dependencies and a strict Content Security Policy."
             ]
           },
-          "Status: an independent security review and a review of the v1.2 changes found no open High or Medium issue; the accepted residual risks are listed in the threat model. Tested end to end on BSC testnet; mainnet deployment comes next."
+          "Status: independent reviews of the mainnet build and of ForewitScores (with its delta review) found no open High or Medium issue; the accepted residual risks are listed in the threat model. Both contracts are live on BSC mainnet and verified on BscScan and Sourcify."
         ]
       },
       "agents": {
@@ -513,7 +513,7 @@
   "start": {
     "title": "Start: from Agent ID to your first commit",
     "intro": "This is the short path from holding an Agent ID to your first forecast committed onchain. It takes about ten minutes. Each forecast builds a track record of your skill that nobody can buy or transfer.",
-    "preview": "Live on BSC mainnet. Run the CLI from the repository with node agent/forewit.mjs; it targets mainnet by default. The npm package (npx forewit, version 0.0.1) is still a testnet preview until the next release, so do not use it for mainnet commits yet.",
+    "preview": "Live on BSC mainnet. Use npx forewit (npm 0.1.0, published with provenance) or run node agent/forewit.mjs from the repository; both target mainnet by default. The profile command is in the repository today and comes to npm with the next release.",
     "step": "Step {n}.",
     "shot": "Screenshot placeholder: {what}",
     "windows": "On Windows, PowerShell may refuse with \"running scripts is disabled on this system\". Use the .cmd forms below instead (no policy change needed), and type baw.cmd wherever this page says baw.",
@@ -586,5 +586,160 @@
     "reveal": "Reveal due for round {n}. If you committed, reveal before the window closes or the round counts as a forfeit. Reveal open until {t}.",
     "revealIn": "Reveal closes in",
     "how": "How to reveal"
+  },
+  "help": {
+    "what": "What do these numbers mean?",
+    "whatTerms": "What do these words mean?",
+    "nextSteps": "Next steps",
+    "glossary": "Glossary",
+    "glossaryIntro": "Every term and number this site uses, in plain words.",
+    "go": {
+      "start": "Start: make your first forecast",
+      "rounds": "See all rounds",
+      "docs": "Read the docs",
+      "scoring": "How scoring works",
+      "leaderboard": "See the leaderboard",
+      "proof": "Check the proof",
+      "play": "How to play"
+    },
+    "intro": {
+      "home": "How it works: each day Forewit opens a round of real questions from Predict.fun prediction markets. You, or your AI agent, commit a probability for each one, hidden until the deadline, and reveal it afterwards. When the markets settle, the contract scores your forecast against the market price, and every score adds to a public track record tied to your Agent ID.",
+      "rounds": "Each round is a small set of questions with a commit deadline and a reveal deadline. Open a round to see its questions and market prices, and after the commit deadline the revealed forecasts.",
+      "round": "Give a probability for each question below before the commit deadline, then reveal it before the reveal deadline. The square shows the market price, the diamond the crowd. Your score compares your forecast with the market price at the deadline.",
+      "roundHidden": "Forecasts stay hidden until the commit deadline. The revealed forecasts chart and the crowd forecast appear here as people reveal.",
+      "play": "What you need, and what happens in one round. For the exact commands, follow the Start page step by step.",
+      "profile": "To appear by name, opt in with the forewit profile command of the CLI; you confirm it in your wallet like any other transaction, and the off option removes your name again.",
+      "docsOrder": "New here? Read in this order: How to play, then How it works and Scoring. The rest go deeper, and every page links to the next one at the bottom."
+    },
+    "scoresWhen": "Round {n} is scored after its reveal deadline ({t}), once its markets settle onchain. Scores appear here then.",
+    "docNav": "Docs pages",
+    "prev": "Previous: {t}",
+    "next": "Next: {t}",
+    "terms": {
+      "agentId": {
+        "t": "Agent ID",
+        "d": "A non transferable identity, one per Binance user, claimed in the Binance App. The ledger accepts a commit only from a wallet that holds one, so one person builds one track record."
+      },
+      "forecast": {
+        "t": "Forecast",
+        "d": "Your probability that a question resolves Yes, given as a percentage. The CLI takes whole numbers from 1 to 99, one per question."
+      },
+      "commit": {
+        "t": "Commit",
+        "d": "A hidden hash of your probabilities and a random secret (the salt), sent onchain before the commit deadline. Nobody, including Forewit, can read it until you reveal."
+      },
+      "salt": {
+        "t": "Salt and reveal receipt",
+        "d": "The random secret inside your commit, saved in your reveal receipt on your computer. Keep it private until the commit deadline. Without it you cannot reveal."
+      },
+      "reveal": {
+        "t": "Reveal",
+        "d": "After the commit deadline and before the reveal deadline you publish your probabilities and salt. The contract checks that they match your commit."
+      },
+      "forfeit": {
+        "t": "Forfeit",
+        "d": "A commit that was never revealed. Every non void question in that round counts as the worst possible Brier (1), so revealing is never worse than forfeiting."
+      },
+      "market": {
+        "t": "Market price",
+        "d": "The price of Yes on the Predict.fun market, read as a probability: 62% means the market gives Yes a 62% chance. Before the deadline the site shows the latest published price."
+      },
+      "baseline": {
+        "t": "Market at deadline (baseline)",
+        "d": "The order book mid price of each question, posted onchain once in the last 15 minutes before the commit deadline. Every forecaster in the round is compared with this same price."
+      },
+      "crowd": {
+        "t": "Agent ID Crowd",
+        "d": "All revealed forecasts on a question combined into one probability. It appears once forecasts are revealed, and the site shows whether it beats the market."
+      },
+      "brier": {
+        "t": "Brier score",
+        "d": "How far a forecast was from what happened: (probability minus outcome) squared, with Yes as 1 and No as 0. 0 is perfect, always saying 50% gives 0.25, and 1 is the worst. Lower is better."
+      },
+      "skill": {
+        "t": "Skill",
+        "d": "Market Brier minus your Brier on the same question. Positive means you were closer to the outcome than the market price. The leaderboard adds it up and divides by (questions with a baseline + 20), so a handful of questions counts for little."
+      },
+      "calibration": {
+        "t": "Calibration error",
+        "d": "How far your probabilities are from how often things happened, over 10 ranges: of your 70% forecasts, did about 70% resolve Yes? Lower is better. Shown for information only, never used for rank."
+      },
+      "participation": {
+        "t": "Participation",
+        "d": "Rounds revealed divided by rounds committed, counting only rounds whose reveal window has closed."
+      },
+      "ranked": {
+        "t": "Ranked",
+        "d": "A public forecaster is ranked after at least 5 scored rounds and 20 questions with a baseline. Before that they are listed under Not yet ranked."
+      },
+      "questionsCol": {
+        "t": "Questions and rounds",
+        "d": "Questions with a market baseline that were scored for this forecaster, and the number of rounds scored or forfeited."
+      },
+      "dagger": {
+        "t": "† mark",
+        "d": "Part of this skill came from commits made after the baseline was posted."
+      },
+      "commitsOpen": {
+        "t": "Commits open",
+        "d": "The round takes commits until its commit deadline. All forecasts stay hidden."
+      },
+      "revealWindow": {
+        "t": "Reveal window",
+        "d": "The commit deadline has passed. Everyone who committed reveals before the reveal deadline."
+      },
+      "resolving": {
+        "t": "Waiting for resolution",
+        "d": "Reveals are closed. The round waits for its markets to settle onchain and for every commit to be scored."
+      },
+      "scored": {
+        "t": "Scored",
+        "d": "Every question has an outcome and every commit is scored or forfeited."
+      },
+      "commits": {
+        "t": "Commits",
+        "d": "How many forecasts were committed in this round. Each comes from a wallet that holds an Agent ID."
+      },
+      "revealProgress": {
+        "t": "Reveal progress",
+        "d": "How many of the commits have been revealed so far."
+      },
+      "void": {
+        "t": "Void and Unresolved",
+        "d": "Unresolved: the market has not settled yet. Void: the question is skipped for everyone, after a split payout, a resolution seen before the round was sealed, or no result after the reveal deadline plus the resolution wait."
+      },
+      "resolutionWait": {
+        "t": "Resolution wait",
+        "d": "How long after the reveal deadline the round waits for its markets to settle. A question still unsettled after that becomes Void. Fixed when the round is created."
+      },
+      "selectionRule": {
+        "t": "Selection rule",
+        "d": "The published rule the keeper used to pick this round’s questions from Predict.fun markets: no sports, no politics, liquid markets only."
+      },
+      "histogram": {
+        "t": "Revealed forecasts chart",
+        "d": "How many revealed forecasts fell in each 10 point range, with the market at deadline and the crowd marked. n is the number of revealed forecasts."
+      },
+      "distinct": {
+        "t": "Distinct forecasters",
+        "d": "Different wallets that have committed at least once, across all rounds."
+      },
+      "ledger": {
+        "t": "ForecastLedger",
+        "d": "The Forewit contract on BSC that records commits, reveals, baselines, outcomes and scores. It holds no funds and cannot be upgraded."
+      },
+      "ctf": {
+        "t": "Conditional Tokens (CTF)",
+        "d": "The onchain contract where Predict.fun markets settle. Outcomes come only from its payouts, so nobody, including Forewit, can set a result."
+      },
+      "resolvedCount": {
+        "t": "Questions resolved",
+        "d": "Questions whose outcome has been read from the Conditional Tokens payouts, out of all questions so far."
+      },
+      "holders": {
+        "t": "Agent ID holders who committed",
+        "d": "Distinct wallets that sent at least one commit. Only Agent ID holders can commit, so each one is a holder."
+      }
+    }
   }
 }
