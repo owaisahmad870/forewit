@@ -4,21 +4,23 @@ import { useT } from '../i18n';
 type Block = Parameters<typeof Blocks>[0]['blocks'][number];
 
 // Commands per step, in the same order as start.steps in the locales. Code, not prose: the locale files allow no hyphens.
-// Every forewit subcommand and flag here exists in agent/forewit.mjs (checked by src/test/start.test.tsx); baw lines are the
-// ones the CLI itself prints or runs in its preflight.
+// Every forewit subcommand and flag here exists in agent/forewit.mjs and every baw line is one the CLI prints or the baw
+// 1.12.0 help lists (checked by src/test/start.test.tsx). Mainnet runs from the repository: npm forewit 0.0.1 is testnet only.
+const ROUND_FILE = 'web/public/data/rounds/1.json';
 export const START_COMMANDS: string[][] = [
-  [],
-  ['baw wallet status --json', 'baw wallet agent-id --json', 'baw wallet settings --json'],
-  ['npx forewit round --round-file <URL of the public round JSON>', 'npx forewit forecast --p 72,15,50'],
+  ['git clone https://github.com/owaisahmad870/forewit.git', 'cd forewit', 'npm ci'],
+  ['npm install -g @binance/agentic-wallet@1.12.0', 'baw wallet status --json', 'baw auth signin'],
+  ['baw wallet agent-id --json', 'baw wallet settings --json'],
+  [`node agent/forewit.mjs round --round-file ${ROUND_FILE}`, 'node agent/forewit.mjs forecast --p 60,40,50,30'],
   [
     'baw wallet address --json',
-    'npx forewit commit --from 0xYourAgenticWallet --p 72,15,50',
-    'npx forewit receipt --from 0xYourAgenticWallet',
+    `node agent/forewit.mjs commit --execute --from 0xYourAgenticWallet --p 60,40,50,30 --round-file ${ROUND_FILE}`,
+    'node agent/forewit.mjs receipt --from 0xYourAgenticWallet',
   ],
-  ['npx forewit reveal --from 0xYourAgenticWallet', 'npx forewit status --from 0xYourAgenticWallet'],
+  ['node agent/forewit.mjs reveal --execute --from 0xYourAgenticWallet', 'node agent/forewit.mjs status --from 0xYourAgenticWallet'],
 ];
-// Mainnet only (the CLI refuses --execute elsewhere); shown under step 4 as the one step alternative.
-export const EXECUTE_COMMAND = 'npx forewit commit --execute --from 0xYourAgenticWallet --p 72,15,50';
+// Windows PowerShell blocks npm.ps1 and baw.ps1 when script execution is disabled; the .cmd shims need no policy change.
+export const WINDOWS_COMMANDS = ['npm.cmd install -g @binance/agentic-wallet@1.12.0', 'baw.cmd wallet status --json', 'baw.cmd auth signin'];
 
 function Shot({ text }: { text: string }) {
   const { t } = useT();
@@ -44,7 +46,7 @@ export function Start() {
               <h2 className="mb-3 text-lg font-semibold">{t('start.step', { n: i + 1 })} {s.h}</h2>
               <Blocks blocks={s.blocks} />
               {START_COMMANDS[i]?.length ? <CopyBlock text={START_COMMANDS[i].join('\n')} /> : null}
-              {i === 3 && <><p className="mt-4 max-w-[68ch]">{t('start.oneStep')}</p><CopyBlock text={EXECUTE_COMMAND} /></>}
+              {i === 1 && <><p className="mt-4 max-w-[68ch]">{t('start.windows')}</p><CopyBlock text={WINDOWS_COMMANDS.join('\n')} /></>}
               {s.shot && <Shot text={s.shot} />}
             </Card>
           </li>
