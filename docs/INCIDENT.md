@@ -7,6 +7,19 @@ Summary: the public version is gitbook/trust/keys_and_incidents.md. This file ho
 * The admin keystore opens: `cast wallet address --keystore ~/forewit_keys/admin` prints the ADMIN address. Offline copies checked the same way.
 * A spare keeper keystore exists, created with `cast wallet new` and backed up offline, unfunded until needed.
 
+## Severity (decide in the first 5 minutes)
+* P1: a team key is used by someone else, or an admin event nobody planned (role grant or revoke, pause, admin transfer). Act now, every step below.
+* P2: a team key may be exposed (pasted, committed, logged) but no onchain use yet. Rotate today.
+* P3: a service token leaked, or a keeper duty missed (baseline, seal). Fix within the day.
+* P4 and P5: anything else (a docs error, a site bug). Normal work.
+
+## Help from outside
+* SEAL 911 (Security Alliance emergency response, free): the Telegram bot @seal_911_bot (https://t.me/seal_911_bot), source github.com/security-alliance/seal-911. Open a ticket in the bot. Anyone who then contacts us directly must repeat the keyword sentence we gave in that ticket; anyone else is not SEAL.
+* Use it for P1 only. Our contracts hold no funds, so the usual job is a second pair of eyes on what the attacker can still do.
+
+## Where alerts arrive
+* Keeper alerts (including every admin event on both contracts, checked on each tick) are comments on the GitHub issue set in the repository variable ALERT_ISSUE_NUMBER; GitHub emails the owner. Healthchecks emails a missed tick, daily or night ping.
+
 ## Keeper key leaked (MAINNET_KEEPER_PRIVATE_KEY)
 1. Stop the keeper: disable the keeper workflow (`gh workflow disable keeper.yml`) so the old key stops sending.
 2. Revoke the role on both contracts (admin keystore, password typed by Owais):
@@ -19,6 +32,11 @@ Summary: the public version is gitbook/trust/keys_and_incidents.md. This file ho
 6. Announce within 24 hours: changelog (EN and ZH), X, and the ledger.
 7. Re enable the keeper workflow.
 
+## Signing with the multisig (after the admin moves to a Safe)
+* Every signer checks the Safe transaction hash on the hardware wallet screen against an independent tool before signing: pcaversaccio/safe-tx-hashes-util (`./safe_hashes.sh --network bsc --address <safe> --nonce <n>`, BSC chain 56 supported). Never trust only the hash or the decoded call shown by the Safe web app.
+* Decode the calldata independently (cast 4byte-decode or the contract source) and check the target is one of our two contracts.
+* Confirm on a second channel (a call or a message on another app) that the other signers expect this exact nonce and action.
+
 ## Admin key leaked
 1. If a pending admin transfer exists (`pendingDefaultAdmin()`), cancel it at once with `cancelDefaultAdminTransfer()` on both contracts.
 2. Revoke any role the attacker granted (read RoleGranted events since the leak).
@@ -30,3 +48,9 @@ Summary: the public version is gitbook/trust/keys_and_incidents.md. This file ho
 
 ## User reports a lost salt
 * Nothing onchain can recover it. Point them to the receipt locations (`~/.forewit/`, the private repo's receipts folder on every branch). If truly lost, the round counts as a forfeit; their record continues next round.
+
+## Announcement template (P1 and P2, EN and ZH, within 24 hours)
+* What happened, in one line; when (UTC); which key or contract.
+* What an attacker could and could not do (no funds held; commits, reveals, outcomes and scores cannot be edited).
+* What we did, with transaction links.
+* What users need to do (usually nothing; never share a key, seed phrase or pairing code with anyone claiming to help).

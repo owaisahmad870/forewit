@@ -46,3 +46,14 @@ Last updated 23 Nov 2026. Nothing is on mainnet.
 * reveal: median 83,161 (the first reveal of a round also pays the seal, up to 232,368 in the tests; the keeper's baseline reveal normally pays it).
 * createRound: 210,582 median (3 questions), 981,719 for 16 (v1.1 stores the resolution wait in one more slot).
 * At 0.05 gwei (BSC gas price on 23 Nov 2026) one commit plus one reveal is about 190k gas, about 0.0000095 BNB per user per day.
+
+## Operational security checklist (24 Nov 2026; items borrowed from the SEAL frameworks, DarkNavySecurity web3-skills and Plamen checklists, read only, nothing installed)
+* Done: GitHub secret scanning with push protection, Dependabot alerts and updates, private vulnerability reporting, rulesets on main and v* tags, actions pinned to commit SHAs, npm releases by trusted publishing with provenance, pre commit scan for .env values, private keys and local paths (worktrees included).
+* Done: incident runbook with severity levels, SEAL 911 contact, Safe hash verification, announcement template (docs/INCIDENT.md); keys and incidents page (gitbook/trust/keys_and_incidents.md).
+* Done on branch v32-topic-rounds (merges after the round 1 seal): keeper alert on every role, pause, admin seat and root revoke event on both contracts.
+* Done: commit hash binds chain id, ledger address, round, forecaster, forecast and salt (DarkNavy transaction ordering item 5).
+* Done: admin handover to a Safe rehearsed in a mainnet fork test (contracts/test/AdminHandoverFork.t.sol); Safe 1.4.1 code hash verified on BSC.
+* Open, needs Owais: an alert channel (create a "Keeper alerts" issue and set ALERT_ISSUE_NUMBER; today keeper alerts only reach the job log); fund ADMIN with about 0.002 BNB; decrypt check of the admin keystore and its copies; security keys (FIDO2) on GitHub, npm, Cloudflare, Porkbun and X.
+* Open, needs Owais (DNS for forewit.xyz, checked 24 Nov 2026): DNSSEC off (enable in Cloudflare, then add the DS record at Porkbun); no CAA record (allow only the authorities Cloudflare uses); registrar transfer lock is on (clientTransferProhibited at Porkbun).
+* Open: a GitHub environment for MAINNET_KEEPER_PRIVATE_KEY limited to the main branch (the secret must be set again by Owais inside the environment).
+* Open: the 2 of 3 Safe on three separate devices, then the announced admin handover (accept before about 5 Dec 2026).
