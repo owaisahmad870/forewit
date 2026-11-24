@@ -430,7 +430,7 @@ async function night(rIn) {
     // Featured: flagged in its round file; without any flag, the oldest due round (the daily round opens first)
     const flagged = due.filter(featuredOf);
     const isFeat = (x) => !V32 || (flagged.length ? flagged.includes(x) : x === due[0]);
-    const others = due.filter((x) => !isFeat(x));
+    const others = due.filter((x) => !isFeat(x) && boardOf(x) !== 'open'); // Open board rounds take no baseline
     if (others.length) {
       await until(dl - 10 * 60 * 1000);
       for (const x of others) if (Date.now() < dl - 5.5 * 60 * 1000) await post(x, dl - 5.5 * 60 * 1000); else errors.push(new Error(`round ${x}: no time left for its baseline`));
@@ -537,7 +537,11 @@ async function topics() {
   const featFile = `keeper/archive/${args.network || 'testnet'}/${day}_daily/selection.json`;
   const featured = new Set(existsSync(featFile) ? JSON.parse(readFileSync(featFile, 'utf8')).chosen.map((c) => String(c.marketId)) : []);
   // scored rounds are capped too: each needs its own baseline inside the 15 minute window
-  const plan = planTopicRounds(raw, cats, d.getTime(), { asked, featured, caps: { scored: num(process.env.TOPIC_SCORED_CAP, 6), open: num(process.env.TOPIC_OPEN_CAP, 10), optional: num(process.env.TOPIC_OPTIONAL_CAP, 5) } });
+  // caps count per day: rounds already opened today (an earlier attempt) are taken off
+  const countFile = `keeper/state/topics_${NET.chain.id}_${day}.opened.json`;
+  const done = existsSync(countFile) ? JSON.parse(readFileSync(countFile, 'utf8')) : { scored: 0, open: 0, optional: 0 };
+  const left = (k, d) => Math.max(0, num(process.env[`TOPIC_${k.toUpperCase()}_CAP`], d) - done[k]);
+  const plan = planTopicRounds(raw, cats, d.getTime(), { asked, featured, caps: { scored: left('scored', 6), open: left('open', 10), optional: left('optional', 5) } });
   log(`topics: ${plan.rounds.length} rounds planned (${plan.dropped} over the caps)`);
   let opened = 0;
   const saved = { selection: args.selection, days: args['resolution-days'] };
@@ -557,6 +561,9 @@ async function topics() {
     Object.assign(args, { selection: file, 'resolution-days': String(r.resolutionDays) });
     await open();
     opened++;
+    done[r.optional ? 'optional' : r.board]++;
+    mkdirSync('keeper/state', { recursive: true });
+    writeFileSync(countFile, JSON.stringify(done));
     for (const q of chosen) asked.add(String(q.marketId));
     mkdirSync('keeper/state', { recursive: true });
     writeFileSync(askedFile, JSON.stringify([...asked]));
