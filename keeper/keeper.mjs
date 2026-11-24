@@ -97,7 +97,8 @@ function ctfFor(m) {
   return m.isNegRisk ? NET.ctfs.ybnr : NET.ctfs.yb;
 }
 async function apiGet(p) {
-  const r = await fetch(NET.api + p, { headers: isMainnet ? { 'x-api-key': process.env.PREDICT_API_KEY } : {} });
+  // v3.2: a stalled request fails after 20 s, so one slow order book cannot eat the baseline window of the rounds after it
+  const r = await fetch(NET.api + p, { headers: isMainnet ? { 'x-api-key': process.env.PREDICT_API_KEY } : {}, ...(V32 && { signal: AbortSignal.timeout(20_000) }) });
   if (!r.ok) throw new Error(`API ${p.split('?')[0]} HTTP ${r.status}`);
   return r.json();
 }
@@ -436,7 +437,7 @@ async function night(rIn) {
       for (const x of others) if (Date.now() < dl - 5.5 * 60 * 1000) await post(x, dl - 5.5 * 60 * 1000); else errors.push(new Error(`round ${x}: no time left for its baseline`));
     }
     await until(dl - 5 * 60 * 1000);
-    for (const x of due.filter(isFeat)) await post(x, dl - 30 * 1000);
+    for (const x of due.filter(isFeat)) await post(x, V32 ? dl - 30 * 1000 : Infinity); // v3.1: retries as before
   }
   await until(dl + 20 * 1000);
   for (const x of due) {
