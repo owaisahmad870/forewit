@@ -54,6 +54,7 @@ contract ForewitScores is AccessControlDefaultAdminRules {
     error UnknownEpoch();
     error AlreadyRevoked();
     error NotAuthorized();
+    error KeeperRevokeTooOld();
 
     /// @param admin Default admin (two step transfer with ADMIN_TRANSFER_DELAY).
     /// @param keeper Address that gets ROUND_MANAGER_ROLE.
@@ -95,12 +96,13 @@ contract ForewitScores is AccessControlDefaultAdminRules {
         emit RootPosted(count + 1, roundId, root, snapshotBlock, leafCount);
     }
 
-    /// @notice Irreversibly mark an epoch as revoked. Keeper or admin.
+    /// @notice Irreversibly mark an epoch as revoked. The admin may revoke any epoch; the keeper only the newest two
+    /// (a bad root and the corrected root that supersedes it), so a stolen hot keeper key cannot erase history.
     function revokeRoot(uint256 epoch, string calldata reason) external {
-        if (!hasRole(ROUND_MANAGER_ROLE, msg.sender) && !hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
-            revert NotAuthorized();
-        }
+        bool isAdmin = hasRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        if (!isAdmin && !hasRole(ROUND_MANAGER_ROLE, msg.sender)) revert NotAuthorized();
         if (!_known(epoch)) revert UnknownEpoch();
+        if (!isAdmin && epoch + 1 < _epochs.length) revert KeeperRevokeTooOld();
         Epoch storage e = _epochs[epoch - 1];
         if (e.revoked) revert AlreadyRevoked();
         e.revoked = true;
