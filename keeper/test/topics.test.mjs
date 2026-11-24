@@ -57,3 +57,16 @@ test('sports are skipped unless switched on', () => {
   assert.equal(planTopicRounds([mk(1, 's')], cats, DL).rounds.length, 0);
   assert.equal(planTopicRounds([mk(1, 's')], cats, DL, { sports: true }).rounds[0].topic, 'sports');
 });
+
+test('a market repeated by the API pages is planned once', () => {
+  const cats = { w: cat(['Weather'], 48, DL) };
+  const plan = planTopicRounds([mk(7, 'w'), mk(8, 'w'), mk(7, 'w')], cats, DL);
+  assert.deepEqual(plan.rounds.flatMap((r) => r.questions.map((q) => q.marketId)), [7, 8]);
+  assert.equal(plan.skipped.duplicate, 1);
+});
+
+test('scored rounds respect their cap', () => {
+  const cats = { w: cat(['Weather'], 48, DL) };
+  const many = Array.from({ length: 3 * MAX_PER_ROUND }, (_, i) => mk(100 + i, 'w'));
+  assert.equal(planTopicRounds(many, cats, DL, { caps: { scored: 2, open: 10, optional: 5 } }).rounds.length, 2);
+});

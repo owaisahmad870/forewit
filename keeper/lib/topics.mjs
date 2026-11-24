@@ -45,9 +45,12 @@ export const horizonOf = (hours) => HORIZONS.find((h) => hours >= MIN_H && hours
  */
 export function planTopicRounds(markets, cats, deadlineMs, { asked = new Set(), featured = new Set(), caps = CAPS, sports = false, elections = false } = {}) {
   const groups = new Map();
-  const skipped = { notBinary: 0, noCategory: 0, asked: 0, featured: 0, outOfWindow: 0, dailyCrypto: 0, sports: 0, elections: 0 };
+  const skipped = { notBinary: 0, noCategory: 0, asked: 0, featured: 0, outOfWindow: 0, dailyCrypto: 0, sports: 0, elections: 0, duplicate: 0 };
+  const seen = new Set(); // the API pages can repeat a market when the list shifts during the fetch
   for (const m of markets) {
     const id = String(m.id);
+    if (seen.has(id)) { skipped.duplicate++; continue; }
+    seen.add(id);
     if (!isBinary(m)) { skipped.notBinary++; continue; }
     if (featured.has(id)) { skipped.featured++; continue; }
     if (asked.has(id)) { skipped.asked++; continue; }

@@ -34,3 +34,10 @@ test('missed daily open', () => {
   assert.deepEqual(dailyOpenMissed(CD, CD + DAY + GRACE), []);
   assert.match(dailyOpenMissed(CD, CD + DAY + GRACE + 1)[0], /open: no new daily round/);
 });
+
+test('an Open board round without a baseline is not a missed duty', async () => {
+  const { missedDuties } = await import('../lib/watchdog.mjs');
+  const round = { commitDeadline: 100, revealDeadline: 200, questionCount: 1, resolvedMask: 0, baselineSet: false, isSealed: true };
+  assert.equal(missedDuties({ round, resolvedOnchainMask: 0, unprocessed: 0, now: 150, needsBaseline: false }).length, 0);
+  assert.equal(missedDuties({ round, resolvedOnchainMask: 0, unprocessed: 0, now: 150 }).length, 1);
+});

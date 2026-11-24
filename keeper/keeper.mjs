@@ -15,7 +15,7 @@ import { tickIds } from './lib/cursor.mjs';
 import { createPublicClient, createWalletClient, http, fallback, keccak256, toHex, parseAbiItem } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { bsc, bscTestnet } from 'viem/chains';
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { takeBaseline } from './lib/baseline.mjs';
 import * as sel from './lib/selection.mjs';
 
@@ -27,6 +27,9 @@ const NET = {
 }[args.network || 'testnet'];
 if (!NET) throw new Error('--network must be testnet or mainnet');
 const isMainnet = NET.chain.id === 56;
+// Rule v3.2 machinery (topic rounds, committers index, unsettled tick, multi round night). Off means the v3.1 keeper exactly.
+const V32 = process.env.TOPIC_ROUNDS === 'on';
+const num = (v, d) => (v === undefined || v === '' ? d : Number(v)); // unset GitHub variables arrive as ''
 // RPC endpoints in order: primary, keyed fallback (mainnet), publicnode last (the baseline has a 15 minute window)
 const SECOND_RPC = isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com';
 const transport = (first) => fallback([...new Set([first, NET.rpc2, SECOND_RPC].filter(Boolean))].map((u) => http(u)));
@@ -142,17 +145,18 @@ async function open() {
   const rd = cd + BigInt(Math.round(Number(args['reveal-hours'] || 24) * 3600));
   const wait = BigInt(Math.round(Number(args['resolution-days'] || sel_days(args.selection)) * 86400));
   const qs = sel.chosen.map((c) => ({ conditionId: c.conditionId, ctf: c.ctf, yesSlot: 0, marketId: BigInt(c.marketId) }));
+  // public round file (data contract for the CLI and site): every question carries its parent event question and label.
+  // Validated before createRound, so a bad question never leaves an onchain round without its public file.
+  const { presentQuestion } = await import('../agent/lib/question.mjs');
+  const questions = sel.chosen.map((c, i) => ({ index: i, marketId: String(c.marketId), conditionId: c.conditionId, ctf: c.ctf, eventQuestion: c.eventQuestion, label: c.label, marketQuestion: c.marketQuestion ?? null, endsAt: c.endsAt ?? null, tags: c.tags ?? [] }));
+  questions.forEach((q) => presentQuestion(q)); // refuse to publish a question without its event question
   const before = await read('roundCount');
   await send('createRound', [qs, cd, rd, wait]);
   const roundId = before + 1n;
   mkdirSync('keeper/state', { recursive: true });
   writeFileSync(`keeper/state/round_${NET.chain.id}_${roundId}.json`, JSON.stringify({ roundId, commitDeadline: sel.commitDeadline, marketIds: sel.chosen.map((c) => c.marketId) }, big, 2));
-  // public round file (data contract for the CLI and site): every question carries its parent event question and label
-  const { presentQuestion } = await import('../agent/lib/question.mjs');
   const pubDir = `keeper/archive/${args.network || 'testnet'}/rounds`;
   mkdirSync(pubDir, { recursive: true });
-  const questions = sel.chosen.map((c, i) => ({ index: i, marketId: String(c.marketId), conditionId: c.conditionId, ctf: c.ctf, eventQuestion: c.eventQuestion, label: c.label, marketQuestion: c.marketQuestion ?? null, endsAt: c.endsAt ?? null, tags: c.tags ?? [] }));
-  questions.forEach((q) => presentQuestion(q)); // refuse to publish a question without its event question
   writeFileSync(`${pubDir}/${roundId}.json`, JSON.stringify({ network: NET.chain.id, ledger: NET.ledger, roundId, kind: sel.kind ?? 'daily', board: sel.board ?? 'scored', featured: sel.featured ?? (sel.kind ?? 'daily') === 'daily', topic: sel.topic ?? null, horizon: sel.horizon ?? null, optional: sel.optional ?? false, funnel: sel.funnel ?? null, rule: sel.rule, commitDeadline: sel.commitDeadline, revealDeadline: new Date(Number(rd) * 1000).toISOString(), resolutionWaitSeconds: wait, questions }, big, 2));
   log(`round ${roundId} open; run "baseline --round ${roundId}" in the last 15 minutes before ${sel.commitDeadline} (target 5)`);
 }
@@ -225,18 +229,22 @@ async function roundArg() {
 }
 
 let committersIndex = null;
+const CONFIRMATIONS = 15n; // about 7 s of BSC blocks
+const OVERLAP = 2000n; // blocks rescanned each run; duplicates are skipped
 /** Committers of round r from keeper/state/committers_<chain>.json, extended forward from its last block. Without
  *  INDEXER_FROM_BLOCK_<NET> and no index file it falls back to the old walk back scan. */
 async function committers(r) {
   const fb = process.env[`INDEXER_FROM_BLOCK_${isMainnet ? 'MAINNET' : 'TESTNET'}`];
   const file = `keeper/state/committers_${NET.chain.id}.json`;
-  if (!fb && !existsSync(file)) return committersScan(r);
+  if (!V32 || (!fb && !existsSync(file))) return committersScan(r);
   if (!committersIndex) {
     const idx = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : { lastBlock: String(BigInt(fb) - 1n), byRound: {} };
     const ev = ABI.find((x) => x.type === 'event' && x.name === 'Committed');
-    const head = await logsPub.getBlockNumber();
+    // index only confirmed blocks and rescan an overlap each run, so one empty read near the tip cannot lose a commit
+    const head = (await logsPub.getBlockNumber()) - CONFIRMATIONS;
     let span = 5000n;
-    for (let from = BigInt(idx.lastBlock) + 1n; from <= head; ) {
+    const start = BigInt(idx.lastBlock) + 1n - OVERLAP;
+    for (let from = start > BigInt(fb ?? 0) ? start : BigInt(fb ?? 0); from <= head; ) {
       const to = from + span - 1n > head ? head : from + span - 1n;
       let logs;
       try {
@@ -351,21 +359,25 @@ async function scores() {
 }
 
 /** Every 15 minutes: seal and reveal the baseline, finalize, score, over the recent rounds. */
-async function tick() {
+async function tick({ stopAt = Infinity } = {}) {
   const count = await read('roundCount');
   const now = BigInt(Math.floor(Date.now() / 1000));
   // unsettled set: only rounds not yet settled plus rounds created since the last tick are read, so long rounds
   // (up to 120 days) never force a rescan of every settled round after them. The old {from} cursor is read once.
+  // Without V32 it scans the newest 15 rounds, as the v3.1 keeper does. stopAt: the loop stops the tick 25 minutes
+  // before an unsealed deadline so a long tick never eats the baseline window; unread rounds stay in the set.
   const cursorFile = `keeper/state/cursor_${NET.chain.id}.json`;
   const saved = existsSync(cursorFile) ? JSON.parse(readFileSync(cursorFile, 'utf8')) : {};
-  const ids = tickIds(saved, count);
+  const ids = V32 ? tickIds(saved, count) : tickIds({ next: count > 14n ? count - 14n : 1n }, count);
   const open = [];
-  for (const r of ids) {
+  for (const [k, r] of ids.entries()) {
+    if (Date.now() > stopAt) { open.push(...ids.slice(k)); log(`tick: stopped before the deadline, ${ids.length - k} rounds left for the next pass`); break; }
     const round = await read('getRound', [r]);
     if (now < round.commitDeadline) { open.push(r); continue; }
     if (!round.isSealed) await seal(r);
     await finalize(r);
     await score(r);
+    if (!V32) continue;
     // settled: reveal over, every question resolved, nobody left to score or forfeit
     const after = await read('getRound', [r]);
     const all = (1n << BigInt(after.questionCount)) - 1n;
@@ -374,8 +386,10 @@ async function tick() {
     const settled = now > after.revealDeadline && BigInt(after.resolvedMask) === all && left === 0;
     if (!settled) open.push(r);
   }
-  mkdirSync('keeper/state', { recursive: true });
-  writeFileSync(cursorFile, JSON.stringify({ next: String(count + 1n), open: open.map(String) }));
+  if (V32) {
+    mkdirSync('keeper/state', { recursive: true });
+    writeFileSync(cursorFile, JSON.stringify({ next: String(count + 1n), open: open.map(String) }));
+  }
   // a scores failure alerts but never blocks sealing, finalizing or scoring
   await scores().catch(async (e) => { await alert(`scores failed: ${(e.shortMessage || e.message).split('\n')[0]}`); process.exitCode = 1; });
 }
@@ -388,17 +402,34 @@ async function night(rIn) {
   const dl = Number(round.commitDeadline) * 1000;
   if (dl - Date.now() > 5.75 * 3600 * 1000) throw new Error(`round ${r} deadline more than 5.75 hours away; night starts too early`);
   const until = (t) => new Promise((res) => setTimeout(res, Math.max(0, t - Date.now())));
-  let err = null;
-  if (!round.baselineSet && Date.now() < dl) {
-    await until(dl - 5 * 60 * 1000);
-    await baseline(r).catch((e) => { err = e; });
+  // V32: every unsealed round sharing this deadline, oldest first (the Featured round opens first), baselines from
+  // 10 minutes before so many rounds fit inside the 15 minute window; v3.1: this round only, 5 minutes before
+  const due = V32 ? await dueAt(dl) : [r];
+  const errors = [];
+  if (Date.now() < dl) {
+    await until(dl - (V32 ? 10 : 5) * 60 * 1000);
+    for (const x of due) {
+      try { if (!(await read('getRound', [x])).baselineSet) await baseline(x); } catch (e) { errors.push(e); }
+    }
   }
-  if (!round.isSealed) {
-    await until(dl + 20 * 1000);
-    await seal(r);
+  await until(dl + 20 * 1000);
+  for (const x of due) {
+    try { if (!(await read('getRound', [x])).isSealed) await seal(x); } catch (e) { errors.push(e); }
   }
-  if (err) throw err;
-  log(`round ${r}: night duties done`);
+  if (errors.length) throw errors[0];
+  log(`rounds ${due.join(', ')}: night duties done`);
+}
+
+/** Unsealed rounds whose commit deadline is dl, oldest first. Scans back from the newest round to one day before dl. */
+async function dueAt(dl) {
+  const due = [];
+  for (let x = await read('roundCount'); x >= 1n; x--) {
+    const y = await read('getRound', [x]);
+    const d = Number(y.commitDeadline) * 1000;
+    if (d < dl - 86400000) break;
+    if (d === dl && !y.isSealed) due.push(x);
+  }
+  return due.reverse();
 }
 
 /** Keeper loop for a host without a working scheduler (GitHub Actions bridge, 24 Nov 2026: schedules stopped firing).
@@ -421,26 +452,19 @@ async function loop() {
     const startOfDay = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
     if (now.getUTCHours() >= 3 && now.getUTCHours() < 20 && (!latest || Number(latest.createdAt) * 1000 < startOfDay)) {
       await guard('daily', async () => { await daily(); await ping('HC_PING_DAILY'); });
-    } else if (process.env.TOPIC_ROUNDS === 'on' && now.getUTCHours() >= 3 && now.getUTCHours() < 20 && !existsSync(`keeper/state/topics_${NET.chain.id}_${now.toISOString().slice(0, 10)}.done`)) {
-      await guard('topics', async () => { await topics(); });
-      mkdirSync('keeper/state', { recursive: true });
-      writeFileSync(`keeper/state/topics_${NET.chain.id}_${now.toISOString().slice(0, 10)}.done`, new Date().toISOString());
+    } else if (V32 && now.getUTCHours() >= 3 && now.getUTCHours() < 20 && dl - Date.now() > 3 * 3600 * 1000 && !existsSync(`keeper/state/topics_${NET.chain.id}_${now.toISOString().slice(0, 10)}.done`)) {
+      // marked done only when topics finished; a failure retries on the next pass
+      await guard('topics', async () => {
+        await topics();
+        mkdirSync('keeper/state', { recursive: true });
+        writeFileSync(`keeper/state/topics_${NET.chain.id}_${now.toISOString().slice(0, 10)}.done`, new Date().toISOString());
+      });
     } else if (latest && !latest.isSealed && dl - Date.now() <= 20 * 60 * 1000) {
-      // every unsealed round with this deadline: baselines first (each in the 15 minute window), then all seals
-      const due = [];
-      for (let r = count; r >= 1n && due.length < 200; r--) {
-        const x = await read('getRound', [r]);
-        if (x.isSealed || Number(x.commitDeadline) * 1000 !== dl) { if (Number(x.commitDeadline) * 1000 < dl - 86400000) break; continue; }
-        due.push(r);
-      }
-      const until = (t) => new Promise((res) => setTimeout(res, Math.max(0, t - Date.now())));
-      await until(dl - 5 * 60 * 1000);
-      for (const r of due.reverse()) await guard(`baseline ${r}`, async () => { if (!(await read('getRound', [r])).baselineSet) await baseline(r); });
-      await until(dl + 20 * 1000);
-      for (const r of due) await guard(`seal ${r}`, () => seal(r));
-      await ping('HC_PING_NIGHT');
+      // night pings only when every baseline and seal succeeded
+      await guard('night', async () => { await night(count); await ping('HC_PING_NIGHT'); });
     } else {
-      await guard('tick', async () => { await tick(); await ping('HC_PING_TICK'); });
+      const stopAt = latest && !latest.isSealed ? dl - 25 * 60 * 1000 : Infinity;
+      await guard('tick', async () => { await tick({ stopAt }); await ping('HC_PING_TICK'); });
     }
     if (latest && !latest.isSealed && dl - 19 * 60 * 1000 > Date.now()) wakeForDeadline = dl - 19 * 60 * 1000;
     } catch (e) { await alert(`loop pass failed: ${(e.shortMessage || e.message).split(String.fromCharCode(10))[0]}`); } // RPC down: next pass in 15 minutes
@@ -473,12 +497,19 @@ async function topics() {
   }
   const askedFile = `keeper/state/asked_${NET.chain.id}.json`;
   const asked = new Set(existsSync(askedFile) ? JSON.parse(readFileSync(askedFile, 'utf8')) : []);
+  // every market of every round ever opened (Featured rounds of earlier days included) counts as asked
+  for (const f of (existsSync('keeper/state') ? readdirSync('keeper/state') : []).filter((f) => f.startsWith(`round_${NET.chain.id}_`) && f.endsWith('.json'))) {
+    for (const id of JSON.parse(readFileSync(`keeper/state/${f}`, 'utf8')).marketIds ?? []) asked.add(String(id));
+  }
   const day = new Date().toISOString().slice(0, 10);
   const featFile = `keeper/archive/${args.network || 'testnet'}/${day}_daily/selection.json`;
   const featured = new Set(existsSync(featFile) ? JSON.parse(readFileSync(featFile, 'utf8')).chosen.map((c) => String(c.marketId)) : []);
-  const plan = planTopicRounds(raw, cats, d.getTime(), { asked, featured, caps: { scored: Infinity, open: Number(process.env.TOPIC_OPEN_CAP ?? 10), optional: Number(process.env.TOPIC_OPTIONAL_CAP ?? 5) } });
-  log(`topics: ${plan.rounds.length} rounds planned (${plan.dropped} over the open cap)`);
+  // scored rounds are capped too: each needs its own baseline inside the 15 minute window
+  const plan = planTopicRounds(raw, cats, d.getTime(), { asked, featured, caps: { scored: num(process.env.TOPIC_SCORED_CAP, 6), open: num(process.env.TOPIC_OPEN_CAP, 10), optional: num(process.env.TOPIC_OPTIONAL_CAP, 5) } });
+  log(`topics: ${plan.rounds.length} rounds planned (${plan.dropped} over the caps)`);
   let opened = 0;
+  const saved = { selection: args.selection, days: args['resolution-days'] };
+  try {
   for (const [i, r] of plan.rounds.entries()) {
     const chosen = [];
     for (const q of r.questions) {
@@ -498,7 +529,9 @@ async function topics() {
     mkdirSync('keeper/state', { recursive: true });
     writeFileSync(askedFile, JSON.stringify([...asked]));
   }
-  delete args['resolution-days'];
+  } finally {
+    for (const [k, v] of [['selection', saved.selection], ['resolution-days', saved.days]]) if (v === undefined) delete args[k]; else args[k] = v;
+  }
   log(`topics: ${opened} rounds opened`);
 }
 
@@ -522,7 +555,11 @@ async function watchdog() {
   const count = await read('roundCount');
   const missed = [];
   if (count === 0n) missed.push('open: no round yet');
-  for (let r = count > 14n ? count - 14n : 1n; r <= count && count > 0n; r++) {
+  // V32: the tick's unsealed and unsettled set plus the newest 15, so the Featured round stays covered at any round count
+  const last15 = count > 0n ? tickIds({ next: count > 14n ? count - 14n : 1n }, count) : [];
+  const cursorFile = `keeper/state/cursor_${NET.chain.id}.json`;
+  const ids = V32 && existsSync(cursorFile) ? [...new Set([...tickIds(JSON.parse(readFileSync(cursorFile, 'utf8')), count), ...last15].map(String))].map(BigInt).sort((a, b) => (a < b ? -1 : 1)) : last15;
+  for (const r of ids) {
     const round = await read('getRound', [r]);
     const qs = await read('getQuestions', [r]);
     let onchain = 0;
@@ -532,7 +569,7 @@ async function watchdog() {
     }
     let unprocessed = 0;
     if (BigInt(now) > round.revealDeadline) for (const a of await committers(r)) if (((await read('flags', [r, a])) & 6) === 0) unprocessed++;
-    for (const m of missedDuties({ round, resolvedOnchainMask: onchain, unprocessed, now })) missed.push(`round ${r} ${m}`);
+    for (const m of missedDuties({ round, resolvedOnchainMask: onchain, unprocessed, now, needsBaseline: boardOf(r) !== 'open' })) missed.push(`round ${r} ${m}`);
     if (r === count) missed.push(...dailyOpenMissed(round.createdAt, now));
   }
   if (!missed.length) return log('watchdog: all duties on schedule');
@@ -540,7 +577,14 @@ async function watchdog() {
   process.exitCode = 1;
 }
 
-const cmds = { select, open, topics, baseline, seal, night, loop, scores, committers: async () => log(JSON.stringify(await committers(await roundArg()))), deadline: async () => console.log(String((await read('getRound', [await roundArg()])).commitDeadline)), finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
+// V32 and no --round: every unsealed round at the newest deadline (the Featured round first), like night
+const baselineCmd = async () => {
+  if ((args.round !== undefined && args.round !== 'latest') || !V32) return baseline();
+  const errors = [];
+  for (const r of await dueAt(Number((await read('getRound', [await read('roundCount')])).commitDeadline) * 1000)) await baseline(r).catch((e) => errors.push(e));
+  if (errors.length) throw errors[0];
+};
+const cmds = { select, open, topics, baseline: baselineCmd, seal, night, loop, scores, committers: async () => log(JSON.stringify(await committers(await roundArg()))), deadline: async () => console.log(String((await read('getRound', [await roundArg()])).commitDeadline)), finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
 if (!cmds[cmd]) {
   console.log('usage: select | open | baseline | seal | night | scores | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
   process.exit(1);

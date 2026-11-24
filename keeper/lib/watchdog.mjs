@@ -9,12 +9,13 @@ export const DAY = 24 * 3600;
  * @param {number} o.resolvedOnchainMask questions whose CTF payoutDenominator > 0
  * @param {number} o.unprocessed committers neither scored nor forfeited
  * @param {number} o.now
+ * @param {boolean} [o.needsBaseline] false for Open board rounds (rule v3.2: no baseline)
  * @returns {string[]} missed duties, empty when the round is on schedule
  */
-export function missedDuties({ round, resolvedOnchainMask, unprocessed, now, grace = GRACE }) {
+export function missedDuties({ round, resolvedOnchainMask, unprocessed, now, grace = GRACE, needsBaseline = true }) {
   const out = [];
   const cd = Number(round.commitDeadline), rd = Number(round.revealDeadline);
-  if (now >= cd && !round.baselineSet) out.push('baseline: not set before the commit deadline (round scores with skill 0)');
+  if (needsBaseline && now >= cd && !round.baselineSet) out.push('baseline: not set before the commit deadline (round scores with skill 0)');
   if (now > cd + grace && !round.isSealed) out.push('seal: round not sealed 15 minutes after the commit deadline');
   const pending = resolvedOnchainMask & ~Number(round.resolvedMask);
   if (now > cd + grace && pending !== 0) out.push(`finalize: questions resolved onchain but not finalized (mask ${pending})`);
