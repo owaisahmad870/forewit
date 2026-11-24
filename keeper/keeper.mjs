@@ -328,7 +328,7 @@ async function night() {
   const r = await roundArg();
   const round = await read('getRound', [r]);
   const dl = Number(round.commitDeadline) * 1000;
-  if (dl - Date.now() > 3 * 3600 * 1000) throw new Error(`round ${r} deadline more than 3 hours away; night starts too early`);
+  if (dl - Date.now() > 5.75 * 3600 * 1000) throw new Error(`round ${r} deadline more than 5.75 hours away; night starts too early`);
   const until = (t) => new Promise((res) => setTimeout(res, Math.max(0, t - Date.now())));
   let err = null;
   if (!round.baselineSet && Date.now() < dl) {
@@ -381,7 +381,7 @@ async function watchdog() {
   process.exitCode = 1;
 }
 
-const cmds = { select, open, baseline, seal, night, scores, finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
+const cmds = { select, open, baseline, seal, night, scores, deadline: async () => console.log(String((await read('getRound', [await roundArg()])).commitDeadline)), finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
 if (!cmds[cmd]) {
   console.log('usage: select | open | baseline | seal | night | scores | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
   process.exit(1);

@@ -27,6 +27,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # night relays itself to a fresh run when started early
 
 concurrency:
   group: keeper
@@ -36,7 +37,7 @@ jobs:
   keeper:
     if: github.event_name == 'workflow_dispatch' || vars.KEEPER_NETWORK != ''
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 360
     env:
       NETWORK: ${{ inputs.network || vars.KEEPER_NETWORK }}
       DUTY: ${{ inputs.duty || (github.event.schedule == '7 3 * * *' && 'daily') || (github.event.schedule == '23,53 * * * *' && 'tick') || 'night' }}
@@ -51,7 +52,26 @@ jobs:
         run: |
           git fetch --depth 1 origin keeper-state && git worktree add ../state FETCH_HEAD || { git worktree add --detach ../state && git -C ../state switch --orphan keeper-state; }
           for d in keeper/state keeper/archive indexer/out web/public/data; do [ -d "../state/$d" ] && mkdir -p "$d" && cp -r "../state/$d/." "$d/" || true; done
+      - name: Relay night when started early
+        id: relay
+        if: env.DUTY == 'night'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LEDGER_TESTNET: ${{ vars.LEDGER_TESTNET }}
+          LEDGER_MAINNET: ${{ vars.LEDGER_MAINNET }}
+          RPC_MAINNET_PRIMARY: ${{ secrets.RPC_MAINNET_PRIMARY }}
+          RPC_MAINNET_FALLBACK: ${{ secrets.RPC_MAINNET_FALLBACK }}
+        run: |
+          # scheduled starts can be late or missing; a night started hours early waits, or hands over to a fresh run
+          DL=$(node keeper/keeper.mjs deadline --network "$NETWORK" --round "$ROUND" | tail -1)
+          LEFT=$(( DL - $(date +%s) ))
+          # a job lives 6 h: within 5.75 h of the deadline night waits inside the job; earlier, wait 5.5 h and hand over
+          if [ "$LEFT" -gt 20700 ]; then
+            sleep 19800; gh workflow run keeper.yml -R "$GITHUB_REPOSITORY" -f duty=night -f network="$NETWORK" -f round="$ROUND"
+            echo "relayed=1" >> "$GITHUB_OUTPUT"; echo "night relayed to a fresh run"
+          fi
       - name: Run duty
+        if: steps.relay.outputs.relayed != '1'
         env:
           LEDGER_TESTNET: ${{ vars.LEDGER_TESTNET }}
           LEDGER_MAINNET: ${{ vars.LEDGER_MAINNET }}
