@@ -463,7 +463,7 @@ async function topics() {
   }
   const cats = {};
   let calls = 0;
-  for (const slug of new Set(raw.filter((m) => sel.isBinary(m) && !sel.isCryptoUpDown(m)).map((m) => m.categorySlug))) {
+  for (const slug of new Set(raw.filter((m) => sel.isBinary(m) && !sel.isCryptoUpDown(m) && !sel.isSports(m)).map((m) => m.categorySlug))) {
     cats[slug] = (await apiGet('/v1/categories/' + slug).catch(() => ({ data: null }))).data;
     if (++calls % 200 === 0) await new Promise((r) => setTimeout(r, 60_000)); // API limit 250 a minute
   }
