@@ -2,7 +2,7 @@
 // and daily metrics from ForecastLedger events only. Anyone can rerun it from chain data:
 //   node indexer/build.mjs --network testnet|mainnet --ledger <address> --from-block <n> [--abi <file>] [--rpc <url>]
 // Writes indexer/out/<network>/<ledger>/snapshot.json. Logs are cached per ledger so reruns only fetch new blocks.
-import { createPublicClient, http, parseAbi } from 'viem';
+import { createPublicClient, http, parseAbi, keccak256, toHex } from 'viem';
 import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { crowdV1, METHOD } from './lib/crowd.mjs';
@@ -16,6 +16,23 @@ export function firstCommits(logs) {
   const out = {};
   for (const l of logs) if (l.eventName === 'Committed') out[l.args.forecaster.toLowerCase()] ??= { tx: l.transactionHash ?? null, roundId: String(l.args.roundId), block: String(l.blockNumber) };
   return out;
+}
+
+// /proof admin log: every role, pause and admin seat change, in chain order, so anyone can see what the team did
+const ADMIN_EVENTS = new Set(['RoleGranted', 'RoleRevoked', 'RoleAdminChanged', 'Paused', 'Unpaused', 'DefaultAdminTransferScheduled', 'DefaultAdminTransferCanceled', 'DefaultAdminDelayChangeScheduled', 'DefaultAdminDelayChangeCanceled']);
+const ROLE_NAMES = Object.fromEntries([['DEFAULT_ADMIN', `0x${'0'.repeat(64)}`], ...['ROUND_MANAGER_ROLE', 'PAUSER_ROLE'].map((r) => [r.replace(/_ROLE$/, ''), keccak256(toHex(r))])].map(([n, h]) => [h, n]));
+export function adminLog(logs) {
+  return logs.filter((l) => ADMIN_EVENTS.has(l.eventName)).map((l) => {
+    const a = l.args ?? {};
+    return {
+      event: l.eventName, block: String(l.blockNumber), tx: l.transactionHash ?? null,
+      ...(a.role !== undefined && { role: ROLE_NAMES[a.role] ?? a.role }),
+      ...(a.account && { account: a.account.toLowerCase() }),
+      ...(a.sender && { by: a.sender.toLowerCase() }),
+      ...(a.newAdmin && { newAdmin: a.newAdmin.toLowerCase() }),
+      ...(a.acceptSchedule !== undefined && { acceptAt: String(a.acceptSchedule) }),
+    };
+  });
 }
 
 export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, abiPath, rpc }) {
@@ -143,6 +160,7 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
     identityChanged, // committers whose Agent ID left their wallet after the ledger went live
     agentId: agentIdAddr, // the Agent ID contract the ledger gates on (null if unreadable)
     firstCommits: firstCommits(cache.logs), // /proof: first commit tx per distinct committer
+    adminLog: adminLog(cache.logs), // /proof: role, pause and admin seat changes
   };
   writeFileSync(`${dir}/snapshot.json`, JSON.stringify(out, big, 2));
   return { out, dir };

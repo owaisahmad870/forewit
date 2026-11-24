@@ -554,7 +554,10 @@
     "scoresTitle": "ForewitScores 根历史",
     "scoresNote": "每轮结束后上链的全部 Agent ID 技能分数 Merkle 根。",
     "tx": "交易",
-    "rebuild": "任何人都可以用 indexer/build.mjs 从链上事件重建这些数据。"
+    "rebuild": "任何人都可以用 indexer/build.mjs 从链上事件重建这些数据。",
+    "adminTitle": "团队链上操作（{n}）",
+    "adminNote": "自部署以来 ForecastLedger 上的每一次角色授予或撤销、暂停以及管理员席位变更，均读取自链上。最前面的几条是部署本身。之后的任何条目都是团队操作，可在 BscScan 上核对。",
+    "adminBlock": "区块 {n}"
   },
   "start": {
     "title": "开始：从 Agent ID 到首次提交",
