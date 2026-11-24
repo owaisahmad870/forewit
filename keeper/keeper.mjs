@@ -29,7 +29,11 @@ if (!NET) throw new Error('--network must be testnet or mainnet');
 const isMainnet = NET.chain.id === 56;
 // Rule v3.2 machinery (topic rounds, committers index, unsettled tick, multi round night). Off means the v3.1 keeper exactly.
 const V32 = process.env.TOPIC_ROUNDS === 'on';
-const num = (v, d) => (v === undefined || v === '' ? d : Number(v)); // unset GitHub variables arrive as ''
+const num = (v, d) => { // unset GitHub variables arrive as ''
+  if (v === undefined || v === '') return d;
+  if (!/^\d+$/.test(String(v))) throw new Error(`bad number ${JSON.stringify(v)} in a TOPIC_ cap variable`);
+  return Number(v);
+};
 // RPC endpoints in order: primary, keyed fallback (mainnet), publicnode last (the baseline has a 15 minute window)
 const SECOND_RPC = isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com';
 const transport = (first) => fallback([...new Set([first, NET.rpc2, SECOND_RPC].filter(Boolean))].map((u) => http(u)));
@@ -68,7 +72,7 @@ async function ledger() {
 const read = async (fn, a = []) => pub.readContract({ address: await ledger(), abi: ABI, functionName: fn, args: a });
 
 /** Simulate, send, wait; retry up to `tries` with backoff; never resend after a mined revert. */
-async function send(fn, a, { tries = 4, address, abi = ABI } = {}) {
+async function send(fn, a, { tries = 4, address, abi = ABI, until = Infinity } = {}) {
   const account = keeperAccount();
   const w = createWalletClient({ account, chain: NET.chain, transport: transport() });
   for (let i = 1; ; i++) {
@@ -81,7 +85,7 @@ async function send(fn, a, { tries = 4, address, abi = ABI } = {}) {
       return rc;
     } catch (e) {
       const msg = (e.shortMessage || e.message).split('\n')[0];
-      if (e.mined || i >= tries || /revert/i.test(msg)) { await alert(`${fn} failed (attempt ${i}): ${msg}`); throw e; }
+      if (e.mined || i >= tries || /revert/i.test(msg) || Date.now() + 5000 * 2 ** i > until) { await alert(`${fn} failed (attempt ${i}): ${msg}`); throw e; }
       log(`${fn} attempt ${i} failed: ${msg}; retrying`);
       await new Promise((r) => setTimeout(r, 5000 * 2 ** i));
     }
@@ -114,8 +118,9 @@ async function select() {
   // categories hold the only end time; fetch them only for markets passing the cheap filters (250 requests per minute)
   const cats = {};
   for (const slug of new Set(raw.filter((m) => sel.prefilter(m, kind)).map((m) => m.categorySlug))) cats[slug] = (await apiGet('/v1/categories/' + slug)).data;
+  const asked = V32 ? askedSet() : new Set(); // rule v3.2: a market is asked in one round only
   const picks = raw
-    .filter((m) => sel.eligible(m, cats[m.categorySlug], cd, kind))
+    .filter((m) => sel.eligible(m, cats[m.categorySlug], cd, kind) && !asked.has(String(m.id)))
     .map((m) => ({ marketId: m.id, conditionId: m.conditionId, ctf: ctfFor(m), category: m.categorySlug, endsAt: cats[m.categorySlug].endsAt, eventQuestion: cats[m.categorySlug].title, label: m.title, marketQuestion: m.question, tags: (cats[m.categorySlug].tags ?? []).map((t) => t.name), title: m.title, dailyCrypto: sel.isDailyCrypto(m), vol24h: m.stats?.volume24hUsd ?? 0 }));
   // one market per event; daily crypto first, then the most traded; then chain checks (2 slots, unresolved)
   picks.sort((x, y) => (y.dailyCrypto - x.dailyCrypto) || (y.vol24h - x.vol24h));
@@ -161,13 +166,23 @@ async function open() {
   log(`round ${roundId} open; run "baseline --round ${roundId}" in the last 15 minutes before ${sel.commitDeadline} (target 5)`);
 }
 
+/** Markets already asked: the asked registry plus every market of every round ever opened (Featured rounds included). */
+function askedSet() {
+  const askedFile = `keeper/state/asked_${NET.chain.id}.json`;
+  const asked = new Set(existsSync(askedFile) ? JSON.parse(readFileSync(askedFile, 'utf8')).map(String) : []);
+  for (const f of (existsSync('keeper/state') ? readdirSync('keeper/state') : []).filter((f) => f.startsWith(`round_${NET.chain.id}_`) && f.endsWith('.json'))) {
+    for (const id of JSON.parse(readFileSync(`keeper/state/${f}`, 'utf8')).marketIds ?? []) asked.add(String(id));
+  }
+  return asked;
+}
+
 /** Board of a round from its public round file: 'open' rounds get no baseline (rule v3.2); default 'scored'. */
 function boardOf(r) {
   const f = `keeper/archive/${args.network || 'testnet'}/rounds/${r}.json`;
   return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')).board ?? 'scored' : 'scored';
 }
 
-async function baseline(rIn) {
+async function baseline(rIn, { until = Infinity } = {}) {
   const r = rIn ?? (await roundArg());
   if (boardOf(r) === 'open') return log(`round ${r}: open board, no baseline by rule v3.2`);
   const round = await read('getRound', [r]);
@@ -180,7 +195,7 @@ async function baseline(rIn) {
   mkdirSync(dir, { recursive: true });
   writeFileSync(`${dir}/baseline_books.json`, JSON.stringify(snap.books, big, 2)); // public archive of the raw books
   // posted in clear (ledger v1.2): retries stay inside the 15 minute window; the contract refuses anything later
-  await send('setBaseline', [r, snap.packed], { tries: 5 });
+  await send('setBaseline', [r, snap.packed], { tries: 5, until });
   log(`round ${r} baseline set ${Math.round((deadlineMs - Date.now()) / 1000)} s before the deadline`);
 }
 
@@ -370,8 +385,9 @@ async function tick({ stopAt = Infinity } = {}) {
   const saved = existsSync(cursorFile) ? JSON.parse(readFileSync(cursorFile, 'utf8')) : {};
   const ids = V32 ? tickIds(saved, count) : tickIds({ next: count > 14n ? count - 14n : 1n }, count);
   const open = [];
+  let stopped = false;
   for (const [k, r] of ids.entries()) {
-    if (Date.now() > stopAt) { open.push(...ids.slice(k)); log(`tick: stopped before the deadline, ${ids.length - k} rounds left for the next pass`); break; }
+    if (Date.now() > stopAt) { stopped = true; open.push(...ids.slice(k)); log(`tick: stopped before the deadline, ${ids.length - k} rounds left for the next pass`); break; }
     const round = await read('getRound', [r]);
     if (now < round.commitDeadline) { open.push(r); continue; }
     if (!round.isSealed) await seal(r);
@@ -390,6 +406,7 @@ async function tick({ stopAt = Infinity } = {}) {
     mkdirSync('keeper/state', { recursive: true });
     writeFileSync(cursorFile, JSON.stringify({ next: String(count + 1n), open: open.map(String) }));
   }
+  if (stopped) return; // scores waits for a pass after the deadline
   // a scores failure alerts but never blocks sealing, finalizing or scoring
   await scores().catch(async (e) => { await alert(`scores failed: ${(e.shortMessage || e.message).split('\n')[0]}`); process.exitCode = 1; });
 }
@@ -406,11 +423,20 @@ async function night(rIn) {
   // 10 minutes before so many rounds fit inside the 15 minute window; v3.1: this round only, 5 minutes before
   const due = V32 ? await dueAt(dl) : [r];
   const errors = [];
+  const post = async (x, limit) => { try { if (!(await read('getRound', [x])).baselineSet) await baseline(x, { until: limit }); } catch (e) { errors.push(e); } };
   if (Date.now() < dl) {
-    await until(dl - (V32 ? 10 : 5) * 60 * 1000);
-    for (const x of due) {
-      try { if (!(await read('getRound', [x])).baselineSet) await baseline(x); } catch (e) { errors.push(e); }
+    // the Featured round keeps its 5 minute target (THREAT_MODEL item 2); topic rounds go first, from 10 minutes
+    // before, each stopping its retries by 5.5 minutes before, so a stuck one can never block the Featured baseline
+    // Featured: flagged in its round file; without any flag, the oldest due round (the daily round opens first)
+    const flagged = due.filter(featuredOf);
+    const isFeat = (x) => !V32 || (flagged.length ? flagged.includes(x) : x === due[0]);
+    const others = due.filter((x) => !isFeat(x));
+    if (others.length) {
+      await until(dl - 10 * 60 * 1000);
+      for (const x of others) if (Date.now() < dl - 5.5 * 60 * 1000) await post(x, dl - 5.5 * 60 * 1000); else errors.push(new Error(`round ${x}: no time left for its baseline`));
     }
+    await until(dl - 5 * 60 * 1000);
+    for (const x of due.filter(isFeat)) await post(x, dl - 30 * 1000);
   }
   await until(dl + 20 * 1000);
   for (const x of due) {
@@ -418,6 +444,12 @@ async function night(rIn) {
   }
   if (errors.length) throw errors[0];
   log(`rounds ${due.join(', ')}: night duties done`);
+}
+
+/** Featured flag of a round from its public round file (the daily round); unknown means not featured. */
+function featuredOf(r) {
+  const f = `keeper/archive/${args.network || 'testnet'}/rounds/${r}.json`;
+  return existsSync(f) && JSON.parse(readFileSync(f, 'utf8')).featured === true;
 }
 
 /** Unsealed rounds whose commit deadline is dl, oldest first. Scans back from the newest round to one day before dl. */
@@ -453,17 +485,21 @@ async function loop() {
     if (now.getUTCHours() >= 3 && now.getUTCHours() < 20 && (!latest || Number(latest.createdAt) * 1000 < startOfDay)) {
       await guard('daily', async () => { await daily(); await ping('HC_PING_DAILY'); });
     } else if (V32 && now.getUTCHours() >= 3 && now.getUTCHours() < 20 && dl - Date.now() > 3 * 3600 * 1000 && !existsSync(`keeper/state/topics_${NET.chain.id}_${now.toISOString().slice(0, 10)}.done`)) {
-      // marked done only when topics finished; a failure retries on the next pass
+      // done after success, or after a second failure the same day (alerted), so a deterministic failure never starves tick
+      const doneFile = `keeper/state/topics_${NET.chain.id}_${now.toISOString().slice(0, 10)}.done`;
+      const tryFile = doneFile.replace(/\.done$/, '.tries');
+      const tries = existsSync(tryFile) ? Number(readFileSync(tryFile, 'utf8')) : 0;
+      mkdirSync('keeper/state', { recursive: true });
+      writeFileSync(tryFile, String(tries + 1));
       await guard('topics', async () => {
-        await topics();
-        mkdirSync('keeper/state', { recursive: true });
-        writeFileSync(`keeper/state/topics_${NET.chain.id}_${now.toISOString().slice(0, 10)}.done`, new Date().toISOString());
+        try { await topics(); } catch (e) { if (tries + 1 >= 2) writeFileSync(doneFile, `gave up ${new Date().toISOString()}`); throw e; }
+        writeFileSync(doneFile, new Date().toISOString());
       });
     } else if (latest && !latest.isSealed && dl - Date.now() <= 20 * 60 * 1000) {
       // night pings only when every baseline and seal succeeded
       await guard('night', async () => { await night(count); await ping('HC_PING_NIGHT'); });
     } else {
-      const stopAt = latest && !latest.isSealed ? dl - 25 * 60 * 1000 : Infinity;
+      const stopAt = V32 && latest && !latest.isSealed ? dl - 25 * 60 * 1000 : Infinity;
       await guard('tick', async () => { await tick({ stopAt }); await ping('HC_PING_TICK'); });
     }
     if (latest && !latest.isSealed && dl - 19 * 60 * 1000 > Date.now()) wakeForDeadline = dl - 19 * 60 * 1000;
@@ -496,11 +532,7 @@ async function topics() {
     if (++calls % 200 === 0) await new Promise((r) => setTimeout(r, 60_000)); // API limit 250 a minute
   }
   const askedFile = `keeper/state/asked_${NET.chain.id}.json`;
-  const asked = new Set(existsSync(askedFile) ? JSON.parse(readFileSync(askedFile, 'utf8')) : []);
-  // every market of every round ever opened (Featured rounds of earlier days included) counts as asked
-  for (const f of (existsSync('keeper/state') ? readdirSync('keeper/state') : []).filter((f) => f.startsWith(`round_${NET.chain.id}_`) && f.endsWith('.json'))) {
-    for (const id of JSON.parse(readFileSync(`keeper/state/${f}`, 'utf8')).marketIds ?? []) asked.add(String(id));
-  }
+  const asked = askedSet();
   const day = new Date().toISOString().slice(0, 10);
   const featFile = `keeper/archive/${args.network || 'testnet'}/${day}_daily/selection.json`;
   const featured = new Set(existsSync(featFile) ? JSON.parse(readFileSync(featFile, 'utf8')).chosen.map((c) => String(c.marketId)) : []);

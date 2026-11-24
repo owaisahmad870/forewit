@@ -15,7 +15,7 @@ export const HORIZONS = [
 ];
 export const MIN_H = 6;
 // pre registered caps per day (v3.2): every scored round, open rounds capped so keeper gas and user load stay bounded
-export const CAPS = { scored: Infinity, open: 10, optional: 5 }; // optional boards (sports, elections) capped: day one has 294 sports rounds
+export const CAPS = { scored: 6, open: 10, optional: 5 }; // rounds per day; scored rounds each need a baseline in the 15 minute window // optional boards (sports, elections) capped: day one has 294 sports rounds
 
 const tagSet = (cat) => new Set((cat?.tags ?? []).map((t) => t?.name ?? t));
 const any = (set, list) => list.some((t) => set.has(t));

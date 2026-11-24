@@ -22,6 +22,11 @@ jobs:
         with:
           node-version: 26
       - run: npm ci --no-audit --no-fund
+      - name: Restore keeper state (read only; boards and the unsettled set)
+        run: |
+          git fetch --depth 1 origin keeper-state || exit 0
+          git worktree add ../state FETCH_HEAD
+          for d in keeper/state keeper/archive; do [ -d "../state/$d" ] && mkdir -p "$d" && cp -r "../state/$d/." "$d/" || true; done
       - name: Check every duty of the recent rounds
         env:
           LEDGER_MAINNET: ${{ vars.LEDGER_MAINNET }}
@@ -30,6 +35,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           HC_PING_WATCHDOG: ${{ secrets.HC_PING_WATCHDOG_GH }}
+          TOPIC_ROUNDS: ${{ vars.TOPIC_ROUNDS }}
         run: node keeper/keeper.mjs watchdog --network mainnet
 
   # Backup trigger for the deadline: this schedule is proven to fire, so between 21:00 and 22:50 UTC it starts the
