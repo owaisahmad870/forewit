@@ -6,6 +6,7 @@
 //   seal      [--round <id>]                         sealRound right after the deadline (alerts if no baseline was set)
 //   finalize  --round <id>                           finalize every question resolved onchain; voidStale when allowed
 //   score     --round <id>                           scoreBatch and forfeitBatch over every committer (from logs)
+//   scores                                           post the ForewitScores root of the newest settled round (two provider check)
 //   night     [--round <id>]                         wait for the baseline window, baseline, then seal (one job for GitHub Actions)
 //   status    --round <id>
 // Mainnet writes refuse to run unless LEDGER_MAINNET is set and KEEPER_CONFIRM_MAINNET=yes (Owais's per action yes).
@@ -63,12 +64,12 @@ async function ledger() {
 const read = async (fn, a = []) => pub.readContract({ address: await ledger(), abi: ABI, functionName: fn, args: a });
 
 /** Simulate, send, wait; retry up to `tries` with backoff; never resend after a mined revert. */
-async function send(fn, a, { tries = 4 } = {}) {
+async function send(fn, a, { tries = 4, address, abi = ABI } = {}) {
   const account = keeperAccount();
   const w = createWalletClient({ account, chain: NET.chain, transport: transport() });
   for (let i = 1; ; i++) {
     try {
-      const { request } = await pub.simulateContract({ account, address: await ledger(), abi: ABI, functionName: fn, args: a });
+      const { request } = await pub.simulateContract({ account, address: address ?? (await ledger()), abi, functionName: fn, args: a });
       const hash = await w.writeContract(request);
       const rc = await pub.waitForTransactionReceipt({ hash, timeout: 120_000 });
       if (rc.status !== 'success') throw Object.assign(new Error(`${fn} reverted ${hash}`), { mined: true });
@@ -253,6 +254,59 @@ async function score(rIn) {
   }
 }
 
+const SCORES_ABI = [
+  parseAbiItem('function postRoot(uint64 roundId, uint64 snapshotBlock, bytes32 root, uint32 leafCount)'),
+  parseAbiItem('function latestEpoch() view returns (uint256)'),
+  parseAbiItem('function getEpoch(uint256) view returns ((bytes32 root, uint64 snapshotBlock, uint64 roundId, uint32 leafCount, uint48 postedAt, bool revoked))'),
+];
+
+/** ForewitScores root for the newest settled round (docs/SCORES.md 5.1). Posts only when two independent providers
+ *  build the same root, leaf count and exclusions, and every leaf matches ledger storage at the snapshot block (review L3). */
+async function scores() {
+  const S = process.env[isMainnet ? 'SCORES_MAINNET' : 'SCORES_TESTNET'];
+  if (!S) return log('scores: no ForewitScores address set; skipping');
+  const [rpcA, rpcB] = isMainnet ? [process.env.RPC_MAINNET_PRIMARY, process.env.RPC_MAINNET_FALLBACK] : [process.env.BSC_TESTNET_RPC_URL, process.env.SCORES_CHECK_RPC_TESTNET];
+  if (!rpcA || !rpcB || rpcA === rpcB) throw new Error('scores: two distinct RPC providers are required');
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  let settled = 0n;
+  for (let r = await read('roundCount'); r >= 1n && !settled; r--) {
+    if (now <= (await read('getRound', [r])).revealDeadline) continue;
+    let left = 0;
+    for (const x of await committers(r)) if (((await read('flags', [r, x])) & 6) === 0) left++;
+    if (!left) settled = r;
+  }
+  if (!settled) return log('scores: no settled round yet');
+  const { build, recompute } = await import('../indexer/scores.mjs');
+  const network = args.network || 'testnet', L = await ledger();
+  const fb = process.env[`INDEXER_FROM_BLOCK_${isMainnet ? 'MAINNET' : 'TESTNET'}`];
+  const fromBlock = fb ? BigInt(fb) : undefined;
+  const A = await build({ network, ledger: L, fromBlock, roundId: settled, rpc: rpcA });
+  if (!A.root) return log(`scores: round ${settled} settled, but no opted in scored holder yet; nothing to post`);
+  const B = await build({ network, ledger: L, fromBlock, roundId: settled, snapshotBlock: BigInt(A.snapshotBlock), rpc: rpcB });
+  const same = B.root === A.root && B.leafCount === A.leafCount && JSON.stringify(B.excluded) === JSON.stringify(A.excluded);
+  if (!same) throw new Error(`scores: providers disagree at block ${A.snapshotBlock} (leaves ${A.leafCount} vs ${B.leafCount}); nothing posted`);
+  const archive = createPublicClient({ chain: NET.chain, transport: http(rpcA) });
+  for (const l of A.leaves) {
+    const st = await archive.readContract({ address: L, abi: ABI, functionName: 'getStats', args: [l.forecaster], blockNumber: BigInt(A.snapshotBlock) });
+    const n = BigInt(st.baselineQuestions);
+    if (String(n) !== l.n || String(BigInt(st.sumSkill) / (n + 20n)) !== l.skill) throw new Error(`scores: leaf for ${l.forecaster} disagrees with getStats; nothing posted`);
+  }
+  const sc = (functionName, a = []) => pub.readContract({ address: S, abi: SCORES_ABI, functionName, args: a });
+  const latest = await sc('latestEpoch');
+  if (latest > 0n) {
+    const e = await sc('getEpoch', [latest]);
+    if (e.root === A.root && Number(e.leafCount) === A.leafCount && !e.revoked) return log(`scores: root unchanged since epoch ${latest}`);
+  }
+  await send('postRoot', [settled, BigInt(A.snapshotBlock), A.root, A.leafCount], { address: S, abi: SCORES_ABI });
+  const epoch = await sc('latestEpoch');
+  const file = { ...A, scores: S, epoch: String(epoch) };
+  mkdirSync('web/public/data/scores', { recursive: true });
+  for (const f of [`${epoch}.json`, 'latest.json']) writeFileSync(`web/public/data/scores/${f}`, JSON.stringify(file, null, 2));
+  const rc = await recompute({ network, scores: S, fromBlock, epoch, rpc: rpcB });
+  if (!rc.ok) await alert(`scores epoch ${epoch}: recompute on the second provider failed ${JSON.stringify(rc.checks)}`);
+  log(`scores: epoch ${epoch} posted for round ${settled}, ${A.leafCount} leaves, recompute ${rc.ok ? 'ok' : 'FAILED'}`);
+}
+
 /** Every 15 minutes: seal and reveal the baseline, finalize, score, over the recent rounds. */
 async function tick() {
   const count = await read('roundCount');
@@ -264,6 +318,8 @@ async function tick() {
     await finalize(r);
     await score(r);
   }
+  // a scores failure alerts but never blocks sealing, finalizing or scoring
+  await scores().catch(async (e) => { await alert(`scores failed: ${(e.shortMessage || e.message).split('\n')[0]}`); process.exitCode = 1; });
 }
 
 /** One job for the deadline (GitHub Actions starts late or drops runs, so the job starts early and waits):
@@ -325,9 +381,9 @@ async function watchdog() {
   process.exitCode = 1;
 }
 
-const cmds = { select, open, baseline, seal, night, finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
+const cmds = { select, open, baseline, seal, night, scores, finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
 if (!cmds[cmd]) {
-  console.log('usage: select | open | baseline | seal | night | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
+  console.log('usage: select | open | baseline | seal | night | scores | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
   process.exit(1);
 }
 const hc = process.env[`HC_PING_${cmd.toUpperCase()}`];
@@ -335,7 +391,7 @@ try {
   await cmds[cmd]();
   // publish real data to the site after every state changing job (needs the ledger's deploy block; PUBLISH=0 disables)
   const fromBlock = process.env[`INDEXER_FROM_BLOCK_${isMainnet ? 'MAINNET' : 'TESTNET'}`];
-  if (['open', 'baseline', 'seal', 'night', 'finalize', 'score', 'tick', 'daily'].includes(cmd) && process.env.PUBLISH !== '0' && fromBlock) {
+  if (['open', 'baseline', 'seal', 'night', 'scores', 'finalize', 'score', 'tick', 'daily'].includes(cmd) && process.env.PUBLISH !== '0' && fromBlock) {
     const { publish } = await import('../indexer/publish.mjs');
     const p = await publish({ network: args.network || 'testnet', ledger: await ledger(), fromBlock, rpc: process.env.LOGS_RPC_URL }).catch(async (e) => { await alert(`publish failed: ${e.message.split('\n')[0]}`); return null; });
     if (p) log(`published ${p.rounds} rounds, ${p.files} round files to web/public/data`);

@@ -15,7 +15,7 @@ on:
     inputs:
       duty:
         type: choice
-        options: [daily, night, tick, baseline, seal, finalize, score, status, watchdog]
+        options: [daily, night, tick, baseline, seal, finalize, score, scores, status, watchdog]
         default: tick
       round:
         default: latest
@@ -54,6 +54,7 @@ jobs:
         env:
           LEDGER_TESTNET: ${{ vars.LEDGER_TESTNET }}
           LEDGER_MAINNET: ${{ vars.LEDGER_MAINNET }}
+          SCORES_MAINNET: ${{ vars.SCORES_MAINNET }}
           INDEXER_FROM_BLOCK_TESTNET: ${{ vars.INDEXER_FROM_BLOCK_TESTNET }}
           INDEXER_FROM_BLOCK_MAINNET: ${{ vars.INDEXER_FROM_BLOCK_MAINNET }}
           KEEPER_CONFIRM_MAINNET: ${{ vars.KEEPER_CONFIRM_MAINNET }}
