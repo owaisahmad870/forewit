@@ -21,7 +21,27 @@ const csp = (): Plugin => ({
   name: 'csp-meta',
   apply: 'build',
   transformIndexHtml: () => [{ tag: 'meta', attrs: { 'http-equiv': 'Content-Security-Policy', content: CSP }, injectTo: 'head-prepend' }],
+  // Cloudflare Pages response headers: the same CSP plus what a meta tag cannot carry (frame-ancestors, HSTS).
+  generateBundle() {
+    this.emitFile({ type: 'asset', fileName: '_headers', source: HEADERS });
+  },
 });
+
+export const HEADERS = [
+  '/*',
+  `  Content-Security-Policy: ${CSP}; frame-ancestors 'none'; upgrade-insecure-requests`,
+  '  Strict-Transport-Security: max-age=31536000; includeSubDomains',
+  '  X-Content-Type-Options: nosniff',
+  '  X-Frame-Options: DENY',
+  '  Referrer-Policy: strict-origin-when-cross-origin',
+  '  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+  '  Cross-Origin-Opener-Policy: same-origin',
+  '/assets/*',
+  '  Cache-Control: public, max-age=31536000, immutable',
+  '/data/*',
+  '  Cache-Control: public, max-age=60',
+  '',
+].join('\n');
 
 export default defineConfig({
   base: './',
