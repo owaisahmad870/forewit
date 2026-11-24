@@ -293,6 +293,22 @@ contract ForewitScoresTest is ScoresBase {
         assertFalse(scores.verifyAt(1, t, s, n, empty));
     }
 
+    function test_revoke_keeperOnlyNewestTwo() public {
+        _post(ROOT_1, 10, 1);
+        _post(ROOT_2, 11, 2);
+        _post(ROOT_1, 12, 1);
+        // epoch 1 is history: the hot keeper key cannot erase it, the admin can
+        vm.expectRevert(ForewitScores.KeeperRevokeTooOld.selector);
+        vm.prank(keeper);
+        scores.revokeRoot(1, "x");
+        // the bad root and the corrected root (epochs 2 and 3) stay revocable by the keeper
+        vm.prank(keeper);
+        scores.revokeRoot(2, "bad, superseded by 3");
+        vm.prank(admin);
+        scores.revokeRoot(1, "admin may revoke history");
+        assertTrue(scores.getEpoch(1).revoked && scores.getEpoch(2).revoked && !scores.getEpoch(3).revoked);
+    }
+
     function test_revoke_authAndErrors() public {
         _post(ROOT_1, 10, 1);
         vm.expectRevert(ForewitScores.NotAuthorized.selector);
@@ -406,6 +422,12 @@ contract ForewitGateTest is ScoresBase {
     function setUp() public override {
         super.setUp();
         gate = new ForewitGate(scores, 0, 20, 3 days);
+        vm.prank(alice);
+        ledger.setPublicProfile(true, "alice");
+        vm.prank(bob);
+        ledger.setPublicProfile(true, "bob");
+        vm.prank(carol);
+        ledger.setPublicProfile(true, "carol");
         bytes32[] memory leaves = new bytes32[](3);
         leaves[0] = _leaf(aliceId, 500, 24); // passes
         leaves[1] = _leaf(bobId, -1, 40); // skill below zero
@@ -420,6 +442,16 @@ contract ForewitGateTest is ScoresBase {
         assertEq(gate.MIN_SKILL(), 0);
         assertEq(gate.MIN_N(), 20);
         assertEq(gate.MAX_AGE(), 3 days);
+        assertEq(address(gate.LEDGER()), address(ledger));
+    }
+
+    function test_gate_holderMustBeOptedIn() public {
+        bytes32[] memory p = _proof(tree, _leaf(aliceId, 500, 24));
+        vm.prank(alice);
+        ledger.setPublicProfile(false, "");
+        vm.expectRevert(ForewitGate.NotOptedIn.selector);
+        vm.prank(alice);
+        gate.claim(aliceId, 500, 24, p);
     }
 
     function test_gate_claim() public {
