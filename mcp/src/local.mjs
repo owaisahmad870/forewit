@@ -56,19 +56,26 @@ const roundInput = roundId.optional().describe('Round id, default the latest rou
 
 /**
  * Salts never enter agent context before the commit deadline: with the salt and the forecast anyone could reveal or copy it.
- * Checks chain time on each receipt's pinned network and throws (a tool error) if any round is still open or unverifiable.
+ * Checks chain time on each receipt's pinned network. Throws (a tool error) if any listed round is still open for commits.
+ * Returns the receipts whose deadline cannot be checked (unpinned ledger, for example a deprecated instance, or no deadline):
+ * their salt is withheld with a warning instead of blocking every other backup.
  */
-async function assertCommitsClosed(receipts) {
+async function saltGate(receipts, warnings) {
   const nowByChain = new Map();
+  const withheld = new Set();
   for (const r of receipts) {
     const net = Object.values(NETWORKS).find((n) => n.chainId === r.chainId && n.ledger && n.ledger.toLowerCase() === r.ledger.toLowerCase());
-    if (!net) throw new Error(`round ${r.roundId}: receipt ledger is not a pinned Forewit ledger, so its commit deadline cannot be checked; salt not returned`);
+    if (!net || r.commitDeadline == null) {
+      withheld.add(r);
+      warnings.push({ file: r.file, reason: net ? 'no commit deadline in the receipt; salt withheld' : 'ledger is not a pinned Forewit ledger, so the commit deadline cannot be checked; salt withheld' });
+      continue;
+    }
     if (!nowByChain.has(net.chainId)) nowByChain.set(net.chainId, await chainNow(net));
-    if (r.commitDeadline == null) throw new Error(`round ${r.roundId}: receipt has no commit deadline to check; salt not returned`);
     if (nowByChain.get(net.chainId) < r.commitDeadline) {
       throw new Error(`round ${r.roundId} is open for commits until ${iso(r.commitDeadline)}; salts stay local until then. Use prepare_reveal after the deadline, or filter with round_id.`);
     }
   }
+  return withheld;
 }
 
 /** `home` is the folder that holds .forewit/ (default: the user's home directory). It is not a tool input. */
@@ -179,14 +186,14 @@ export function createLocalServer({ home } = {}) {
     for (const w of warnings) console.error(`forewit mcp: skipped ${w.file}: ${w.reason}`);
     found.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
     const { page, next_cursor } = paginate(found, { cursor, limit });
-    if (include_salt) await assertCommitsClosed(page);
+    const withheld = include_salt ? await saltGate(page, warnings) : null;
     return ok({
       folder: receiptDir(home),
       receipts: page.map((r) => ({
         file: r.file, network: r.network, chain_id: r.chainId, ledger: r.ledger, round_id: r.roundId,
         forecaster: r.forecaster, commit_hash: r.commitHash, probabilities_bps: r.probabilitiesBps ?? [],
         commit_deadline: iso(r.commitDeadline), reveal_deadline: iso(r.revealDeadline), created_at: r.createdAt ?? null,
-        ...(include_salt ? { salt: r.salt } : {}),
+        ...(include_salt && !withheld.has(r) ? { salt: r.salt } : {}),
       })),
       warnings,
       next_cursor,

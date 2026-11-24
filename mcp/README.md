@@ -1,5 +1,7 @@
 # Forewit MCP servers
 
+Preview, testnet only (0.0.1). Targets the BSC testnet ledger until mainnet launch.
+
 Two Model Context Protocol servers for Forewit, the commit and reveal forecasting ledger for Agent ID holders on BNB Smart Chain. One npm package, `forewit`, with one bin:
 
 * `forewit mcp`: local server over stdio. Prepares commit, reveal and profile transactions. Never signs, never sends, never runs baw.
@@ -81,7 +83,7 @@ Recorded in `mcp/INSPECTOR.md`.
 ## Ready for the publish step (owner approval needed, not done)
 
 * `npm pack` output is checked (see `INSPECTOR.md`): bin, src, vendor, README only.
-* Publish with provenance from CI: `npm publish --provenance --access public` (package name `forewit`; check it is free on npm first).
+* Preview publish (0.0.1, testnet only, no provenance): `npm publish --access public` by the owner after `npm login`. At mainnet launch, with the repo public, republish with `npm publish --provenance --access public` from a CI workflow with `id-token: write`.
 * MCP Registry: needs a `server.json` and a namespace (`io.github.owaisahmad870/forewit` or a domain namespace `xyz.forewit/forewit` with DNS verification). Not created.
 * Hosting the remote server: run `node bin/forewit.mjs mcp remote` behind TLS at `mcp.forewit.xyz`, with `HOST=0.0.0.0` and a proxy rate limit.
 * Reserve the npm name `forewit` before the docs page goes live: the page tells users to run `npx forewit mcp`, and the name is unregistered today.

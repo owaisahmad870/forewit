@@ -1,7 +1,7 @@
 {
   "name": "forewit",
-  "version": "0.1.0",
-  "description": "Forewit MCP servers: a read only remote server for rounds, baselines, the crowd and the leaderboard, and a local stdio server that prepares commit, reveal and profile calldata without ever signing.",
+  "version": "0.0.1",
+  "description": "Preview, testnet only. Forewit MCP servers: a read only remote server for rounds, baselines, the crowd and the leaderboard, and a local stdio server that prepares commit, reveal and profile calldata without ever signing.",
   "license": "MIT",
   "type": "module",
   "repository": {
