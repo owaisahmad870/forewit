@@ -1,35 +1,40 @@
+/* Hallmark v2.0.0 polish · theme: Vantage palette (by request) with IBM Plex Sans body and Familjen Grotesk heads (by request; Cobalt faces) · shape: app screen
+   critique: an exact, quiet instrument: near black slate, one lime signal for the action, the current page and focus; figures in rows, never tiles; corners nearly square */
 @import "tailwindcss";
 @import "@fontsource/ibm-plex-sans/latin-400.css";
 @import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/familjen-grotesk/latin-600.css";
 
-/* Dark is the default theme; light is opt in through the toggle (data-theme="light").
-   Every text pair is WCAG AA; chart pairs were checked with the dataviz validator (see web report). */
+/* Dark is the default; light is opt in through the toggle (data-theme="light").
+   Every text pair is WCAG AA; pos, neg and market keep their checked chart values. */
 :root {
   color-scheme: dark;
-  --bg: #0d1420;
-  --surface: #141d2c;
-  --surface-2: #1b2638;
-  --line: #2a3850;
-  --text: #e7ecf4;
-  --muted: #9ba8bc;
-  --accent: #a594ff;
-  --accent-mark: #8a76f5;
-  --accent-ink: #0d1420;
+  --bg: oklch(13.5% 0.012 235);
+  --surface: oklch(17% 0.014 235);
+  --surface-2: oklch(21% 0.016 235);
+  --line: oklch(29% 0.014 235);
+  --text: oklch(95% 0.006 230);
+  --muted: oklch(70% 0.016 230);
+  --accent: oklch(89% 0.19 126);
+  --accent-mark: oklch(80% 0.17 126);
+  --accent-ink: oklch(19% 0.04 126);
   --pos: #7be0ae;
   --neg: #d27070;
   --market: #98a2b3;
+  --radius-card: 6px;
+  --radius-inner: 4px;
 }
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f4f6fa;
-  --surface: #ffffff;
-  --surface-2: #eef1f7;
-  --line: #d5dce7;
-  --text: #121a28;
-  --muted: #526079;
-  --accent: #5b45d9;
-  --accent-mark: #5b45d9;
-  --accent-ink: #ffffff;
+  --bg: oklch(97.5% 0.004 230);
+  --surface: oklch(100% 0 0);
+  --surface-2: oklch(94.5% 0.006 230);
+  --line: oklch(88% 0.008 230);
+  --text: oklch(18% 0.014 235);
+  --muted: oklch(45% 0.016 235);
+  --accent: oklch(42% 0.11 130);
+  --accent-mark: oklch(55% 0.15 128);
+  --accent-ink: oklch(99% 0.01 126);
   --pos: #0a4a2b;
   --neg: #c04848;
   --market: #626a7c;
@@ -48,6 +53,9 @@
   --color-pos: var(--pos);
   --color-neg: var(--neg);
   --color-market: var(--market);
+  --radius-xl: var(--radius-card);
+  --radius-lg: var(--radius-inner);
+  --font-display: "Familjen Grotesk", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   --font-sans: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
 }
 
@@ -59,8 +67,11 @@ html {
   -webkit-text-size-adjust: 100%;
   scrollbar-gutter: stable; /* no horizontal jump when data loads and a scrollbar appears */
 }
-body { margin: 0; background: var(--bg); min-height: 100vh; overflow-x: hidden; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+html, body { overflow-x: clip; }
+body { margin: 0; background: var(--bg); min-height: 100vh; font-size: 1rem; line-height: 1.55; }
+h1, h2 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; overflow-wrap: break-word; min-width: 0; }
+:lang(zh-CN) h1, :lang(zh-CN) h2 { letter-spacing: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; transition: none; }
 code, pre { font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace; }
 
 @media (prefers-reduced-motion: reduce) {
