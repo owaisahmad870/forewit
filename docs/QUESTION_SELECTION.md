@@ -26,7 +26,7 @@ The keeper applies this rule mechanically (keeper/keeper.mjs select --kind daily
 
 ## v3.2 open board (Owais decision 24 Nov 2026, pre registered before any v3.2 round opens)
 * Applies only to rounds opened after this entry is published, never to a round already open. Rounds 1 and 2 run under v3.1.
-* Featured round: one per day, unchanged from the v3.1 daily rule (liquid, resolving 6 to 72 hours after the deadline, one market per event, at most 8). The site, posts and quickstart point to it first.
+* Featured round: one per day, the v3.1 daily rule (liquid, resolving 6 to 72 hours after the deadline, one market per event, at most 8), except that a market already asked in an earlier round is skipped (below). The site, posts and quickstart point to it first.
 * Two boards.
   * Scored board: markets that pass the liquidity rule (two sided book, spread at most 0.10, at least 100 USD traded in 24 hours, rule 5). The keeper posts a baseline, so these questions count for skill, the leaderboard and ForewitScores.
   * Open board: markets that fail the liquidity rule. The keeper posts no baseline, so the contract adds no skill and no baseline question count (ForecastLedger, baselineSet); the Brier score is still recorded. Labeled "no market price" everywhere and never counted toward skill.
@@ -34,6 +34,7 @@ The keeper applies this rule mechanically (keeper/keeper.mjs select --kind daily
 * Planned boards (not opened yet): Sports and Elections (elections and candidates). Both were approved as optional boards, then switched off for now by the owner on 24 Nov 2026 because of keeper gas (a dry run found 286 sports and 8 election rounds on day one). The site lists them as planned. Policy outcomes (central banks, laws, tariffs) stay under macro.
 * Before the first v3.2 topic round: measure keeper gas per day at full volume, user gas per round, and Agentic Wallet previews and executes a user needs per day per topic; if the friction is too high, cap the default topics. Logged in notes/ledger.md as predicted versus observed.
 * Every market is asked in one round only: a market already asked in any earlier round (Featured or topic) is skipped by both the Featured selection and the topic planner.
+* Approved by Owais on 24 Nov 2026, before any topic round opened: the three items below (one round per market, daily caps, baseline timing).
 * Daily caps (rounds per day, set before the first topic round, 24 Nov 2026 review): Scored 6, Open 10, optional boards 5. Each Scored round needs its own baseline inside the 15 minute window, so the cap keeps every baseline on time.
 * Baseline timing: the Featured round keeps its 5 minute target. Topic rounds are posted first, from 10 minutes before the deadline, and stop retrying 5.5 minutes before it, so they can never delay the Featured baseline. This widens the copy the market window (THREAT_MODEL item 2) for topic rounds only.
 * The Featured round publishes its selection funnel (open markets, then each filter with its count), so a visitor sees why these questions were chosen. Topic rounds publish their board, topic and horizon.
