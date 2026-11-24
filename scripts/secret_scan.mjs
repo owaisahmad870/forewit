@@ -3,6 +3,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { userInfo } from 'node:os';
+import { join, dirname, resolve } from 'node:path';
 
 const git = (...a) => execFileSync('git', a, { encoding: 'buffer', maxBuffer: 64 << 20 });
 // --raw -z gives ":oldmode newmode oldsha newsha status\0path\0"; gitlinks (mode 160000, submodules) have no blob to scan.
@@ -29,8 +30,10 @@ function isPublicRpc(v) {
 
 const secrets = [];
 const skipped = [];
-if (existsSync('.env')) {
-  for (const line of readFileSync('.env', 'utf8').split(/\r?\n/)) {
+// a linked worktree has no .env of its own: check against the main checkout's .env
+const ENV = existsSync('.env') ? '.env' : join(dirname(resolve(git('rev-parse', '--git-common-dir').toString().trim())), '.env');
+if (existsSync(ENV)) {
+  for (const line of readFileSync(ENV, 'utf8').split(/\r?\n/)) {
     const m = line.match(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
     if (!m) continue;
     const v = m[2].trim().replace(/^['"]|['"]$/g, '');
