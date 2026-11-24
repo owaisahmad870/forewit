@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  actions: write # night_backup starts the keeper night job by workflow_dispatch
 
 jobs:
   watchdog:
@@ -30,3 +31,21 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           HC_PING_WATCHDOG: ${{ secrets.HC_PING_WATCHDOG_GH }}
         run: node keeper/keeper.mjs watchdog --network mainnet
+
+  # Backup trigger for the deadline: this schedule is proven to fire, so between 21:00 and 22:50 UTC it starts the
+  # keeper night job when none is queued or running (night is idempotent: a second start finds the work done).
+  night_backup:
+    if: github.event_name == 'schedule' && vars.KEEPER_NETWORK != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Start night if none is active
+        run: |
+          now=$(date -u +%H%M)
+          if [ "$now" -lt 2100 ] || [ "$now" -gt 2250 ]; then echo "outside 21:00 to 22:50 UTC ($now)"; exit 0; fi
+          active=$(gh run list -R "$GITHUB_REPOSITORY" -w keeper.yml --json status,createdAt --jq '[.[] | select(.status == "in_progress" or .status == "queued")] | length')
+          if [ "$active" -gt 0 ]; then echo "keeper run already active ($active)"; exit 0; fi
+          gh workflow run keeper.yml -R "$GITHUB_REPOSITORY" -f duty=night -f network="${{ vars.KEEPER_NETWORK }}" -f round=latest
+          echo "night dispatched at $now UTC"
