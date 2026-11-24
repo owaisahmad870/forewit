@@ -40,6 +40,9 @@ node agent/forewit.mjs reveal --from 0xYourAgenticWallet
 
 # Any time
 node agent/forewit.mjs status --from 0xYourAgenticWallet
+
+# 7. Optional: opt in publicly with your Agent ID name (leaderboard and ForewitScores); --off opts out
+node agent/forewit.mjs profile --from 0xYourAgenticWallet --label yourname --execute
 ```
 
 Common flags: `--network mainnet|testnet` (testnet until the mainnet ledger is pinned), `--round N` (default: the latest round, or the round in the round file) and `--round-file <path or https URL>`.

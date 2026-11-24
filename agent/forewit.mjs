@@ -11,7 +11,7 @@ import { parseArgs, parseEnv } from 'node:util';
 import { spawnSync } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import {
-  keccakText, keccakWords, bytesToHex, encodeCall, decodeWords, wordUint, wordAddress, wordBytes32,
+  keccakText, keccakWords, bytesToHex, encodeCall, decodeWords, wordUint, wordAddress, wordBytes32, wordBool,
   wordToAddress, wordToBytes32, isAddress, isBytes32,
 } from './lib/keccak.mjs';
 import { writeSecretFile } from './lib/secure_file.mjs';
@@ -32,6 +32,7 @@ export const SIG = Object.freeze({
   getCommit: 'getCommit(uint256,address)',
   getReveal: 'getReveal(uint256,address)',
   computeCommitHash: 'computeCommitHash(uint256,address,uint256,bytes32)',
+  setPublicProfile: 'setPublicProfile(bool,string)',
 });
 
 export const COMMIT_TYPEHASH = keccakText(
@@ -81,6 +82,12 @@ export function commitHash({ chainId, ledger, roundId, forecaster, packed, salt 
 }
 
 export const commitCalldata = (roundId, hash) => encodeCall(SIG.commit, [wordUint(roundId), wordBytes32(hash)]);
+/** setPublicProfile(bool,string): the bool, the string's offset (64), then its length and its bytes padded to 32. */
+export function profileCalldata(isPublic, label) {
+  const hex = Buffer.from(label, 'utf8').toString('hex');
+  return encodeCall(SIG.setPublicProfile, [wordBool(isPublic), wordUint(64), wordUint(hex.length / 2)]) + hex.padEnd(Math.ceil(hex.length / 64) * 64, '0');
+}
+
 export const revealCalldata = (roundId, packed, salt) => encodeCall(SIG.reveal, [wordUint(roundId), wordUint(packed), wordBytes32(salt)]);
 export const revealForCalldata = (roundId, forecaster, packed, salt) =>
   encodeCall(SIG.revealFor, [wordUint(roundId), wordAddress(forecaster), wordUint(packed), wordBytes32(salt)]);
@@ -493,6 +500,21 @@ export async function revealPlan({ net, from, home, loaded }) {
   return { alreadyRevealed: false, receipt: r, onchain, bps: bps.slice(0, round.questionCount), data: revealCalldata(id, BigInt(r.packed), r.salt) };
 }
 
+/** Opt in to the public leaderboard and ForewitScores with your Agent ID name, or opt out with --off. */
+async function cmdProfile(o, io) {
+  const net = network(o.network);
+  const from = needFrom(o.from);
+  const label = o.off ? '' : String(o.label ?? '').trim().toLowerCase().replace(/\.ai$/, '');
+  if (!o.off && !/^[a-z0-9_]{1,64}$/.test(label)) throw new Error('--label <your Agent ID name, for example owaisahmad> is required (or --off to opt out)');
+  if (o.execute) assertCanExecute(net, io);
+  const data = profileCalldata(!o.off, label);
+  const what = o.off ? 'profile opt out (removes your public name)' : `public profile with the name ${label}.ai`;
+  say(o.off ? 'Opting out: your name leaves the leaderboard and the next ForewitScores root.' : `Opting in as ${label}.ai: your name, track record and ForewitScores leaf become public. The ledger checks that ${from} owns ${label}.ai.`);
+  if (o.execute) await sendWithConfirmation({ net, from, data, what, io });
+  else printWalletSteps(net, from, data, what);
+  footer();
+}
+
 async function cmdReveal(o, io) {
   const net = network(o.network);
   const from = needFrom(o.from);
@@ -811,6 +833,7 @@ ${CMD} <command> [flags]
             add --execute to commit or reveal to run baw preview, review it and send after typing yes
             (BSC mainnet only, interactive terminal only, never with a piped or scripted yes)
   status    --from 0x..           Commit, reveal and scoring status for a wallet
+  profile   --from 0x.. --label name [--execute]  Opt in publicly with your Agent ID name (leaderboard, ForewitScores); --off opts out
   receipt   [--from 0x..] [--show-salt]  Print saved reveal receipts (salt only with --show-salt) so you can back them up
   agent     --from 0x.. [--env-file path] [--execute]  Your own LLM forecasts the open round, then the commit flow runs
             (FOREWIT_LLM_URL, FOREWIT_LLM_MODEL, FOREWIT_LLM_KEY, FOREWIT_LLM_API=openai|anthropic; only question texts are sent)
@@ -829,10 +852,10 @@ export async function main(argv, io = ttyIo) {
     options: {
       network: { type: 'string' }, round: { type: 'string' }, 'round-file': { type: 'string' }, execute: { type: 'boolean' }, from: { type: 'string' },
       p: { type: 'string' }, 'show-salt': { type: 'boolean' }, reveal: { type: 'boolean' }, 'env-file': { type: 'string' }, at: { type: 'string' },
-      install: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
+      install: { type: 'boolean' }, label: { type: 'string' }, off: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
     },
   });
-  const cmds = { round: cmdRound, forecast: cmdForecast, commit: cmdCommit, reveal: cmdReveal, status: cmdStatus, receipt: cmdReceipt, agent: cmdAgent, schedule: cmdSchedule };
+  const cmds = { round: cmdRound, forecast: cmdForecast, commit: cmdCommit, reveal: cmdReveal, status: cmdStatus, receipt: cmdReceipt, profile: cmdProfile, agent: cmdAgent, schedule: cmdSchedule };
   const cmd = cmds[positionals[0]];
   if (!cmd || o.help) return say(HELP);
   if (o.round !== undefined) needRound(o.round);
