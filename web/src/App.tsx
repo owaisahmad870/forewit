@@ -6,6 +6,8 @@ import { Home } from './pages/Home';
 import { RoundPage, Rounds } from './pages/Round';
 import { Leaderboard } from './pages/Leaderboard';
 import { Crowd, DocPage, DocsIndex, Play, Profile } from './pages/Static';
+import { Proof } from './pages/Proof';
+import { Start } from './pages/Start';
 
 const store = {
   get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -25,11 +27,13 @@ function useRoute() {
 
 const NAV = [
   ['', 'nav.home'],
+  ['start', 'nav.start'],
   ['rounds', 'nav.rounds'],
   ['leaderboard', 'nav.leaderboard'],
   ['crowd', 'nav.crowd'],
   ['play', 'nav.play'],
   ['docs', 'nav.docs'],
+  ['proof', 'nav.proof'],
 ] as const;
 
 function Header({ route, theme, setTheme }: { route: string[]; theme: string; setTheme: (t: string) => void }) {
@@ -51,13 +55,13 @@ function Header({ route, theme, setTheme }: { route: string[]; theme: string; se
           {t('brand')}
           {t('brandLocal') && <span lang="zh-CN" className="font-normal text-muted">{t('brandLocal')}</span>}
         </a>
-        <nav aria-label={t('nav.main')} className="hidden items-center md:flex">{links}</nav>
+        <nav aria-label={t('nav.main')} className="hidden items-center lg:flex">{links}</nav>
         <div className="flex items-center gap-2">
           <button type="button" className={btn} lang={lang === 'en' ? 'zh' : 'en'} title={t('ui.otherLangName')} onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}>{t('ui.otherLang')}</button>
           <button type="button" className={btn} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? t('ui.toLight') : t('ui.toDark')}</button>
         </div>
       </div>
-      <details ref={menu} className="border-t border-line md:hidden">
+      <details ref={menu} className="border-t border-line lg:hidden">
         <summary className="mx-auto flex min-h-11 max-w-5xl cursor-pointer items-center px-4 text-sm">{t('nav.menu')}</summary>
         <nav aria-label={t('nav.main')} className="mx-auto grid max-w-5xl grid-cols-2 px-2 pb-2">{links}</nav>
       </details>
@@ -112,6 +116,7 @@ function Page({ route, data, error }: { route: string[]; data: Dataset | null; e
   const { t } = useT();
   const [head, arg] = route;
   if (head === 'play') return <Play />;
+  if (head === 'start') return <Start />;
   if (head === 'docs') return arg ? <DocPage slug={arg} /> : <DocsIndex />;
   if (head === 'profile') return <Profile />;
   if (error) return <p className="text-muted">{t('ui.loadError')}</p>;
@@ -121,6 +126,7 @@ function Page({ route, data, error }: { route: string[]; data: Dataset | null; e
   if (head === 'round') return <RoundPage data={data} id={Number(arg)} />;
   if (head === 'leaderboard') return <Leaderboard data={data} />;
   if (head === 'crowd') return <Crowd data={data} />;
+  if (head === 'proof') return <Proof data={data} />;
   return <p className="text-muted">{t('ui.notFound')} <a href="#/" className="text-accent underline">{t('ui.backHome')}</a></p>;
 }
 

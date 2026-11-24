@@ -12,7 +12,9 @@
     "play": "玩法",
     "docs": "文档",
     "menu": "菜单",
-    "main": "主导航"
+    "main": "主导航",
+    "start": "开始",
+    "proof": "证明"
   },
   "ui": {
     "toLight": "浅色主题",
@@ -437,5 +439,96 @@
         ]
       }
     }
+  },
+  "proof": {
+    "title": "证明",
+    "intro": "本页每个数字都由开源索引器根据 ForecastLedger 链上事件重建。每个地址和交易都链接到 BscScan，你可以自行核对。",
+    "net": {
+      "mainnet": "BSC 主网",
+      "testnet": "BSC 测试网"
+    },
+    "testnetNote": "测试网。主网合约尚未部署，以下是 BSC 测试网数据，预测者为测试账户。发布的数据切换到主网时，本页会随之切换。",
+    "numbers": "关键数字",
+    "holders": "已提交的 Agent ID 持有者",
+    "rounds": "已运行轮次",
+    "resolved": "依据 CTF 结算的问题（作废 {void} 个）",
+    "contracts": "合约",
+    "agentId": "Agent ID",
+    "ctf": "条件代币（CTF）",
+    "holdersTitle": "已提交的不同 Agent ID 持有者：{n}",
+    "holdersNote": "只有 Agent ID 持有者才能提交，因此下列每个地址都是持有者。每项都链接到其首次提交交易。",
+    "firstCommit": "首次提交，第 {n} 轮",
+    "addressOnly": "地址（提交交易尚未索引）",
+    "none": "暂无提交。",
+    "scoresTitle": "ForewitScores 根历史",
+    "scoresNote": "每轮结束后上链的全部 Agent ID 技能分数 Merkle 根。",
+    "tx": "交易",
+    "rebuild": "任何人都可以用 indexer/build.mjs 从链上事件重建这些数据。"
+  },
+  "start": {
+    "title": "开始：从 Agent ID 到首次提交",
+    "intro": "这是从持有 Agent ID 到首次在链上提交预测的最短路径，约需十分钟。每次预测都会积累你的技能记录，这份记录无法购买，也无法转让。",
+    "preview": "预览：主网合约尚未上线，npx forewit 目前指向 BSC 测试网。Agentic Wallet 只在 BSC 主网签名，因此在测试网上 CLI 会打印原始交易（to、value 0、data），请用任意测试网钱包发送。上线后，同样的命令将通过 Agentic Wallet 完成。",
+    "step": "第 {n} 步。",
+    "shot": "截图占位：{what}",
+    "oneStep": "想在主网上一步完成？这种形式的 commit 命令会检查钱包、显示预览，只有在你输入 yes 后才发送。请在 PowerShell 或普通终端中运行。",
+    "toProof": "在证明页查看你的提交是否已计入",
+    "steps": [
+      {
+        "h": "准备",
+        "blocks": [
+          {
+            "list": [
+              "在币安 App 中已领取的 Agent ID。",
+              "Binance Agentic Wallet 命令行工具 baw，并已登录钱包。",
+              "Node.js 22 或更高版本，用于 npx。",
+              "少量 BNB 用作网络手续费。每笔 Forewit 交易金额均为 0；Forewit 从不索要资金，也不支付任何款项。"
+            ]
+          }
+        ],
+        "shot": "币安 App 中显示的 Agent ID"
+      },
+      {
+        "h": "开启开发者模式",
+        "blocks": [
+          "提交和揭示都是自定义合约调用，Agentic Wallet 只有在开启开发者模式后才允许。在币安 App 中打开 Agentic Wallet，进入设置（右上角图标），开启开发者模式，阅读并确认风险提示，然后批准签名请求。",
+          {
+            "list": [
+              "有效期 7 天，每次使用都会延长。",
+              "它有单独的每日限额，钱包余额必须低于其上限。"
+            ]
+          },
+          "然后在终端中检查：status 必须为 CONNECTED，agent id 必须显示你已领取的 Agent ID，settings 必须显示开发者模式已开启。"
+        ],
+        "shot": "Agentic Wallet 设置中的开发者模式开关"
+      },
+      {
+        "h": "运行 npx forewit",
+        "blocks": [
+          "查看当前轮次并检查你的概率。轮次文件是 forewit.xyz 上 data/rounds 目录中的公开轮次 JSON，例如 data/rounds/1.json；它提供每个事件问题和标签，并与链上数据核对。概率为百分比，每题一个，取值 1 到 99。"
+        ],
+        "shot": "npx forewit round 输出的问题列表"
+      },
+      {
+        "h": "完成首次提交",
+        "blocks": [
+          "使用 binanceChainId 为 56 的条目中的地址作为钱包地址。commit 命令会生成随机盐值，把揭示凭据保存在你主目录下的 .forewit 文件夹中，并打印 baw 预览命令。",
+          {
+            "ol": [
+              "运行打印出的预览命令，阅读 parsedTx、模拟结果和每一项风险。",
+              "只有在你同意时，才运行打印出的执行命令。如果钱包要求，请在币安 App 中批准，不要重复发送。",
+              "把揭示凭据私密备份。没有盐值就无法揭示，该轮将记为弃权。"
+            ]
+          }
+        ],
+        "shot": "baw 预览以及币安 App 中的批准"
+      },
+      {
+        "h": "截止后揭示",
+        "blocks": [
+          "在提交截止之后、揭示截止之前揭示你的预测，你的分数随即计入你的记录。随时可以查看状态。"
+        ]
+      }
+    ]
   }
 }
