@@ -12,6 +12,7 @@
 // Mainnet writes refuse to run unless LEDGER_MAINNET is set and KEEPER_CONFIRM_MAINNET=yes (Owais's per action yes).
 // Keys never print. Baseline salts are stored with agent/lib/secure_file.mjs before any commit transaction.
 import { tickIds } from './lib/cursor.mjs';
+import { redactPublic } from './lib/redact.mjs';
 import { createPublicClient, createWalletClient, http, fallback, keccak256, toHex, parseAbiItem } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { bsc, bscTestnet } from 'viem/chains';
@@ -53,7 +54,7 @@ async function alert(msg) {
   // GitHub issue comment: GitHub emails the repository owner (set ALERT_ISSUE_NUMBER; the workflow passes GITHUB_TOKEN)
   const { ALERT_ISSUE_NUMBER: issue, GITHUB_TOKEN: gh, GITHUB_REPOSITORY: repo } = process.env;
   // the issue is public and GitHub does not mask secrets in API bodies: drop URLs (a keyed RPC) and long tokens other than tx hashes and addresses
-  const pubMsg = msg.replace(/https?:\/\/\S+/g, '<url>').replace(/(?!0x)[A-Za-z0-9_-]{32,}/g, '<redacted>');
+  const pubMsg = redactPublic(msg);
   if (issue && gh && repo) await fetch(`https://api.github.com/repos/${repo}/issues/${issue}/comments`, { method: 'POST', headers: { authorization: `Bearer ${gh}`, accept: 'application/vnd.github+json', 'content-type': 'application/json' }, body: JSON.stringify({ body: `Keeper (${args.network || 'testnet'}): ${pubMsg}` }) }).catch(() => log('issue alert failed'));
   if (process.env.ALERT_WEBHOOK_URL) await fetch(process.env.ALERT_WEBHOOK_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: `Forewit keeper: ${msg}` }) }).catch(() => log('alert webhook failed'));
 }
