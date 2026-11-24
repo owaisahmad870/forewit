@@ -8,7 +8,7 @@ Every transaction this toolkit prepares has value 0 and goes to one pinned contr
 
 This folder holds:
 
-* `forewit.mjs`: a zero dependency Node CLI (Node 26 or newer) that reads rounds from the chain, computes commits, stores salts safely and prints the exact `baw` commands, or runs them for you after you type yes (`--execute`).
+* `forewit.mjs`: a zero dependency Node CLI (Node 26 or newer) that reads rounds from the chain, computes commits, stores salts safely and prints the exact `baw` commands, or runs them for you after you type yes (`--execute`). `agent` lets your own LLM pick the probabilities, and `schedule` sets up a daily run.
 * `SKILL.md`: a Claude Code skill with the preflight, the round flow and the hard rules for agents.
 * `llms.txt`: a short machine readable summary for any agent.
 * `config.mjs`: the pinned networks and ledger addresses. The CLI has no flag to change them.
@@ -83,6 +83,57 @@ Results:
 
 Every transaction has value 0 and only pays network gas. Forewit never asks for funds and pays no returns.
 
+## Forecast with your own LLM (`agent`)
+
+`agent` does a whole round in one run: it reads the open round, asks your own LLM for one probability per question, then runs the normal commit flow (salt saved first, then the dry run, or with `--execute` the preview and your typed yes). It ends by printing the reveal command. You pay your LLM provider directly; Forewit pays nothing per user and sees nothing.
+
+```bash
+# Dry run: prints the baw commands
+node agent/forewit.mjs agent --from 0xYourAgenticWallet --env-file ~/.forewit_llm.env
+
+# Preview, your typed yes, send
+node agent/forewit.mjs agent --from 0xYourAgenticWallet --env-file ~/.forewit_llm.env --execute
+
+# After the commit deadline: reveal the newest committed round whose reveal window is open
+node agent/forewit.mjs agent --reveal --from 0xYourAgenticWallet --execute
+```
+
+Settings, in your environment or in a file given with `--env-file` (the file wins). Only these four names are read from that file, so other secrets in it never enter the CLI:
+
+* `FOREWIT_LLM_MODEL`: required: your provider's model id, for example `claude-opus-5-5` with `FOREWIT_LLM_API=anthropic`.
+* `FOREWIT_LLM_KEY`: your API key, sent only in the auth header. Leave it empty for a local server.
+* `FOREWIT_LLM_API`: `openai` (default, any OpenAI compatible chat completions endpoint: OpenAI, OpenRouter, Groq, Ollama, LM Studio and others) or `anthropic` (the Anthropic Messages API).
+* `FOREWIT_LLM_URL`: the endpoint. Defaults to `https://api.openai.com/v1/chat/completions` or `https://api.anthropic.com/v1/messages`. It must be https; plain http is allowed only for localhost, for example `http://localhost:11434/v1/chat/completions` for Ollama.
+
+What goes to the LLM, and what never does:
+
+* Sent: the question texts (event question plus label, cross checked against the chain), the current time and the commit deadline. Nothing else.
+* Never sent: the salt, the wallet address, the receipt. The LLM is asked before the salt exists.
+* The question texts come from Predict.fun and are untrusted. The prompt passes them as JSON data and tells the model to ignore any instructions inside them.
+* The reply must be exactly `{"p":[...]}` with one number from 1 to 99 per question, in order (one surrounding code fence is tolerated). Anything else, a wrong count, a 0 or a 100 is refused and shown, and nothing is saved or sent. A refusal is never clamped into a forecast.
+
+Round file: `--round-file` is optional on mainnet. Without it the CLI fetches `https://forewit.xyz/data/rounds/<latest round>.json` and cross checks it against the chain like any round file.
+
+## Daily schedule (`schedule`)
+
+```bash
+# Print the daily job for this machine (nothing is installed)
+node agent/forewit.mjs schedule --from 0xYourAgenticWallet --env-file ~/.forewit_llm.env
+
+# Write the script and register it
+node agent/forewit.mjs schedule --from 0xYourAgenticWallet --env-file ~/.forewit_llm.env --install
+```
+
+The job runs once a day at `--at HH:MM` local time (default: 12:00 UTC in your local time; daily rounds open about 03:00 UTC and take commits until 23:00 UTC, and the previous round's reveal window is open then too). It first runs `agent --reveal --execute`, then `agent --execute`, so one sitting reveals yesterday and forecasts today.
+
+Why it opens a terminal instead of sending by itself: every commit and reveal needs your typed yes, and the CLI refuses a piped or scripted yes. A background job cannot type it, and Forewit does not offer a way around that. So:
+
+* Windows: a Task Scheduler task (`schtasks /Create ... /IT`) opens a console window with `~/.forewit/forewit_daily.cmd` while you are signed in. Review each preview and type yes, or close the window to skip. Remove it with `schtasks /Delete /F /TN "Forewit daily"`.
+* macOS: a launchd agent (`~/Library/LaunchAgents/xyz.forewit.daily.plist`) opens Terminal with `~/.forewit/forewit_daily.command`. Remove it with `launchctl unload -w` on that plist.
+* Linux: cron has no terminal, so the cron job (`~/.forewit/forewit_daily.sh`) only runs the read only `status`, appends it to `~/.forewit/schedule.log` and shows a desktop notice with `notify-send` when available. Then run the two `agent` commands yourself. It never calls your LLM or saves a salt in the background.
+
+Notes: run `schedule` from a stable copy of the CLI (this repository checkout), not from an npx cache path, which can disappear; the job points at the exact file that created it. A scheduled task does not see variables from your shell, so pass `--env-file`. Times are local, so the job follows daylight saving changes.
+
 ## How salts are stored and protected
 
 A commit is a hash of your probabilities and a random 32 byte salt. The salt keeps your forecast hidden until the deadline, and you need it again to reveal.
@@ -106,7 +157,7 @@ Without the salt your commit cannot be revealed. A commit that is not revealed b
 node --test agent/test/
 ```
 
-The tests check keccak256 vectors, the golden commit hash vector, function selectors, full calldata and result decoding against viem (installed at the repository root as a dev dependency only), probability clamping, receipt matching, the CLI refusals, round file titles and their chain cross check, and that a secret file on this machine ends up readable by the current user only. Execute mode is tested against a fake `baw` script (`test/fixtures/fake_baw.mjs`, selected by the test only variable `FOREWIT_BAW_BIN`): the happy path, PENDING_CONFIRMATION, each error code, previews with a wrong target, value or calldata, a non TTY stdin, and every answer other than yes.
+The tests check keccak256 vectors, the golden commit hash vector, function selectors, full calldata and result decoding against viem (installed at the repository root as a dev dependency only), probability clamping, receipt matching, the CLI refusals, round file titles and their chain cross check, and that a secret file on this machine ends up readable by the current user only. Execute mode is tested against a fake `baw` script (`test/fixtures/fake_baw.mjs`, selected by the test only variable `FOREWIT_BAW_BIN`): the happy path, PENDING_CONFIRMATION, each error code, previews with a wrong target, value or calldata, a non TTY stdin, and every answer other than yes. `agent` is tested against a fake LLM on localhost (OpenAI and Anthropic shapes): the happy path through execute, malformed model output refused, the salt and wallet never in the LLM request, a piped yes refused before the LLM, the chain or baw is touched, and `agent --reveal`. `schedule` is tested as a pure plan for Windows, macOS and Linux and in print mode; the tests never install a schedule.
 
 ## Risk warning
 
