@@ -10,6 +10,8 @@ Status: built and tested, not published to npm, not listed in the MCP Registry, 
 
 ## Protocol and SDK
 
+Supports MCP protocol 2025-11-25. Support for 2026-07-28 will come when the official MCP SDK adds it.
+
 * SDK: `@modelcontextprotocol/sdk` 1.32.2 (latest on npm, 24 Nov 2026) with zod 4.6.7.
 * Protocol: 2025-11-25. Neither `@modelcontextprotocol/sdk` 1.32.2 nor the split `@modelcontextprotocol/server` 2.4.0 negotiates revision 2026-07-28 yet (both list 2025-11-25 as their latest; a 2026-07-28 `initialize` is answered with 2025-11-25, which a 2026-07-28 client accepts or declines per the spec). Checked by sending `initialize` to both; the remote test asserts this fallback, so an SDK upgrade that adds 2026-07-28 shows up as a test change.
 * Capabilities: tools only. No resources, prompts, logging, sampling, roots or elicitation.
@@ -54,9 +56,9 @@ Tools:
 * `prepare_commit {from, probabilities_percent, round_id?, network?}`: reads the round from the ledger, refuses after the commit deadline or on a wrong question count, makes a 32 byte salt with `crypto.randomBytes`, checks the hash encoding against the ledger's `computeCommitHash` with a throwaway salt, saves the receipt to `~/.forewit/` with owner only permissions (`agent/lib/secure_file.mjs`, icacls on Windows), then returns the commit hash, calldata, `{to, value: "0", data}` and the exact `baw contract-call preview` command. The salt is not returned (`salt_returned: false`).
 * `prepare_reveal {from, round_id?, network?}`: refused before the commit deadline (chain time). After it, finds the receipt matching the onchain commit and returns the reveal calldata. That calldata contains the salt by construction; it is returned only when the salt is about to be public onchain anyway.
 * `prepare_profile {from, is_public, label?, network?}`: `setPublicProfile(bool,string)` calldata, checked against viem in the tests. Opting out always clears the name.
-* `my_receipts {from?, round_id?, network?, include_salt?, cursor?, limit?}`: receipt metadata and file paths. Salts only with `include_salt: true`, for a private backup the user asked for.
+* `my_receipts {from?, round_id?, network?, include_salt?, cursor?, limit?}`: receipt metadata and file paths. Salts only with `include_salt: true`, for a private backup the user asked for, and only once every listed round is past its commit deadline (chain time on the receipt's pinned network); otherwise the call is a tool error. Files in `~/.forewit` that are not valid receipts are skipped and listed in `warnings` (file and reason), never failing the whole call.
 
-Decision on salts: the model never sees a salt unless the user explicitly asks `my_receipts` for it. Before the commit deadline the salt plus forecast would let anyone reveal or copy the forecast, so it stays on disk.
+Decision on salts: salts never enter agent context before the commit deadline. Before it, the salt plus forecast would let anyone reveal or copy the forecast, so it stays on disk; `prepare_reveal` and `my_receipts include_salt` are both refused until then. After the deadline the model sees a salt only in reveal calldata or when the user asks `my_receipts` for a backup.
 
 Guarantees: no tool signs, sends or runs baw (a test runs the stdio server with a fake baw that leaves a marker file and asserts it never ran). stdout carries JSON RPC only; logs go to stderr (`console.log` is redirected). Network access is the pinned RPC only. A `home` folder is not a tool input, and neither are round file URLs.
 
@@ -84,5 +86,4 @@ Recorded in `mcp/INSPECTOR.md`.
 * Hosting the remote server: run `node bin/forewit.mjs mcp remote` behind TLS at `mcp.forewit.xyz`, with `HOST=0.0.0.0` and a proxy rate limit.
 * Reserve the npm name `forewit` before the docs page goes live: the page tells users to run `npx forewit mcp`, and the name is unregistered today.
 * Provenance needs a public repository and a publish workflow with `id-token: write`; neither exists yet.
-* The repository has no LICENSE file; add the MIT text before packing so the tarball carries it.
 * `agent/config.mjs` is copied at pack time: a package published before the mainnet ledger is pinned stays testnet only until republished.

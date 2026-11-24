@@ -14,6 +14,7 @@ mkdirSync(out('web'), { recursive: true });
 for (const f of ['forewit.mjs', 'config.mjs']) cpSync(root(`agent/${f}`), out(`agent/${f}`));
 cpSync(root('agent/lib'), out('agent/lib'), { recursive: true });
 cpSync(root('web/src/lib/question.mjs'), out('web/question.mjs'));
+cpSync(root('LICENSE'), fileURLToPath(new URL('../LICENSE', import.meta.url))); // npm packs LICENSE from the package folder only
 process.removeAllListeners('warning'); // stripTypeScriptTypes prints an experimental warning on every build
 writeFileSync(out('web/data.mjs'), stripTypeScriptTypes(readFileSync(root('web/src/lib/data.ts'), 'utf8')));
 const scoring = Object.fromEntries(['en', 'zh'].map((l) => [l, JSON.parse(readFileSync(root(`web/src/locales/${l}.json`), 'utf8')).docs.pages.scoring]));

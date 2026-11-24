@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { encodeFunctionData, parseAbi } from 'viem';
@@ -70,6 +70,17 @@ test('local server', async (t) => {
     assert.match(text, /revealing early is refused/);
   });
 
+  await t.test('my_receipts refuses include_salt while commits are open', async () => {
+    const salt = JSON.parse(readFileSync(commit.receipt_file, 'utf8')).salt;
+    for (const args of [{ include_salt: true }, { include_salt: true, round_id: 1, from: FROM }]) {
+      const { result, text } = await call(client, 'my_receipts', args);
+      assert.equal(result.isError, true, JSON.stringify(args));
+      assert.match(text, /salts stay local/);
+      assert.ok(!JSON.stringify(result).includes(salt.slice(2)), 'salt not in the refusal');
+    }
+    assert.equal((await call(client, 'my_receipts', {})).result.isError, undefined, 'metadata is still listed');
+  });
+
   await t.test('prepare_reveal after the deadline returns the matching reveal calldata', async () => {
     chain.now = now + 700;
     const receipt = JSON.parse(readFileSync(commit.receipt_file, 'utf8'));
@@ -107,6 +118,19 @@ test('local server', async (t) => {
     const withSalt = await call(client, 'my_receipts', { include_salt: true, from: FROM, round_id: 1 });
     assert.match(withSalt.data.receipts[0].salt, /^0x[0-9a-f]{64}$/);
     assert.equal((await call(client, 'my_receipts', { round_id: 2 })).data.receipts.length, 0);
+  });
+
+  await t.test('my_receipts skips malformed receipt files with a warning per file', async () => {
+    const dir = join(home, '.forewit');
+    writeFileSync(join(dir, 'broken.json'), '{ not json');
+    writeFileSync(join(dir, 'odd.json'), JSON.stringify({ roundId: 'one', salt: 42 }));
+    writeFileSync(join(dir, 'list.json'), '[]');
+    const { result, data } = await call(client, 'my_receipts', { include_salt: true });
+    assert.equal(result.isError, undefined, result.content?.[0]?.text);
+    assert.equal(data.receipts.length, 1);
+    assert.match(data.receipts[0].salt, /^0x[0-9a-f]{64}$/);
+    assert.deepEqual(data.warnings.map((w) => basename(w.file)).sort(), ['broken.json', 'list.json', 'odd.json']);
+    assert.ok(data.warnings.every((w) => w.reason.length > 0));
   });
 
   await t.test('network access is the pinned RPC only', () => {
