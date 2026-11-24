@@ -239,7 +239,7 @@ async function finalize(rIn) {
       const status = meta ? (await apiGet(`/v1/markets/${meta.marketIds[i]}`).catch(() => null))?.data?.status : null;
       if (['PRICE_PROPOSED', 'PRICE_DISPUTED'].includes(status)) { log(`round ${r} q${i}: resolution pending (${status}); not voiding`); continue; }
       // fail closed: an unknown status (API down, no state file) never voids for 7 more days, so a pending resolution survives an outage
-      if (!status && now <= round.revealDeadline + round.resolutionWait + 7n * 86400n) { await alert(`round ${r} q${i}: market status unknown; not voiding yet`); continue; }
+      if (!status && now <= round.revealDeadline + round.resolutionWait + 7n * 86400n) { log(`round ${r} q${i}: market status unknown; not voiding yet`); continue; }
       await send('voidStale', [r, BigInt(i)]);
     }
   }
