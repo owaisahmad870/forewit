@@ -1,6 +1,11 @@
 import { Blocks, Card, CopyBlock, Explain } from '../components';
 import { useT } from '../i18n';
 
+// URL, hosts and prompt keep hyphens, so they live in code, not in the locale files
+const TEMPLATE_URL = 'https://github.com/owaisahmad870/forewit-agent-template';
+const PHONE_HOSTS = 'www.binance.com\nbsc-rpc.publicnode.com\nforewit.xyz\napi.github.com';
+const PHONE_PROMPT = 'Follow CLAUDE.md. Commit my forecast for the current Forewit round.';
+
 type Block = Parameters<typeof Blocks>[0]['blocks'][number];
 
 // Commands per step, in the same order as start.steps in the locales. Code, not prose: the locale files allow no hyphens.
@@ -40,6 +45,15 @@ export function Start() {
       <p className="max-w-[68ch]">{t('start.intro')}</p>
       <Explain terms={['agentId', 'forecast', 'commit', 'salt', 'reveal', 'forfeit']} summary="help.whatTerms" />
       <p className="max-w-[68ch] rounded-lg border border-accent bg-surface-2 p-3 font-semibold">{t('start.preview')}</p>
+      <section aria-labelledby="phone-h" className="max-w-[68ch] rounded-lg border border-line bg-surface p-4">
+        <h2 id="phone-h" className="mb-2 text-lg font-semibold">{t('start.phone.title')}</h2>
+        <p>{t('start.phone.intro')}</p>
+        <ol className="mt-3 list-decimal space-y-2 pl-5">{raw<string[]>('start.phone.steps').map((x, i) => <li key={i}>{x}</li>)}</ol>
+        <CopyBlock text={PHONE_HOSTS} />
+        <CopyBlock text={PHONE_PROMPT} />
+        <a href={TEMPLATE_URL} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center rounded-md bg-accent px-4 font-semibold text-accent-ink">{t('start.phone.cta')}</a>
+        <p className="mt-2 text-sm text-muted">{t('start.phone.note')}</p>
+      </section>
       <ol className="space-y-4">
         {steps.map((s, i) => (
           <li key={i}>

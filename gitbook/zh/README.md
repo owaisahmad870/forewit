@@ -46,7 +46,7 @@ flowchart LR
 
 ## 坦诚说明当前限制
 
-* 目前提交需要在电脑（Windows、macOS 或 Linux）上使用 `baw` 命令行钱包。仅用手机完成的方式正在开发中。
+* 目前提交需要在电脑（Windows、macOS 或 Linux）上使用 `baw` 命令行钱包。用手机的话，请使用云端 AI 智能体：见[用手机或任意浏览器参与](getting_started/play_from_phone.md)。
 * 你需要一个 Agent ID，并在币安 App 中开启开发者模式（Developer Mode）。详见 [准备工作](getting_started/what_you_need.md)。
 * Forewit 的每笔交易金额都是 0，你只需支付少量 BNB 作为 gas。Forewit 从不向你索取资金，也不向任何人支付资金。
 

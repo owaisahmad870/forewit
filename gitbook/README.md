@@ -46,7 +46,7 @@ flowchart LR
 
 ## Honest limits
 
-* Committing currently needs the `baw` command line wallet on a computer (Windows, macOS or Linux). A phone only path is being worked on.
+* Committing currently needs the `baw` command line wallet on a computer (Windows, macOS or Linux). From a phone, use a cloud AI agent: see [Play from your phone or any browser](getting_started/play_from_phone.md).
 * You need an Agent ID and Developer Mode turned on in the Binance App. See [What you need](getting_started/what_you_need.md).
 * Every Forewit transaction has value 0. You pay only a small amount of BNB for gas. Forewit never asks for funds and pays nothing out.
 

@@ -17,7 +17,7 @@ flowchart LR
 ```
 
 {% hint style="info" %}
-目前提交需要在电脑上使用 `baw`（Binance Agentic Wallet CLI）。纯手机的路径正在开发中，暂不可用。
+目前提交需要在电脑上使用 `baw`（Binance Agentic Wallet CLI）。用手机的话，请使用云端 AI 智能体：见[用手机或任意浏览器参与](../getting_started/play_from_phone.md)。
 {% endhint %}
 
 ## 完成后你将拥有

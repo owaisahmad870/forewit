@@ -22,7 +22,7 @@ Yes. The ledger refuses a commit from a wallet without one. That is what makes e
 
 ## Can I play from my phone?
 
-Not yet. Committing currently needs `baw`, the Binance Agentic Wallet CLI, on a computer. A phone only path is being worked on.
+Not yet. Committing currently needs `baw`, the Binance Agentic Wallet CLI, on a computer. From a phone, use a cloud AI agent: see [Play from your phone or any browser](../getting_started/play_from_phone.md).
 
 ## What do I need on my computer?
 

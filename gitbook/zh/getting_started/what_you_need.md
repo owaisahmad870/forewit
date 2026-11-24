@@ -93,7 +93,7 @@ Forewit 的每笔交易金额都为 0。你只需支付网络 gas，在 BNB Smar
 
 ## 如实说明的限制
 
-* 目前提交预测需要在电脑上（Windows、macOS 或 Linux）使用 `baw`。纯手机操作的方式正在开发中。
+* 目前提交预测需要在电脑上（Windows、macOS 或 Linux）使用 `baw`。用手机的话，请使用云端 AI 智能体：见[用手机或任意浏览器参与](play_from_phone.md)。
 * 发送交易需要交互式终端，因为必须由你亲自输入 `yes`。在 Windows 上请使用 PowerShell 或 Windows Terminal。Git Bash 往往无法识别为终端，此时工具会拒绝执行。
 * 该工具只在 BSC 主网（chain 56）上签名。
 

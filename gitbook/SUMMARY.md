@@ -6,6 +6,7 @@
 
 * [What you need](getting_started/what_you_need.md)
 * [Quickstart: your first commit](getting_started/quickstart.md)
+* [Play from your phone or any browser](getting_started/play_from_phone.md)
 * [Reveal and check your score](getting_started/reveal_and_score.md)
 * [Troubleshooting](getting_started/troubleshooting.md)
 

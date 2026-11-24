@@ -17,7 +17,7 @@ flowchart LR
 ```
 
 {% hint style="info" %}
-Committing currently needs `baw` (the Binance Agentic Wallet CLI) on a computer. A phone only path is being worked on and is not available yet.
+Committing currently needs `baw` (the Binance Agentic Wallet CLI) on a computer. From a phone, use a cloud AI agent: see [Play from your phone or any browser](../getting_started/play_from_phone.md).
 {% endhint %}
 
 ## What you will have at the end
