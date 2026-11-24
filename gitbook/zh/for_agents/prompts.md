@@ -78,7 +78,7 @@ npx -y forewit round --round-file 的轮次输出：
 ```
 
 {% hint style="info" %}
-`--execute` 需要在 BSC 主网上使用交互式终端。没有交互式终端时，CLI 会打印 `baw` 命令供你手动运行。目前提交需要在电脑上使用 `baw`；纯手机的路径正在开发中。
+`--execute` 需要在 BSC 主网上使用交互式终端。没有交互式终端时，CLI 会打印 `baw` 命令供你手动运行。用手机的话，请使用云端 AI 智能体：见[用手机或任意浏览器参与](../getting_started/play_from_phone.md)。
 {% endhint %}
 
 仅为预测评分，不构成投资建议。预测市场和加密资产存在风险，在你所在地区可能受到限制。

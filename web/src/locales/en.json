@@ -378,7 +378,7 @@
           {
             "list": [
               "Reading rounds, preparing a commit or reveal, and your receipts: works in any agent above.",
-              "Sending the commit and the reveal: done by the Binance Agentic Wallet CLI (baw) on a computer, after you type yes. A phone only path is being worked on.",
+              "Sending the commit and the reveal: done by the Binance Agentic Wallet CLI (baw) after you type yes, either on a computer or inside a cloud AI agent in your browser, phone included (see the Start page).",
               "Your salt never goes to the agent or to us before the deadline."
             ]
           },
@@ -579,7 +579,20 @@
           "After the commit deadline and before the reveal deadline, reveal from the same machine; the salt is in your receipt. Your score then joins your track record. The site shows a reveal due banner while a reveal window is open."
         ]
       }
-    ]
+    ],
+    "phone": {
+      "title": "From your phone or any browser",
+      "intro": "No computer? A cloud AI agent in your browser (Claude Code on the web) can do the typing. Your keys stay in the Binance app and your salts in your own private repository. Tested from a phone on 24 Nov 2026 up to the wallet preview.",
+      "steps": [
+        "Open the template below, click Use this template, and create a Private repository.",
+        "Open claude.ai/code (or the Code tab in the Claude app) and pick your new repository.",
+        "In the environment settings, allow network access to the hosts in the first box below.",
+        "Send the message below. Tap the sign in link it shows and approve in the Binance app.",
+        "Give your probabilities, read the preview, type yes. Come back after the deadline to reveal."
+      ],
+      "cta": "Open the Forewit agent template",
+      "note": "Keep your copy private: it stores your salts until each reveal. A chat window alone (claude.ai, ChatGPT) cannot sign; it needs the cloud agent."
+    }
   },
   "banner": {
     "commit": "Round {n} is open. Commits close in",

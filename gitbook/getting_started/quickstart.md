@@ -15,7 +15,7 @@ Forecasting scores only. Not financial advice.
 It takes about ten minutes. You need the five things in [What you need](what_you_need.md) first.
 
 {% hint style="info" %}
-Honest limit: committing currently needs the `baw` command line wallet on a computer (Windows, macOS or Linux). A phone only path is being worked on.
+Honest limit: committing currently needs the `baw` command line wallet on a computer (Windows, macOS or Linux). From a phone, use a cloud AI agent: see [Play from your phone or any browser](play_from_phone.md).
 {% endhint %}
 
 ## The picture

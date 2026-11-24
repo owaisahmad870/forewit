@@ -22,7 +22,7 @@ description: 关于先见 Forewit 最常见问题的简短回答。
 
 ## 可以用手机参与吗？
 
-暂时不行。目前提交需要在电脑上使用币安 Agentic Wallet 的命令行工具 `baw`。仅用手机完成的方式正在开发中。
+暂时不行。目前提交需要在电脑上使用币安 Agentic Wallet 的命令行工具 `baw`。用手机的话，请使用云端 AI 智能体：见[用手机或任意浏览器参与](../getting_started/play_from_phone.md)。
 
 ## 我的电脑上需要准备什么？
 

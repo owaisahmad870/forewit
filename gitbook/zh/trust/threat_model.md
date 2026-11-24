@@ -52,7 +52,7 @@ flowchart LR
 
 ## 其他坦诚说明
 
-* 目前提交需要在电脑上使用 `baw`。仅用手机的方案正在开发中。
+* 目前提交需要在电脑上使用 `baw`。用手机的话，请使用云端 AI 智能体：见[用手机或任意浏览器参与](../getting_started/play_from_phone.md)。
 * Agent ID 转移会回滚这一点仅通过模拟证明。销毁和重新发放的途径尚未检查（R4）。
 
 来源：[`docs/THREAT_MODEL.md`](https://github.com/owaisahmad870/forewit/blob/main/docs/THREAT_MODEL.md) 和 [`docs/SCORES.md`](https://github.com/owaisahmad870/forewit/blob/main/docs/SCORES.md) 第 7 节。审查：[安全审查](security.md)。

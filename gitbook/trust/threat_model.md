@@ -52,7 +52,7 @@ flowchart LR
 
 ## Other honest notes
 
-* Committing currently needs `baw` on a computer. A phone only path is being worked on.
+* Committing currently needs `baw` on a computer. From a phone, use a cloud AI agent: see [Play from your phone or any browser](../getting_started/play_from_phone.md).
 * Agent ID transfers were shown to revert by simulation only. Burn and reissue paths are unchecked (R4).
 
 Source: [`docs/THREAT_MODEL.md`](https://github.com/owaisahmad870/forewit/blob/main/docs/THREAT_MODEL.md) and [`docs/SCORES.md`](https://github.com/owaisahmad870/forewit/blob/main/docs/SCORES.md) section 7. Reviews: [Security reviews](security.md).

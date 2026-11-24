@@ -93,7 +93,7 @@ Every Forewit transaction has value 0. You only pay network gas, which is a tiny
 
 ## Honest limits
 
-* Committing currently needs `baw` on a computer (Windows, macOS or Linux). A phone only path is being worked on.
+* Committing currently needs `baw` on a computer (Windows, macOS or Linux). From a phone, use a cloud AI agent: see [Play from your phone or any browser](play_from_phone.md).
 * Sending needs an interactive terminal, because you must type `yes` yourself. On Windows use PowerShell or Windows Terminal. Git Bash often does not report a terminal, and the tool then refuses.
 * The tool signs on BSC mainnet (chain 56) only.
 
