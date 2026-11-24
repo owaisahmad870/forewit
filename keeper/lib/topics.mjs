@@ -43,9 +43,9 @@ export const horizonOf = (hours) => HORIZONS.find((h) => hours >= MIN_H && hours
  * @param {{asked?: Set<string>, featured?: Set<string>, caps?: object}} o markets already asked or in the Featured round are skipped
  * @returns {{rounds: {board, topic, horizon, optional, resolutionDays, questions: object[]}[], skipped: object}}
  */
-export function planTopicRounds(markets, cats, deadlineMs, { asked = new Set(), featured = new Set(), caps = CAPS } = {}) {
+export function planTopicRounds(markets, cats, deadlineMs, { asked = new Set(), featured = new Set(), caps = CAPS, sports = false } = {}) {
   const groups = new Map();
-  const skipped = { notBinary: 0, noCategory: 0, asked: 0, featured: 0, outOfWindow: 0, dailyCrypto: 0 };
+  const skipped = { notBinary: 0, noCategory: 0, asked: 0, featured: 0, outOfWindow: 0, dailyCrypto: 0, sports: 0 };
   for (const m of markets) {
     const id = String(m.id);
     if (!isBinary(m)) { skipped.notBinary++; continue; }
@@ -59,6 +59,7 @@ export function planTopicRounds(markets, cats, deadlineMs, { asked = new Set(), 
     if (!hz) { skipped.outOfWindow++; continue; }
     const board = isLiquid(m) ? 'scored' : 'open';
     const topic = topicOf(m, cat);
+    if (topic === 'sports' && !sports) { skipped.sports++; continue; } // owner 24 Nov 2026: sports off for now (keeper gas)
     const key = `${board}|${topic}|${hz.name}`;
     if (!groups.has(key)) groups.set(key, { board, topic, horizon: hz.name, optional: OPTIONAL.has(topic), resolutionDays: hz.waitDays, items: [] });
     groups.get(key).items.push({ m, cat, endMs });

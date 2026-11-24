@@ -45,3 +45,9 @@ test('plan: boards, chunks of 16, skips asked and featured, caps open rounds', (
   assert.equal(capped.rounds.length, 1);
   assert.ok(capped.dropped >= 2);
 });
+
+test('sports are skipped unless switched on', () => {
+  const cats = { s: cat(['Sports'], 48, DL) };
+  assert.equal(planTopicRounds([mk(1, 's')], cats, DL).rounds.length, 0);
+  assert.equal(planTopicRounds([mk(1, 's')], cats, DL, { sports: true }).rounds[0].topic, 'sports');
+});
