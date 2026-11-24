@@ -16,7 +16,7 @@ on:
     inputs:
       duty:
         type: choice
-        options: [daily, night, tick, baseline, seal, finalize, score, scores, status, watchdog]
+        options: [loop, daily, night, tick, baseline, seal, finalize, score, scores, status, watchdog]
         default: tick
       round:
         default: latest
@@ -43,6 +43,7 @@ jobs:
       DUTY: ${{ inputs.duty || (github.event.schedule == '7 3 * * *' && 'daily') || (github.event.schedule == '23,53 * * * *' && 'tick') || 'night' }}
       ROUND: ${{ inputs.round || 'latest' }}
     steps:
+      - run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -98,3 +99,12 @@ jobs:
           git config user.name "forewit keeper" && git config user.email "keeper@users.noreply.github.com"
           git add -A && { git diff --cached --quiet || git commit -qm "keeper $DUTY $NETWORK $(date -u +%FT%TZ)"; }
           git push origin HEAD:refs/heads/keeper-state
+      - name: Relay the loop to a fresh run
+        if: always() && env.DUTY == 'loop'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # a loop that dies within 20 minutes does not relay, so a crash cannot spin; the healthchecks then alert
+          if [ $(( $(date +%s) - JOB_START )) -lt 1200 ]; then echo "loop ended early: not relaying"; exit 1; fi
+          gh workflow run keeper.yml -R "$GITHUB_REPOSITORY" -f duty=loop -f network="$NETWORK" -f round=latest
+          echo "loop relayed"

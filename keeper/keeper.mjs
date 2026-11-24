@@ -324,8 +324,8 @@ async function tick() {
 
 /** One job for the deadline (GitHub Actions starts late or drops runs, so the job starts early and waits):
  *  baseline about 5 minutes before the commit deadline, then seal 20 s after it. A second start finds both done. */
-async function night() {
-  const r = await roundArg();
+async function night(rIn) {
+  const r = rIn ?? (await roundArg());
   const round = await read('getRound', [r]);
   const dl = Number(round.commitDeadline) * 1000;
   if (dl - Date.now() > 5.75 * 3600 * 1000) throw new Error(`round ${r} deadline more than 5.75 hours away; night starts too early`);
@@ -341,6 +341,35 @@ async function night() {
   }
   if (err) throw err;
   log(`round ${r}: night duties done`);
+}
+
+/** Keeper loop for a host without a working scheduler (GitHub Actions bridge, 24 Nov 2026: schedules stopped firing).
+ *  Runs LOOP_HOURS (default 5.5); the workflow then starts a fresh loop. Each pass, in order:
+ *  open today's daily round (03:00 to 20:00 UTC, once per UTC day); within 20 minutes of an unsealed deadline run
+ *  night (baseline, then seal); otherwise tick (seal, finalize, score, scores). Passes every 15 minutes, and wakes
+ *  19 minutes before an open deadline. A failing duty alerts and the loop goes on. */
+async function loop() {
+  const end = Date.now() + Number(process.env.LOOP_HOURS || 5.5) * 3600 * 1000;
+  const ping = async (k) => { if (process.env[k]) await fetch(process.env[k]).catch(() => {}); };
+  const guard = async (name, fn) => { try { await fn(); } catch (e) { await alert(`loop ${name} failed: ${(e.shortMessage || e.message).split('\n')[0]}`); } };
+  while (Date.now() < end) {
+    const now = new Date();
+    const count = await read('roundCount');
+    const latest = count > 0n ? await read('getRound', [count]) : null;
+    const dl = latest ? Number(latest.commitDeadline) * 1000 : 0;
+    const startOfDay = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    if (now.getUTCHours() >= 3 && now.getUTCHours() < 20 && (!latest || Number(latest.createdAt) * 1000 < startOfDay)) {
+      await guard('daily', async () => { await daily(); await ping('HC_PING_DAILY'); });
+    } else if (latest && !latest.isSealed && dl - Date.now() <= 20 * 60 * 1000) {
+      await guard('night', async () => { await night(count); await ping('HC_PING_NIGHT'); });
+    } else {
+      await guard('tick', async () => { await tick(); await ping('HC_PING_TICK'); });
+    }
+    const wakeForDeadline = latest && !latest.isSealed && dl - 19 * 60 * 1000 > Date.now() ? dl - 19 * 60 * 1000 : Infinity;
+    const next = Math.min(Date.now() + 15 * 60 * 1000, wakeForDeadline, end);
+    if (next > Date.now()) await new Promise((res) => setTimeout(res, next - Date.now()));
+  }
+  log('loop: time budget used; the workflow starts a fresh loop');
 }
 
 /** Daily at 03:00 UTC: select and open a daily round whose commit deadline is 23:00 UTC today. */
@@ -381,7 +410,7 @@ async function watchdog() {
   process.exitCode = 1;
 }
 
-const cmds = { select, open, baseline, seal, night, scores, deadline: async () => console.log(String((await read('getRound', [await roundArg()])).commitDeadline)), finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
+const cmds = { select, open, baseline, seal, night, loop, scores, deadline: async () => console.log(String((await read('getRound', [await roundArg()])).commitDeadline)), finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
 if (!cmds[cmd]) {
   console.log('usage: select | open | baseline | seal | night | scores | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
   process.exit(1);
@@ -391,7 +420,7 @@ try {
   await cmds[cmd]();
   // publish real data to the site after every state changing job (needs the ledger's deploy block; PUBLISH=0 disables)
   const fromBlock = process.env[`INDEXER_FROM_BLOCK_${isMainnet ? 'MAINNET' : 'TESTNET'}`];
-  if (['open', 'baseline', 'seal', 'night', 'scores', 'finalize', 'score', 'tick', 'daily'].includes(cmd) && process.env.PUBLISH !== '0' && fromBlock) {
+  if (['open', 'baseline', 'seal', 'night', 'loop', 'scores', 'finalize', 'score', 'tick', 'daily'].includes(cmd) && process.env.PUBLISH !== '0' && fromBlock) {
     const { publish } = await import('../indexer/publish.mjs');
     const p = await publish({ network: args.network || 'testnet', ledger: await ledger(), fromBlock, rpc: process.env.LOGS_RPC_URL }).catch(async (e) => { await alert(`publish failed: ${e.message.split('\n')[0]}`); return null; });
     if (p) log(`published ${p.rounds} rounds, ${p.files} round files to web/public/data`);
