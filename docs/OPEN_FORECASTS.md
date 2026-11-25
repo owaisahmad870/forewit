@@ -12,7 +12,6 @@ Owais, 25 Nov 2026: "any market, any question, any time ... using its agentic wa
 * A price counts only when the market traded at least 100 USD in the last 24 hours (the v1 liquidity floor) and the price is strictly between 0 and 100 percent.
 * Residual risk, stated plainly: someone who trades a thin market before committing can move its price history, paying real trades and fees; the same holds for any market price.
 * A forecast without such a price counts for nothing in the record (no accuracy, no count, no scoring day). It is still scored onchain and shown on the owner's card as "not counted". Re-review M1: so a forecast slipped in during a keeper gap can never help a record.
-* Residual risk, stated plainly: someone willing to put at least 50 USD on each side of a thin book at a false price can still move it, at the risk of those orders being filled.
 * Per wallet, the keeper pays for at most 50 new forecasts a day (price and reveal), and those come first in every pass; beyond that a forecast gets no price (so it counts for nothing) and the owner reveals it.
 
 ## Void
