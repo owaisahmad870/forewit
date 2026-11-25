@@ -26,6 +26,12 @@ describe('proof page', () => {
     expect([f.rounds, f.resolved, f.questions, f.voided]).toEqual([2, 3, 4, 1]);
     expect(f.ctfs).toHaveLength(1);
   });
+  it('counts holders who only made v2 open forecasts once, after the round holders', () => {
+    const C = '0x' + 'c'.repeat(40);
+    const f = proofFacts(snap({ open: { forecasts: [], committers: [A, C] } }));
+    expect(f.holders.map((h) => h.addr)).toEqual([A, B, C]);
+    expect(f.holders[2].tx).toBeNull();
+  });
   it('testnet data: testnet label and testnet.bscscan.com links', () => {
     const out = html(snap());
     expect(out).toContain('BSC testnet');

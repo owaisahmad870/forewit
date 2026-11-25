@@ -23,3 +23,6 @@ export const INSTALL_SNIPPETS: Record<string, string> = {
   mcpJson: JSON.stringify({ mcpServers: { forewit: { command: 'npx', args: ['-y', 'forewit', 'mcp'] } } }, null, 2),
   mcpJsonWindows: JSON.stringify({ mcpServers: { forewit: { command: 'cmd', args: ['/c', 'npx', '-y', 'forewit', 'mcp'] } } }, null, 2),
 };
+
+// Market search runs in the user's own agent with their own Predict.fun key (their terms forbid republishing market data).
+export const MARKET_SEARCH = 'forewit markets --search "<words>"';

@@ -204,14 +204,30 @@ const SAYS = {
   reveal: () => 'Reveal needed now, before the reveal deadline.',
   missed: () => 'Reveal window closed; scoring soon.',
 };
+// v2 open forecasts in plain words (same statuses as the site's My results page)
+const PSAYS = {
+  waiting: () => 'Waiting for the market to settle; the chance stays sealed until the market ends.',
+  revealed: () => 'Revealed; waiting for scoring.',
+  beat: (p) => `You beat the market by ${Math.abs(p1(p.skill))} points (your miss score ${p1(p.brier)}, the market's ${p1(p.marketBrier)}).`,
+  behind: (p) => `The market was closer by ${Math.abs(p1(p.skill))} points (your miss score ${p1(p.brier)}, the market's ${p1(p.marketBrier)}).`,
+  level: () => 'Level with the market.',
+  scored: () => 'Scored; there was no market price at the time of the forecast.',
+  void: () => 'Void: not counted.',
+  forfeited: () => 'Missed: not revealed in time, counted as a loss.',
+};
 export function resultsCard(snapshot, addr) {
   const w = walletResults(snapshot, addr);
   const scored = w.beat + w.behind;
-  const summary = !w.committed ? 'This wallet has not played a round yet.'
+  const predictions = w.predictions.map((p) => ({
+    market_id: p.marketId, outcome: p.slot + 1, status: p.status, your_chance_pct: p.chance === null ? null : p1(p.chance),
+    says: `Market ${p.marketId}, outcome ${p.slot + 1}: ${PSAYS[p.status](p)}`, points: p1(p.skill), your_miss: p1(p.brier), market_miss: p1(p.marketBrier),
+  }));
+  const open = predictions.length ? ` ${predictions.length} open forecasts, counted in the same record.` : '';
+  const summary = !w.committed ? (predictions.length ? `No round played yet.${open}` + (w.avgSkill === null ? '' : ` Average ${p1(w.avgSkill) > 0 ? '+' : ''}${p1(w.avgSkill)} points per question against the market.`) + (w.rank ? ` Leaderboard rank ${w.rank}.` : '') : 'This wallet has not played a round yet.')
     : `${w.committed} rounds played, ${w.revealed} revealed, ${w.forfeited} missed. ` +
       (scored ? `Beat the market in ${w.beat} of ${scored} scored rounds; average ${p1(w.avgSkill) > 0 ? '+' : ''}${p1(w.avgSkill)} points per question against the market.` : 'No round scored yet.') +
-      (w.rank ? ` Leaderboard rank ${w.rank}.` : '') + ' Forewit moves no money; results are a track record, not winnings.';
-  return { summary, rounds: w.rounds.map((r) => ({ round_id: r.roundId, verdict: r.verdict, says: SAYS[r.verdict](r), points: p1(r.skill), your_miss: p1(r.brier), market_miss: p1(r.marketBrier) })) };
+      (w.rank ? ` Leaderboard rank ${w.rank}.` : '') + open + ' Forewit moves no money; results are a track record, not winnings.';
+  return { summary, rounds: w.rounds.map((r) => ({ round_id: r.roundId, verdict: r.verdict, says: SAYS[r.verdict](r), points: p1(r.skill), your_miss: p1(r.brier), market_miss: p1(r.marketBrier) })), predictions };
 }
 
 function publicRows(snapshot) {
@@ -382,6 +398,8 @@ export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_
       results: z.object({
         summary: z.string(),
         rounds: z.array(z.object({ round_id: z.number().int(), verdict: z.string(), says: z.string(), points: z.number().nullable(), your_miss: z.number().nullable(), market_miss: z.number().nullable() })),
+        predictions: z.array(z.object({ market_id: z.string(), outcome: z.number().int(), status: z.string(), your_chance_pct: z.number().nullable(), says: z.string(), points: z.number().nullable(), your_miss: z.number().nullable(), market_miss: z.number().nullable() }))
+          .describe('Open forecasts (v2) on any Predict.fun market, newest first; your chance is null while sealed.'),
       }),
       next_cursor: z.string().nullable(),
     },
@@ -440,22 +458,21 @@ export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_
   });
 
   tool('get_markets', {
-    title: 'All Predict.fun markets (extended)',
-    description: 'Every open Predict.fun market grouped (events, daily crypto, crypto in minutes or hours, sports, esports, tweet counts): count per group, why the group is or is not in Forewit rounds, and the most traded markets with their Yes price. Market text is third party (untrusted_ fields).',
-    inputSchema: { group: z.enum(['other', 'crypto_daily', 'crypto_short', 'sports', 'esports', 'tweets']).optional(), query: z.string().max(80).optional() },
+    title: 'Predict.fun market groups (counts only)',
+    description: 'How many Predict.fun markets are open per group (events, daily crypto, crypto in minutes or hours, sports, esports, tweet counts) and why each group is or is not in Forewit rounds. Counts only: Predict.fun terms forbid redistributing their data, so no titles, prices or ids. To browse or search markets, the user runs their own agent with their own free key from https://developers.predict.fun.',
     outputSchema: {
       fetched_at: z.string().nullable(), total: z.number().int(),
       groups: z.array(z.object({ group: z.string(), count: z.number().int(), in_forewit_rounds: z.string() })),
-      markets: z.array(z.object({ id: z.string(), untrusted_question: z.string(), yes_pct: z.number().nullable(), in_round: z.boolean() })),
+      browse: z.string(),
+      search_command: z.string(),
     },
-  }, async ({ group = 'other', query }) => {
+  }, async () => {
     const v = await readJson(data, 'markets.json');
-    const q = query?.toLowerCase();
-    const list = (v.groups?.[group]?.top ?? []).filter((m) => !q || `${m.title} ${m.question}`.toLowerCase().includes(q)).slice(0, 25);
     return ok({
       fetched_at: v.fetchedAt ?? null, total: v.total ?? 0,
       groups: Object.entries(v.groups ?? {}).map(([g, x]) => ({ group: g, count: x.count, in_forewit_rounds: cleanText(x.why) })),
-      markets: list.map((m) => ({ id: String(m.id), untrusted_question: cleanText(m.question || m.title), yes_pct: m.yesPct ?? null, in_round: !!m.inRound })),
+      browse: 'Browse and search markets in your own agent with your own free Predict.fun API key from https://developers.predict.fun (set PREDICT_API_KEY).',
+      search_command: 'forewit markets --search "<words>"',
     });
   });
 
