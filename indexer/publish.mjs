@@ -41,10 +41,15 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
   out.metrics.windowMove = { rounds: first5.length, avgPts: first5.length ? first5.reduce((s, m) => s + m.pts, 0) / first5.length : null, thresholdPts: 0.5, active: first5.length === 5 && first5.reduce((s, m) => s + m.pts, 0) / 5 > 0.5 };
   // extended view: every open Predict.fun market from the keeper's newest daily download (no API call, no gas)
   const days = existsSync(archive) ? readdirSync(archive).filter((d) => /_daily$/.test(d) && existsSync(`${archive}/${d}/markets_raw.json`)).sort() : [];
+  // best effort: a bad or huge markets file must never block the snapshot below
   if (days.length) {
-    const raw = JSON.parse(readFileSync(`${archive}/${days.at(-1)}/markets_raw.json`, 'utf8'));
-    const asked = new Set(out.rounds.flatMap((r) => r.questions.map((q) => String(q.marketId))));
-    writeFileSync(`${outDir}/markets.json`, JSON.stringify(marketsView(raw.markets ?? [], { fetchedAt: raw.fetchedAt, asked })));
+    try {
+      const raw = JSON.parse(readFileSync(`${archive}/${days.at(-1)}/markets_raw.json`, 'utf8'));
+      const asked = new Set(out.rounds.flatMap((r) => r.questions.map((q) => String(q.marketId))));
+      writeFileSync(`${outDir}/markets.json`, JSON.stringify(marketsView(raw.markets ?? [], { fetchedAt: raw.fetchedAt, asked })));
+    } catch (e) {
+      console.error(`markets view skipped: ${e.message}`);
+    }
   }
   writeFileSync(`${outDir}/snapshot.json`, JSON.stringify(out, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2));
   writeFileSync(`${outDir}/index.json`, JSON.stringify({ sample: false, network: out.network, ledger, publishedAt: out.builtAt, note: network === 'mainnet' ? 'Live data from BSC mainnet.' : 'Real BSC testnet data (test forecasters and mock markets where noted), not mainnet.', snapshot: 'snapshot.json', rounds: files }, null, 2));
