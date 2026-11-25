@@ -1,7 +1,8 @@
 // Forewit local MCP server (stdio), run on each user's own machine or own cloud sandbox. Prepares commit, reveal and
 // profile transactions and lists local receipts. The wallet tools run that user's own Binance Agentic Wallet CLI (baw):
-// sending needs two human approvals the model cannot give, a confirmation form shown by the MCP client (elicitation)
-// and, when the wallet asks for it, approval in the Binance App. Forewit never holds a key or a wallet session.
+// sending needs the person to type yes in a confirmation form shown by the MCP client (elicitation), which the model
+// cannot fill in; the Binance App adds its own approval only when the wallet asks (requireConfirmation, often false in
+// Developer Mode). Sign in stays with the wallet CLI itself. Forewit never holds a key, a session or a pairing code.
 // Network access: the pinned public RPC (read only eth_call) and baw. Logs go to stderr only.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
@@ -205,10 +206,12 @@ export function createLocalServer({ home } = {}) {
   }, { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false });
 
   // Wallet tools: the signed in wallet is the user's own baw session on this machine or in this sandbox.
+  // Sign in stays with the Binance Agentic Wallet itself (MASTER_PROMPT red line 6: Forewit never handles pairing codes)
+  const SIGN_IN = 'the Agentic Wallet is not signed in on this machine. Sign in with the Binance Agentic Wallet CLI itself: run baw auth signin --json, open its link, check the pairing code in the Binance App and approve, then run baw auth verify --qrCodeId <id> --json and keep it running until it returns. Forewit never sees the pairing code.';
   const SEND = { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true };
   const walletAddress = () => {
     const a = (runBaw(['wallet', 'address', '--json'])?.data?.addresses ?? []).find((x) => String(x.binanceChainId) === '56')?.address;
-    if (!/^0x[0-9a-fA-F]{40}$/.test(a ?? '')) throw new Error('the Agentic Wallet is not signed in or has no BSC address. Use wallet_sign_in first.');
+    if (!/^0x[0-9a-fA-F]{40}$/.test(a ?? '')) throw new Error(SIGN_IN);
     return a;
   };
   // the human gate: a form the MCP client shows to the person; the model cannot fill it in
@@ -222,7 +225,7 @@ export function createLocalServer({ home } = {}) {
       const r = await server.server.elicitInput({
         message: ['Forewit: send this transaction from your Agentic Wallet?', ...log.filter((x) => x !== '').slice(-40)].join('\n').slice(0, 6000),
         requestedSchema: { type: 'object', properties: { confirm: { type: 'string', title: 'Type yes to send', description: 'Anything else cancels. Value is 0; only network gas is paid.' } }, required: ['confirm'] },
-      });
+      }, { timeout: 240_000 }); // the person may take a while; stays under the wallet preview's 300 s expiry
       return r.action === 'accept' ? String(r.content?.confirm ?? '') : '';
     },
   });
@@ -234,42 +237,19 @@ export function createLocalServer({ home } = {}) {
 
   tool('wallet_status', {
     title: 'Wallet status',
-    description: 'Reads the Binance Agentic Wallet on this machine: signed in or not, Agent ID, Developer Mode and the BSC address. Changes nothing.',
+    description: 'Reads the Binance Agentic Wallet on this machine: signed in or not, Agent ID, Developer Mode and the BSC address. Changes nothing. When not signed in, how_to_sign_in says how to sign in with the wallet CLI itself (Forewit never handles pairing codes).',
     inputSchema: {},
-    outputSchema: { signed_in: z.boolean(), agent_id: z.string().nullable(), developer_mode: z.boolean().nullable(), bsc_address: z.string().nullable() },
+    outputSchema: { signed_in: z.boolean(), agent_id: z.string().nullable(), developer_mode: z.boolean().nullable(), bsc_address: z.string().nullable(), how_to_sign_in: z.string().nullable() },
   }, async () => {
     const signedIn = runBaw(['wallet', 'status', '--json'])?.data?.status === 'CONNECTED';
-    if (!signedIn) return ok({ signed_in: false, agent_id: null, developer_mode: null, bsc_address: null });
+    if (!signedIn) return ok({ signed_in: false, agent_id: null, developer_mode: null, bsc_address: null, how_to_sign_in: SIGN_IN });
     const id = runBaw(['wallet', 'agent-id', '--json'])?.data;
     const dev = runBaw(['wallet', 'settings', '--json'])?.data?.devMode;
     const exp = typeof dev?.expiresAt === 'number' ? dev.expiresAt * 1000 : Date.parse(dev?.expiresAt ?? '');
     let addr = null;
     try { addr = walletAddress(); } catch { /* shown as null */ }
-    return ok({ signed_in: true, agent_id: id?.claimed ? String(id.agentId ?? '') : null, developer_mode: dev?.enabled === true && exp > Date.now(), bsc_address: addr });
+    return ok({ signed_in: true, agent_id: id?.claimed ? String(id.agentId ?? '') : null, developer_mode: dev?.enabled === true && exp > Date.now(), bsc_address: addr, how_to_sign_in: null });
   }, { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true });
-
-  tool('wallet_sign_in', {
-    title: 'Sign in to the Agentic Wallet',
-    description: 'Starts the Binance Agentic Wallet sign in. Show the person the link and the pairing code exactly as returned; they open the link, check the code in the Binance App and approve. Then call wallet_sign_in_wait with the qr_code_id. The link expires after about 5 minutes.',
-    inputSchema: {},
-    outputSchema: { already_signed_in: z.boolean(), link: z.string().nullable(), pairing_code: z.string().nullable(), qr_code_id: z.string().nullable() },
-  }, async () => {
-    const d = runBaw(['auth', 'signin', '--json'])?.data ?? {};
-    if (d.status === 'ALREADY_CONNECTED') return ok({ already_signed_in: true, link: null, pairing_code: null, qr_code_id: null });
-    if (!d.urlForWeb || !d.qrCodeId) throw new Error('sign in could not start; try again in a minute');
-    return ok({ already_signed_in: false, link: String(d.urlForWeb), pairing_code: String(d.pairingCode ?? ''), qr_code_id: String(d.qrCodeId) });
-  });
-
-  tool('wallet_sign_in_wait', {
-    title: 'Wait for the sign in approval',
-    description: 'Waits up to about 50 seconds for the person to approve the sign in in the Binance App. Call again while it says waiting; if it says expired, start over with wallet_sign_in.',
-    inputSchema: { qr_code_id: z.string().regex(/^[A-Za-z0-9-]{8,64}$/) },
-    outputSchema: { status: z.enum(['signed_in', 'waiting', 'expired']) },
-  }, async ({ qr_code_id }) => {
-    const r = runBaw(['auth', 'verify', '--qrCodeId', qr_code_id, '--json'], { timeout: 50000 });
-    if (runBaw(['wallet', 'status', '--json'])?.data?.status === 'CONNECTED') return ok({ status: 'signed_in' });
-    return ok({ status: r?.success === false && !r.unknown ? 'expired' : 'waiting' });
-  });
 
   tool('commit_forecast', {
     title: 'Commit a forecast from the Agentic Wallet',

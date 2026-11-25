@@ -40,7 +40,7 @@ test('wallet tools', async (t) => {
   await t.test('wallet_status reads the signed in wallet', async () => {
     const { c } = await client(join(dir, 'h0'), { action: 'accept', content: { confirm: 'yes' } });
     const { data } = await call(c, 'wallet_status');
-    assert.deepEqual(data, { signed_in: true, agent_id: 'tester.ai', developer_mode: true, bsc_address: WALLET });
+    assert.deepEqual(data, { signed_in: true, agent_id: 'tester.ai', developer_mode: true, bsc_address: WALLET, how_to_sign_in: null });
   });
 
   await t.test('commit_forecast sends only after the person types yes in the form, from the wallet\'s own address', async () => {

@@ -24,7 +24,7 @@ flowchart LR
 
 1. 安装 Node 22 或更高版本（这是该包的最低要求）。
 2. 把服务器添加到你的客户端。各处使用的命令都相同：`npx -y forewit mcp`。
-3. 重启客户端，确认出现四个工具：`prepare_commit`、`prepare_reveal`、`prepare_profile`、`my_receipts`。
+3. 重启客户端，确认出现七个工具：`prepare_commit`、`prepare_reveal`、`prepare_profile`、`my_receipts`、`wallet_status`、`commit_forecast`、`reveal_forecast`。
 
 ### Claude Desktop
 
@@ -80,6 +80,10 @@ claude mcp add forewit -- npx -y forewit mcp
 {% hint style="info" %}
 在 Windows 上，如果客户端无法启动 `npx`，请使用 `"command": "cmd"` 并配合 `"args": ["/c", "npx", "-y", "forewit", "mcp"]`。
 {% endhint %}
+
+* `wallet_status {}`：读取本机上你自己的币安 Agentic Wallet（是否登录、Agent ID、开发者模式、BSC 地址），不做任何更改。未登录时会说明如何用钱包 CLI 本身登录：Forewit 从不接触配对码。
+* `commit_forecast {probabilities_percent, round_id?, auto_reveal?}`：从你已登录的钱包提交你自己的预测。它先保存回执，运行钱包预览，然后向**你**显示一个确认表单（MCP elicitation）。只有你在表单中输入 yes 才会发送；助手无法代填。不支持表单的客户端只会被拒绝，绝不会发送。
+* `reveal_forecast {round_id?}`：揭示的相同流程。开启自动揭示后通常不需要，除非截止一小时后状态仍显示未揭示。
 
 ## 本地工具（stdio）
 

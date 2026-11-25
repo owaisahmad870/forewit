@@ -24,7 +24,7 @@ flowchart LR
 
 1. Install Node 22 or newer (the package minimum).
 2. Add the server to your client. The command is the same everywhere: `npx -y forewit mcp`.
-3. Restart the client and check that four tools appear: `prepare_commit`, `prepare_reveal`, `prepare_profile`, `my_receipts`.
+3. Restart the client and check that seven tools appear: `prepare_commit`, `prepare_reveal`, `prepare_profile`, `my_receipts`, `wallet_status`, `commit_forecast`, `reveal_forecast`.
 
 ### Claude Desktop
 
@@ -102,6 +102,10 @@ Every tool defaults to BSC mainnet. `network` accepts `mainnet` or `testnet`.
   * `include_salt: true` adds salts, for a private backup you asked for, and only once every listed round is past its commit deadline. Before that the call is refused.
   * Files that are not valid receipts are skipped and listed in `warnings`.
 
+* `wallet_status {}`: reads your own Binance Agentic Wallet on this machine (signed in, Agent ID, Developer Mode, BSC address). Changes nothing. When you are not signed in it says how to sign in with the wallet CLI itself: Forewit never sees the pairing code.
+* `commit_forecast {probabilities_percent, round_id?, auto_reveal?}`: commits your own forecast from your signed in wallet. It saves the receipt first, runs the wallet preview, then shows **you** a confirmation form (MCP elicitation). It sends only if you type yes in that form; the assistant cannot fill it in. A client without forms gets a refusal, never a send.
+* `reveal_forecast {round_id?}`: the same flow for a reveal. Not needed with auto reveal unless status still shows not revealed an hour after the deadline.
+
 ## The salt rule
 
 A salt plus your forecast lets anyone who sees them reveal or copy your forecast. So salts never enter the assistant's context before the commit deadline:
@@ -116,12 +120,13 @@ This rule covers MCP tool output only. The CLI command `receipt --show-salt` pri
 
 ## Guarantees
 
-* No tool signs, sends or runs `baw`. A test runs the server with a fake `baw` that leaves a marker file and checks it never ran.
+* The `prepare_*` tools and `my_receipts` never run `baw` (a test with a fake `baw` checks it). Only `wallet_status`, `commit_forecast` and `reveal_forecast` run your own `baw`, and the two send tools send only after you type yes in the confirmation form.
+* Honest limits: in Developer Mode the Binance App often does not ask again (`requireConfirmation` false), so the form is the one human gate inside Forewit. Your assistant can also run `baw` directly in a sandbox where it has a shell; the form guards Forewit's tools, not the wallet itself. Keep only a little BNB in the Agentic Wallet you use with an assistant, note that Developer Mode has its own limit, and sign out at the end (`baw auth signout`).
 * stdout carries JSON RPC only. Logs go to stderr.
 * Network access is the pinned RPC only. A home folder or a round file URL is never a tool input.
 * `baw_can_sign_this_network` is false on testnet: `baw` signs on BSC mainnet only.
 
-## Remote read only server (coming soon)
+## Remote read only server
 
 A second server, `forewit mcp remote`, is **hosted at https://forewit.xyz/mcp** (no sign in, read only). Add it as a connector: in Claude open Settings, Connectors, Add custom connector, and paste that URL. It serves read only tools over Streamable HTTP: `get_current_round`, `get_round`, `get_question`, `get_baseline`, `get_crowd`, `get_leaderboard`, `get_markets`, `get_my_status`, `get_upcoming` and `explain_scoring`. It cannot commit or sign: sending a forecast always needs your own wallet (`npx forewit@latest start` on a computer). `get_markets` lists every open Predict.fun market by group (events, daily crypto, crypto in minutes or hours, sports, esports, tweet counts) and says why each group is or is not in Forewit rounds. `get_my_status` includes a `results` card in plain words: per round, "You beat the market by X points" or "The market was closer by X points" with both miss scores (Brier times 100, 0 perfect to 100 fully wrong), and overall rounds played, beat count, average points per question and rank when ranked. Forewit moves no money. `get_upcoming` lists the rounds open for commits now and when the next daily round opens (about 03:10 UTC; commits close at 23:00 UTC). The same results card is on the site at [forewit.xyz/#/me](https://forewit.xyz/#/me), and from the command line with `npx forewit@0.1.2 results --from 0xYourAgenticWallet` and `npx forewit@0.1.2 upcoming`. Market text comes back only inside `untrusted_market_text`, and profile names only inside `untrusted_profile_name`.
 
