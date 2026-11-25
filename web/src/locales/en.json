@@ -635,9 +635,9 @@
       "steps": [
         "Open the template below, click Use this template, and create a Private repository.",
         "Open claude.ai/code (or the Code tab in the Claude app) and pick your new repository.",
-        "In the environment settings, allow network access to the hosts in the first box below.",
+        "In the environment settings, allow network access to the hosts in the first box below. For any market, also add your free Predict.fun key there as PREDICT_API_KEY.",
         "Send the message below. Tap the sign in link it shows and approve in the Binance app.",
-        "Give your probabilities, read the preview, type yes. Come back after the deadline to reveal."
+        "Give your chance, read the preview, type yes. Auto reveal is on, so there is no second step. Other messages: Forecast today's Forewit round, or How did I do?"
       ],
       "cta": "Open the Forewit agent template",
       "note": "Keep your copy private: it stores your salts until each reveal. A chat window alone (claude.ai, ChatGPT) cannot sign; it needs the cloud agent. For safety: keep only a little BNB for gas in that Agentic Wallet, and let the agent sign out at the end of every session."

@@ -19,12 +19,12 @@ description: 用手机或任意浏览器，通过云端 AI 智能体参与先见
 ## 步骤
 1. 打开[先见智能体模板](https://github.com/owaisahmad870/forewit-agent-template)，点击 **Use this template**，再点击 **Create a new repository**，并选择 **Private**。结果：你的 GitHub 账号里多了一个私有副本。
 2. 打开 **claude.ai/code**（或 Claude App 里的 Code 标签），连接 GitHub 并选择你的新仓库。结果：在你的仓库上开启新会话。
-3. 在环境设置中，允许访问 `www.binance.com`、`bsc-rpc.publicnode.com`、`forewit.xyz`、`api.github.com` 以及 npm 仓库。结果：智能体的网络检查返回 2xx 或 3xx，而不是 403。
-4. 发送 `Follow CLAUDE.md. Commit my forecast for the current Forewit round.`。结果：智能体给出一个登录链接和一个配对码。
+3. 在环境设置中，允许访问 `www.binance.com`、`bsc-rpc.publicnode.com`、`forewit.xyz`、`api.github.com`、`api.predict.fun` 以及 npm 仓库。如需预测任意市场，再把你在 developers.predict.fun 免费创建的密钥添加为环境变量 `PREDICT_API_KEY`。之后每次会话开始时会自动完成设置。结果：智能体的网络检查返回 2xx 或 3xx，而不是 403。
+4. 发送 `Forecast a market: bitcoin 15 minute`（或 `Forecast today's Forewit round`）。结果：智能体给出一个登录链接和一个配对码。
 5. 在同一部手机上点击链接，在币安 App 里核对配对码并批准。结果：智能体显示 CONNECTED 以及你的 BSC 地址。
-6. 为每道题给出一个百分比。结果：智能体把回执保存到你的私有仓库，并展示钱包预览（目标是先见账本合约，金额为 0）。
+6. 给出你的概率。结果：智能体把回执保存到你的私有仓库，并展示钱包预览（目标是先见合约，金额为 0）。
 7. 输入 yes。结果：得到一个交易哈希，或者提示你在币安 App 里批准。
-8. 提交截止后，在同一仓库开启新会话，发送 `Follow CLAUDE.md. Reveal my forecast.`。
+8. 无需其他操作：市场结算后自动揭示并计分。随时发送 `How did I do?` 查看结果。
 
 {% hint style="warning" %}
 回执里包含 salt。请保持你的模板副本为私有，绝不要把 salt 粘贴到任何地方。丢失 salt 意味着该轮按弃权计算。

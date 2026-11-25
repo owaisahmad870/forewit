@@ -636,9 +636,9 @@
       "steps": [
         "打开下面的模板，点击 Use this template，创建一个私有（Private）仓库。",
         "打开 claude.ai/code（或 Claude App 里的 Code 标签），选择你的新仓库。",
-        "在环境设置中，允许访问下方第一个框里列出的网址。",
+        "在环境设置中，允许访问下方第一个框里列出的网址。如需预测任意市场，再在那里添加你的 Predict.fun 免费密钥 PREDICT_API_KEY。",
         "发送下面这条消息。点击它给出的登录链接，在币安 App 里批准。",
-        "给出你的概率，查看预览，输入 yes。截止后回来揭示。"
+        "给出你的概率，查看预览，输入 yes。自动揭示已开启，无需第二步。也可以发送：Forecast today's Forewit round 或 How did I do?"
       ],
       "cta": "打开先见智能体模板",
       "note": "请保持你的副本为私有：它会保存你的 salt 直到每次揭示。单纯的聊天窗口（claude.ai、ChatGPT）无法签名，需要云端智能体。安全提示：该 Agentic Wallet 里只保留少量用于 gas 的 BNB，并让智能体在每次会话结束时退出登录。"

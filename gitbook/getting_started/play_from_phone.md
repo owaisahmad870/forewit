@@ -19,12 +19,12 @@ Tested on 24 Nov 2026 from a phone: sign in by tapping a link, round, commit pre
 ## Steps
 1. Open the [Forewit agent template](https://github.com/owaisahmad870/forewit-agent-template), click **Use this template**, then **Create a new repository**, and choose **Private**. Expected: a private copy in your GitHub account.
 2. Open **claude.ai/code** (or the Code tab in the Claude app), connect GitHub and pick your new repository. Expected: a new session on your repository.
-3. In the environment settings, allow network access to `www.binance.com`, `bsc-rpc.publicnode.com`, `forewit.xyz`, `api.github.com` and the npm registry. Expected: the agent's network checks return 2xx or 3xx instead of 403.
-4. Send `Follow CLAUDE.md. Commit my forecast for the current Forewit round.` Expected: the agent shows a sign in link and a pairing code.
+3. In the environment settings, allow network access to `www.binance.com`, `bsc-rpc.publicnode.com`, `forewit.xyz`, `api.github.com`, `api.predict.fun` and the npm registry. For any market, also add your free key from developers.predict.fun as the environment variable `PREDICT_API_KEY`. Setup then runs by itself at the start of every session. Expected: the agent's network checks return 2xx or 3xx instead of 403.
+4. Send `Forecast a market: bitcoin 15 minute` (or `Forecast today's Forewit round`). Expected: the agent shows a sign in link and a pairing code.
 5. Tap the link on the same phone, check the pairing code in the Binance app and approve. Expected: the agent reports CONNECTED and your BSC address.
-6. Give one percentage per question. Expected: the agent saves your receipt to your private repository and shows the wallet preview (target the Forewit ledger, value 0).
+6. Give your chance. Expected: the agent saves your receipt to your private repository and shows the wallet preview (target a Forewit contract, value 0).
 7. Type yes. Expected: a transaction hash, or a request to approve in the Binance app.
-8. After the commit deadline, open a new session on the same repository and send `Follow CLAUDE.md. Reveal my forecast.`
+8. Nothing more: auto reveal scores it after the market settles. Send `How did I do?` any time.
 
 {% hint style="warning" %}
 Your receipts hold the salt. Keep your copy of the template private, and never paste a salt anywhere. A lost salt means the round counts as a forfeit.

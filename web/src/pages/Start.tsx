@@ -3,8 +3,8 @@ import { useT } from '../i18n';
 
 // URL, hosts and prompt keep hyphens, so they live in code, not in the locale files
 const TEMPLATE_URL = 'https://github.com/owaisahmad870/forewit-agent-template';
-const PHONE_HOSTS = 'www.binance.com\nbsc-rpc.publicnode.com\nforewit.xyz\napi.github.com';
-const PHONE_PROMPT = 'Follow CLAUDE.md. Commit my forecast for the current Forewit round.';
+const PHONE_HOSTS = 'www.binance.com\nbsc-rpc.publicnode.com\nforewit.xyz\napi.github.com\napi.predict.fun';
+const PHONE_PROMPT = 'Forecast a market: bitcoin 15 minute';
 
 type Block = Parameters<typeof Blocks>[0]['blocks'][number];
 
