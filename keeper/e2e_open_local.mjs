@@ -44,7 +44,8 @@ let spike = false;
 const server = createServer((req, res) => {
   // price history: 57% for the last 10 minutes, then a spike to 90% that only appears after the commit (must be ignored)
   const t = Math.floor(Date.now() / 60000) * 60;
-  const body = req.url.startsWith('/v1/markets/777/timeseries') ? { resolution: '1m', series: [...Array(10)].map((_, i) => ({ x: t - 540 + i * 60, y: 57 })).concat(spike ? [{ x: Math.floor(Date.now() / 1000) + 1, y: 90 }] : []) }
+  const body = req.url.startsWith('/v1/markets/777/orderbook') ? { bids: [[0.56, 300]], asks: [[0.58, 300]], updateTimestampMs: Date.now() }
+    : req.url.startsWith('/v1/markets/777/timeseries') ? { resolution: '1m', series: [...Array(10)].map((_, i) => ({ x: t - 540 + i * 60, y: 57 })).concat(spike ? [{ x: Math.floor(Date.now() / 1000) + 1, y: 90 }] : []) }
     : req.url.startsWith('/v1/markets/777') ? market : req.url.startsWith('/v1/categories/btc-2m') ? { slug: 'btc-2m', title: 'Bitcoin 2 minute', endsAt, tradingSession: { closesAt: endsAt } } : null;
   res.writeHead(body ? 200 : 404, { 'content-type': 'application/json' });
   res.end(JSON.stringify({ success: !!body, data: body }));

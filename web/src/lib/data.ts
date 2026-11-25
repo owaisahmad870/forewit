@@ -53,7 +53,8 @@ export interface OpenForecast {
 // A v2 forecast counts toward the record only when scored on a Yes or No payout: void forecasts and split payouts never count.
 // counts only with a market price posted in time: without one it carries no weight at all (re-review M1, so a late
 // commit during a keeper gap can never help a record)
-export const openCounts = (f: OpenForecast) => !!f.scored && f.scored.baselineUsed && !f.voided && !!f.finalized && !f.finalized.split;
+// a baseline outside 1 to 99 percent never counts (final review L1: a stolen keeper key cannot mint skill with 0 or 100)
+export const openCounts = (f: OpenForecast) => !!f.scored && f.scored.baselineUsed && f.baselineBps !== null && f.baselineBps >= 100 && f.baselineBps <= 9900 && !f.voided && !!f.finalized && !f.finalized.split;
 const dayOf = (sec: number) => new Date(sec * 1000).toISOString().slice(0, 10);
 
 export interface RoundFile {

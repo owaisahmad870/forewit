@@ -1,31 +1,25 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { priceFromBook, priceFromHistory, voidReason } from '../open.mjs';
+import { priceFromHistory, voidReason, liveMidBps } from '../open.mjs';
 
 const CTF = '0x22DA1810B194ca018378464a58f6Ac2B10C9d244';
 const CID = '0x' + 'ab'.repeat(32);
 
-test('market price: middle of a deep two sided Yes book, mirrored for slot 1', () => {
-  const book = { bids: [[0.62, 200]], asks: [[0.66, 100]] };
-  assert.deepEqual(priceFromBook(book, 0), { ok: true, bps: 6400 });
-  assert.deepEqual(priceFromBook(book, 1), { ok: true, bps: 3600 });
-  assert.equal(priceFromBook({ bids: [[0.55, 200]], asks: [[0.65, 200]] }, 0).ok, true); // exactly 10 points counts (integer compare)
-});
-
-test('review H1: dust orders cannot set the price; thin or wide books score on accuracy only', () => {
-  assert.match(priceFromBook({ bids: [[0.9, 1]], asks: [[0.94, 1]] }, 0).why, /less than 50 USD/);
-  assert.equal(priceFromBook({ bids: [], asks: [[0.5, 1000]] }, 0).ok, false);
-  assert.match(priceFromBook({ bids: [[0.3, 1000]], asks: [[0.45, 1000]] }, 0).why, /spread 15 points/);
-  assert.match(priceFromBook({ bids: [[0.62, 200]], asks: [[0.66, 100]] }, 0, 50, 20).why, /traded in 24 hours/); // same floor as v1
-});
-
 test('final review: the price comes from before the commit and cannot be planted after it', () => {
-  const series = [{ x: 1000, y: 40 }, { x: 1060, y: 41 }, { x: 1120, y: 90 }]; // 90 appears after the commit at 1100
-  assert.deepEqual(priceFromHistory(series, 1100, 0, 500), { ok: true, bps: 4100, at: 1060 });
-  assert.deepEqual(priceFromHistory(series, 1100, 1, 500), { ok: true, bps: 5900, at: 1060 });
-  assert.match(priceFromHistory([{ x: 500, y: 40 }], 1100, 0, 500).why, /5 minutes before/);
-  assert.match(priceFromHistory(series, 1100, 0, 20).why, /traded in 24 hours/);
-  assert.equal(priceFromHistory([{ x: 1000, y: 100 }], 1100, 0, 500).ok, false);
+  const series = [{ x: 960, y: 40 }, { x: 1020, y: 41 }, { x: 1080, y: 90 }]; // the 1080 bucket runs past the commit at 1100
+  assert.deepEqual(priceFromHistory(series, 1100, 0, 500, 4150), { ok: true, bps: 4100, at: 1020 });
+  assert.deepEqual(priceFromHistory(series, 1100, 1, 500, 4150), { ok: true, bps: 5900, at: 1020 });
+  assert.match(priceFromHistory([{ x: 500, y: 40 }], 1100, 0, 500, 4000).why, /3 minutes before/);
+  assert.match(priceFromHistory(series, 1100, 0, 20, 4100).why, /traded in 24 hours/);
+  assert.equal(priceFromHistory([{ x: 1000, y: 100 }], 1100, 0, 500, 9900).ok, false);
+});
+
+test('final review M2 (rule v2.1): no price when the live book has moved from the last bucket', () => {
+  const series = [{ x: 1020, y: 41 }];
+  assert.match(priceFromHistory(series, 1100, 0, 500, 4800).why, /moved 7 points/); // commit timed after a jump
+  assert.match(priceFromHistory(series, 1100, 0, 500, null).why, /no live price/);
+  assert.equal(liveMidBps({ bids: [[0.4, 10]], asks: [[0.42, 10]] }), 4100);
+  assert.equal(liveMidBps({ bids: [], asks: [[0.5, 1]] }), null);
 });
 
 test('void only on positive evidence', () => {

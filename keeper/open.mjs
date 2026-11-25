@@ -1,9 +1,10 @@
 // Forewit v2 keeper for OpenForecasts (docs/OPEN_FORECASTS.md). Own wallet, own job: it can never starve the v1
 // deadline duties. Each pass (every OPEN_PASS_SECONDS, default 10):
-//   A. new commits first: within 120 s of each, post the market price (two sided book, spread at most 10 points, at
-//      least OPEN_MIN_DEPTH_USD at the best bid and the best ask) or void on positive evidence (no such market, wrong
-//      condition, wrong Conditional Tokens or outcome layout, market ended, book closed when read promptly). An API
-//      outage never voids: it is retried while the window lasts. The decision and its evidence are archived;
+//   A. new commits first: within 120 s of each, post the market price (rule v2.1: Predict.fun's 1 minute chance
+//      history, a bucket that ended before the commit and at most 3 minutes old, only if the live book read now agrees
+//      within 3 points) or void on positive evidence (no such market, wrong condition, wrong Conditional Tokens or
+//      outcome layout, market ended, book closed when read promptly). An API outage never voids: it is retried while
+//      the window lasts. The decision and its evidence are archived;
 //   B. once per market: finalize when the Conditional Tokens payout is reported;
 //   C. reveal sealed copies once open (hash checked first; a bad copy alerts once), score revealed forecasts and,
 //      after the reveal window, unrevealed ones as forfeits.
@@ -41,35 +42,32 @@ const PAYOUT_CHECK_S = 60; // an unresolved market's payout is read at most once
 const MIN_DEPTH_USD = Number(process.env.OPEN_MIN_DEPTH_USD || 50);
 const PROMPT_READ_S = 15; // a closed book counts as void evidence only when read this soon after the commit
 const WALLET_DAILY_CAP = Number(process.env.OPEN_WALLET_DAILY_CAP || 50);
+const MAX_JUMP_BPS = 300; // rule v2.1: the live book must agree with the history point within 3 points
 
-/**
- * Market price for `slot` from the Yes book, or why it cannot count. Review H1: a price counts only with real depth
- * at the best bid and the best ask, so a forecaster cannot plant a price with dust orders.
- */
+/** Live Yes middle of a two sided book in basis points, or null. Used only to refuse a price, never to set one. */
+export function liveMidBps(book) {
+  const bid = Math.round(Number(book?.bids?.[0]?.[0]) * 10000), ask = Math.round(Number(book?.asks?.[0]?.[0]) * 10000);
+  return bid > 0 && ask > 0 && ask >= bid ? Math.round((bid + ask) / 2) : null;
+}
+
 /**
  * The market price from BEFORE the commit (final review, H1 residual): Predict.fun's own 1 minute chance history, the
  * last point strictly before the commit's block time and at most 5 minutes old. Nothing posted after the commit can
  * change it. Also needs the v1 liquidity floor (100 USD traded in 24 hours).
  */
-export function priceFromHistory(series, committedAt, slot, volume24hUsd = Infinity) {
+export function priceFromHistory(series, committedAt, slot, volume24hUsd = Infinity, liveYesBps = null) {
   if (!(volume24hUsd >= MIN_VOLUME_USD)) return { ok: false, why: `less than ${MIN_VOLUME_USD} USD traded in 24 hours` };
-  const before = (series ?? []).filter((p) => Number(p.x) < committedAt && committedAt - Number(p.x) <= 300 && Number.isFinite(Number(p.y)));
-  if (!before.length) return { ok: false, why: 'no price in the 5 minutes before the commit' };
+  // rule v2.1 (final review M2): the whole 1 minute bucket ended before the commit (so no trade after it can be in it),
+  // and it is at most 3 minutes old
+  const before = (series ?? []).filter((p) => Number(p.x) + 60 <= committedAt && committedAt - Number(p.x) <= 180 && Number.isFinite(Number(p.y)));
+  if (!before.length) return { ok: false, why: 'no price bucket that ended in the 3 minutes before the commit' };
   const last = before.reduce((a, b) => (Number(b.x) > Number(a.x) ? b : a));
   const yes = Math.round(Number(last.y) * 100); // chance in percent to basis points
   if (yes <= 0 || yes >= 10000) return { ok: false, why: 'price at 0 or 100 percent' };
+  // a commit timed right after a price jump would score against the stale point: no price unless the live book agrees
+  if (liveYesBps === null || !Number.isFinite(liveYesBps)) return { ok: false, why: 'no live price to check against' };
+  if (Math.abs(liveYesBps - yes) > MAX_JUMP_BPS) return { ok: false, why: `price moved ${Math.abs(liveYesBps - yes) / 100} points since the last bucket` };
   return { ok: true, bps: slot === 0 ? yes : 10000 - yes, at: Number(last.x) };
-}
-
-export function priceFromBook(book, slot, minDepthUsd = MIN_DEPTH_USD, volume24hUsd = Infinity) {
-  if (!(volume24hUsd >= MIN_VOLUME_USD)) return { ok: false, why: `less than ${MIN_VOLUME_USD} USD traded in 24 hours` };
-  const [bp, bs] = book?.bids?.[0] ?? [], [ap, as] = book?.asks?.[0] ?? [];
-  const bid = Math.round(Number(bp) * 10000), ask = Math.round(Number(ap) * 10000);
-  if (!(bid > 0) || !(ask > 0) || ask < bid) return { ok: false, why: 'book not two sided' };
-  if (ask - bid > MAX_SPREAD_BPS) return { ok: false, why: `spread ${(ask - bid) / 100} points` };
-  if (Number(bp) * Number(bs) < minDepthUsd || Number(ap) * Number(as) < minDepthUsd) return { ok: false, why: `less than ${minDepthUsd} USD at the best bid or ask` };
-  const yes = (bid + ask) / 2;
-  return { ok: true, bps: Math.round(slot === 0 ? yes : 10000 - yes) };
 }
 
 /** The void reason from what the API returned, or 0. Pure, so the rule is testable (docs/OPEN_FORECASTS.md). */
@@ -158,11 +156,12 @@ async function priceOrVoid(f, now) {
     return;
   }
   f.tries += 1;
-  let m, cat = null, book = null;
+  let m, cat = null, book = null, live = null;
   try {
     m = await api(`/v1/markets/${f.marketId}?includeStats=true`);
     if (m?.categorySlug) cat = await api(`/v1/categories/${m.categorySlug}`);
     if (m) book = await api(`/v1/markets/${f.marketId}/timeseries?metric=chance&resolution=1m&from=${f.committedAt - 600}&limit=20`);
+    if (m) live = await api(`/v1/markets/${f.marketId}/orderbook`);
   } catch (e) {
     if (e instanceof Outage) return log(`market ${f.marketId}: Predict.fun not reachable (${e.message}); retrying, never voided for this`);
     throw e;
@@ -170,11 +169,11 @@ async function priceOrVoid(f, now) {
   const endsAtS = Date.parse(cat?.tradingSession?.closesAt ?? cat?.endsAt ?? '') / 1000;
   // re-review L2: the read time is taken after the API calls, not at the start of the pass
   const reason = voidReason({ f, market: m, endsAtS, readAtS: Math.floor(Date.now() / 1000), chainId: CHAIN_ID });
-  const p = reason ? null : priceFromHistory(book?.series, f.committedAt, f.slot, Number(m?.stats?.volume24hUsd));
+  const p = reason ? null : priceFromHistory(book?.series, f.committedAt, f.slot, Number(m?.stats?.volume24hUsd), liveMidBps(live));
   if (!reason && m && !m.stats) await alert(`market ${f.marketId}: Predict.fun returned no stats, so no price can count; check the API`);
   const evidence = { forecast: { ...f, sealed: undefined }, checkedAt: now, tries: f.tries, reason, price: p,
     market: m && { id: m.id, conditionId: m.conditionId, tradingStatus: m.tradingStatus, status: m.status, outcomes: m.outcomes?.map((o) => ({ indexSet: o.indexSet })) },
-    category: cat && { slug: cat.slug, endsAt: cat.endsAt, tradingSession: cat.tradingSession }, history: book?.series?.slice(-10) ?? null, volume24hUsd: m?.stats?.volume24hUsd ?? null };
+    category: cat && { slug: cat.slug, endsAt: cat.endsAt, tradingSession: cat.tradingSession }, history: book?.series?.slice(-10) ?? null, liveMidBps: liveMidBps(live), volume24hUsd: m?.stats?.volume24hUsd ?? null };
   if (reason) {
     await send('voidForecast', [f.key, f.forecaster, reason]);
     f.stage = 'void';
