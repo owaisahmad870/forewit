@@ -17,3 +17,7 @@ screenshots/
 npm_recovery_codes.txt
 FOREWIT_LAUNCH_PROMPT.md
 prompts/
+
+# local secret files (never commit)
+predict.fun*key*.txt
+*api*key*.txt
