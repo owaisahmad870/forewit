@@ -34,7 +34,10 @@ const log = (...a) => console.log(new Date().toISOString(), ...a);
 const DIR = process.env.OPEN_STATE_DIR || 'keeper/state';
 const STATE = `${DIR}/open_${CHAIN_ID}_${String(LEDGER).toLowerCase()}.json`;
 const ARCHIVE = `${process.env.OPEN_STATE_DIR ? DIR + '/archive' : 'keeper/archive'}/open_${CHAIN_ID}`;
-const BASELINE_WINDOW = 120, VOID_WINDOW = 120, REVEAL_WINDOW = 3 * 86400, MAX_SPREAD_BPS = 1000, CONFIRMATIONS = 3n;
+const BASELINE_WINDOW = 120, VOID_WINDOW = 120, REVEAL_WINDOW = 3 * 86400, MAX_SPREAD_BPS = 1000, CONFIRMATIONS = 15n;
+const MIN_VOLUME_USD = Number(process.env.OPEN_MIN_VOLUME_USD || 100); // the same liquidity floor as v1 selection
+const UNPAID_PER_PASS = Number(process.env.OPEN_UNPAID_PER_PASS || 5); // over cap forecasts get only spare API budget
+const PAYOUT_CHECK_S = 60; // an unresolved market's payout is read at most once a minute
 const MIN_DEPTH_USD = Number(process.env.OPEN_MIN_DEPTH_USD || 50);
 const PROMPT_READ_S = 15; // a closed book counts as void evidence only when read this soon after the commit
 const WALLET_DAILY_CAP = Number(process.env.OPEN_WALLET_DAILY_CAP || 50);
@@ -43,7 +46,8 @@ const WALLET_DAILY_CAP = Number(process.env.OPEN_WALLET_DAILY_CAP || 50);
  * Market price for `slot` from the Yes book, or why it cannot count. Review H1: a price counts only with real depth
  * at the best bid and the best ask, so a forecaster cannot plant a price with dust orders.
  */
-export function priceFromBook(book, slot, minDepthUsd = MIN_DEPTH_USD) {
+export function priceFromBook(book, slot, minDepthUsd = MIN_DEPTH_USD, volume24hUsd = Infinity) {
+  if (!(volume24hUsd >= MIN_VOLUME_USD)) return { ok: false, why: `less than ${MIN_VOLUME_USD} USD traded in 24 hours` };
   const [bp, bs] = book?.bids?.[0] ?? [], [ap, as] = book?.asks?.[0] ?? [];
   const bid = Math.round(Number(bp) * 10000), ask = Math.round(Number(ap) * 10000);
   if (!(bid > 0) || !(ask > 0) || ask < bid) return { ok: false, why: 'book not two sided' };
@@ -60,6 +64,8 @@ export function voidReason({ f, market, endsAtS, readAtS, chainId }) {
   if (String(ctfFor(chainId, market)).toLowerCase() !== String(f.ctf).toLowerCase()) return 3; // wrong Conditional Tokens
   if (market.outcomes?.[0]?.indexSet !== 1 || market.outcomes?.[1]?.indexSet !== 2) return 3; // review M7: layout
   if (Number.isFinite(endsAtS) && f.committedAt >= endsAtS) return 1; // committed at or after the market's end
+  // re-review N1: a reveal start must sit at the market end plus a few minutes, never later (no hiding a loss)
+  if (Number(f.revealNotBefore) > 0 && (!Number.isFinite(endsAtS) || Number(f.revealNotBefore) > endsAtS + 300)) return 4;
   if (market.tradingStatus && market.tradingStatus !== 'OPEN' && readAtS - f.committedAt <= PROMPT_READ_S) return 2; // closed when read promptly
   return 0;
 }
@@ -121,7 +127,7 @@ async function newCommits(st) {
       const k = `${day}:${l.args.forecaster.toLowerCase()}`;
       st.perDay[k] = (st.perDay[k] ?? 0) + 1;
       st.forecasts[id] = { key: l.args.key, forecaster: l.args.forecaster, ctf: l.args.ctf, conditionId: l.args.conditionId, slot: Number(l.args.slot), marketId: String(l.args.marketId),
-        committedAt: Number(b.timestamp), sealed: l.args.sealedCopy, stage: 'new', tries: 0, paid: st.perDay[k] <= WALLET_DAILY_CAP };
+        committedAt: Number(b.timestamp), sealed: l.args.sealedCopy, revealNotBefore: Number(l.args.revealNotBefore ?? 0), stage: 'new', tries: 0, paid: st.perDay[k] <= WALLET_DAILY_CAP };
       log(`commit ${l.args.forecaster} market ${l.args.marketId}`);
     }
     st.lastBlock = String(to);
@@ -139,7 +145,7 @@ async function priceOrVoid(f, now) {
   f.tries += 1;
   let m, cat = null, book = null;
   try {
-    m = await api(`/v1/markets/${f.marketId}`);
+    m = await api(`/v1/markets/${f.marketId}?includeStats=true`);
     if (m?.categorySlug) cat = await api(`/v1/categories/${m.categorySlug}`);
     if (m) book = await api(`/v1/markets/${f.marketId}/orderbook`);
   } catch (e) {
@@ -147,8 +153,9 @@ async function priceOrVoid(f, now) {
     throw e;
   }
   const endsAtS = Date.parse(cat?.tradingSession?.closesAt ?? cat?.endsAt ?? '') / 1000;
-  const reason = voidReason({ f, market: m, endsAtS, readAtS: now, chainId: CHAIN_ID });
-  const p = reason ? null : priceFromBook(book, f.slot);
+  // re-review L2: the read time is taken after the API calls, not at the start of the pass
+  const reason = voidReason({ f, market: m, endsAtS, readAtS: Math.floor(Date.now() / 1000), chainId: CHAIN_ID });
+  const p = reason ? null : priceFromBook(book, f.slot, MIN_DEPTH_USD, Number(m?.stats?.volume24hUsd));
   const evidence = { forecast: { ...f, sealed: undefined }, checkedAt: now, tries: f.tries, reason, price: p,
     market: m && { id: m.id, conditionId: m.conditionId, tradingStatus: m.tradingStatus, status: m.status, outcomes: m.outcomes?.map((o) => ({ indexSet: o.indexSet })) },
     category: cat && { slug: cat.slug, endsAt: cat.endsAt, tradingSession: cat.tradingSession }, book: book && { bids: book.bids?.slice(0, 3), asks: book.asks?.slice(0, 3), updateTimestampMs: book.updateTimestampMs } };
@@ -170,19 +177,26 @@ async function pass() {
   await newCommits(st);
   let now = Math.floor(Date.now() / 1000);
   const all = Object.values(st.forecasts);
-  // A: new commits first (review M5), so the 120 s windows are met before any slower work
-  for (const f of all.filter((x) => x.stage === 'new')) {
+  // A: new commits first (review M5), wallets under their daily cap before anyone else, so a flood of commits from
+  // one wallet cannot push other forecasts past their 120 s windows (re-review M5)
+  const fresh = all.filter((x) => x.stage === 'new');
+  const unpaid = fresh.filter((x) => !x.paid);
+  for (const f of [...fresh.filter((x) => x.paid), ...unpaid.slice(0, UNPAID_PER_PASS)]) {
     try { await priceOrVoid(f, now); } catch (e) { await alert(`market ${f.marketId} ${f.forecaster}: ${(e.shortMessage || e.message).split('\n')[0]}`); }
   }
+  for (const f of unpaid.slice(UNPAID_PER_PASS)) if (now > f.committedAt + VOID_WINDOW) f.stage = 'priced'; // no price, so no weight
   save(st);
   now = Math.floor(Date.now() / 1000);
   // B: once per market
   const open = all.filter((x) => x.stage === 'priced');
   const resolved = new Map();
+  st.payoutCheckedAt ??= {};
   for (const key of new Set(open.map((x) => x.key))) {
     const f = open.find((x) => x.key === key);
     try {
-      let at = Number((await read('markets', [key]))[0]);
+      if (now - (st.payoutCheckedAt[key] ?? 0) < PAYOUT_CHECK_S && !st.resolved?.[key]) continue;
+      st.payoutCheckedAt[key] = now;
+      let at = st.resolved?.[key] ?? Number((await read('markets', [key]))[0]);
       if (!at) {
         const den = await pub.readContract({ address: f.ctf, abi: CTF_ABI, functionName: 'payoutDenominator', args: [f.conditionId] });
         if (den === 0n) continue;
@@ -190,6 +204,7 @@ async function pass() {
         at = Number((await read('markets', [key]))[0]);
       }
       resolved.set(key, at);
+      (st.resolved ??= {})[key] = at;
     } catch (e) { await alert(`finalize market ${f.marketId}: ${(e.shortMessage || e.message).split('\n')[0]}`); }
   }
   // C: reveal and score
@@ -199,7 +214,8 @@ async function pass() {
       const [hash, , , flags, , , revealNotBefore] = await read('forecasts', [f.key, f.forecaster]);
       if (flags & 2 || flags & 8) { f.stage = 'done'; continue; }
       const deadline = Math.max(resolvedAt, Number(revealNotBefore)) + REVEAL_WINDOW;
-      if (!(flags & 1) && f.paid && !f.sealedBad && f.sealed && f.sealed !== '0x' && now <= deadline) {
+      // re-review N2: no drand call before the copy is due to open
+      if (!(flags & 1) && f.paid && !f.sealedBad && f.sealed && f.sealed !== '0x' && now <= deadline && now >= Number(revealNotBefore)) {
         const ct = ciphertextOf(f.sealed);
         if (!ct) { f.sealedBad = true; await alert(`market ${f.marketId} ${f.forecaster}: sealed copy unreadable; the owner must reveal from the receipt`); }
         else {

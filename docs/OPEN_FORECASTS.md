@@ -9,15 +9,17 @@ Owais, 25 Nov 2026: "any market, any question, any time ... using its agentic wa
 
 ## Market price (the baseline)
 * The keeper records the Predict.fun order book middle for that market as soon as it sees the commit, and posts it onchain. The contract accepts it only within 120 seconds of the commit's block time, never after the market is finalized or the forecast revealed.
-* Skill against the market counts only when that price was posted in time, the book was two sided with a spread of at most 10 points, and the best bid and the best ask each held at least 50 USD (independent review H1, 25 Nov 2026: without depth a forecaster could plant a price with dust orders). Otherwise the forecast is scored on accuracy (Brier) only, like the v1 Open board.
+* A price counts only when it was posted in time, the book was two sided with a spread of at most 10 points, the best bid and the best ask each held at least 50 USD, and the market traded at least 100 USD in the last 24 hours (the v1 liquidity floor). Independent review H1, 25 Nov 2026: without depth and volume a forecaster could plant a price with small orders.
+* A forecast without such a price counts for nothing in the record (no accuracy, no count, no scoring day). It is still scored onchain and shown on the owner's card as "not counted". Re-review M1: so a forecast slipped in during a keeper gap can never help a record.
 * Residual risk, stated plainly: someone willing to put at least 50 USD on each side of a thin book at a false price can still move it, at the risk of those orders being filled.
-* Per wallet, the keeper pays for at most 50 new forecasts a day (price and reveal); beyond that a forecast is scored on accuracy only and the owner reveals it.
+* Per wallet, the keeper pays for at most 50 new forecasts a day (price and reveal), and those come first in every pass; beyond that a forecast gets no price (so it counts for nothing) and the owner reveals it.
 
 ## Void
 * The contract cannot see when Predict.fun stopped trading a market. The keeper voids, only within 120 seconds of the commit and only on positive evidence (an API outage never voids), with a reason code:
   * 1: committed at or after the market's end time (category tradingSession.closesAt, else endsAt);
   * 2: the market's trading status was not OPEN when read within 15 seconds of the commit;
-  * 3: no such market, or its condition, Conditional Tokens contract or outcome layout does not match the commit.
+  * 3: no such market, or its condition, Conditional Tokens contract or outcome layout does not match the commit;
+  * 4: a reveal start (revealNotBefore) later than the market end plus 5 minutes, or with no published end time (re-review N1: no delaying a losing forecast's forfeit). The contract also refuses any reveal start without a sealed copy.
 * The evidence behind every decision is archived, so anyone can recompute it. A void forecast is never scored.
 
 ## Resolution, reveal and score

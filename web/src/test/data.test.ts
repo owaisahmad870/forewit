@@ -221,7 +221,7 @@ describe('merged record with v2 open forecasts (docs/OPEN_FORECASTS.md Record)',
     expect(row.days).toBe(1);
     expect(row.ranked).toBe(false);
   });
-  it('void forecasts and split payouts never count; forfeits count; no market price adds Brier only', () => {
+  it('void forecasts and split payouts never count; forfeits count; no market price counts for nothing', () => {
     const open = { forecasts: [
       of('0xa', 1, { voided: true, scored: null }),
       of('0xa', 2, { finalized: { slot0Outcome: 'Void', split: true, at: 1795000000 }, scored: { brier: '0', baselineBrier: '0', skill: '0', baselineUsed: false, forfeited: false } }),
@@ -232,8 +232,8 @@ describe('merged record with v2 open forecasts (docs/OPEN_FORECASTS.md Record)',
       of('0xa', 7, { slot: 1, scored: { brier: '64000000', baselineBrier: '36000000', skill: '-28000000', baselineUsed: true, forfeited: false } }),
     ], committers: ['0xa'] };
     const row = leaderboard({ ...snap([], pub), open }).rows[0];
-    expect([row.questions, row.baselineQuestions, row.openForecasts]).toEqual([3, 2, 3]);
-    expect(row.meanBrier).toBeCloseTo((1e8 + 4e6 + 64e6) / 3 / 1e8);
+    expect([row.questions, row.baselineQuestions, row.openForecasts]).toEqual([2, 2, 2]);
+    expect(row.meanBrier).toBeCloseTo((1e8 + 64e6) / 2 / 1e8);
     const w = walletResults({ ...snap([], pub), open }, '0xa');
     expect(w.committed).toBe(0);
     expect(Object.fromEntries(w.predictions.map((p) => [p.marketId, p.status]))).toEqual({ 101: 'void', 102: 'void', 103: 'forfeited', 104: 'scored', 105: 'waiting', 106: 'revealed', 107: 'behind' });

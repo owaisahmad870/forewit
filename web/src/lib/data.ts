@@ -51,7 +51,9 @@ export interface OpenForecast {
 }
 
 // A v2 forecast counts toward the record only when scored on a Yes or No payout: void forecasts and split payouts never count.
-export const openCounts = (f: OpenForecast) => !!f.scored && !f.voided && !!f.finalized && !f.finalized.split;
+// counts only with a market price posted in time: without one it carries no weight at all (re-review M1, so a late
+// commit during a keeper gap can never help a record)
+export const openCounts = (f: OpenForecast) => !!f.scored && f.scored.baselineUsed && !f.voided && !!f.finalized && !f.finalized.split;
 const dayOf = (sec: number) => new Date(sec * 1000).toISOString().slice(0, 10);
 
 export interface RoundFile {
@@ -345,6 +347,7 @@ export function walletPredictions(snap: Snapshot, addr: string): WalletPredictio
       const status: PredictionStatus = f.voided || f.finalized?.split ? 'void'
         : counted && s!.forfeited ? 'forfeited'
         : counted ? (skill === null ? 'scored' : skill > 0 ? 'beat' : skill < 0 ? 'behind' : 'level')
+        : s ? 'scored' // scored onchain without a market price: shown, never counted
         : f.revealedBps !== null ? 'revealed' : 'waiting';
       return {
         marketId: f.marketId, slot: f.slot, committedAt: new Date(f.committedAt * 1000), status,

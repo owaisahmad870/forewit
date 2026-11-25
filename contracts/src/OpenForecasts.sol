@@ -134,6 +134,7 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
     error ZeroAddress();
     error NoCode(address target);
     error BadCtfList();
+    error BadRevealStart();
 
     constructor(address agentId, address[] memory ctfAllowlist, address admin, address keeper)
         AccessControlDefaultAdminRules(ADMIN_TRANSFER_DELAY, admin)
@@ -219,6 +220,8 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
     ) external whenNotPaused {
         if (commitHash == bytes32(0)) revert ZeroHash();
         if (sealedCopy.length > MAX_SEALED) revert SealedTooLarge();
+        // a later reveal start exists only for a sealed copy (re-review N1: no delaying a losing forecast's forfeit)
+        if (sealedCopy.length == 0 && revealNotBefore != 0) revert BadRevealStart();
         if (slot > 1) revert BadSlot();
         if (!isAllowedCtf(ctf)) revert CtfNotAllowed(ctf);
         // slither-disable-next-line incorrect-equality

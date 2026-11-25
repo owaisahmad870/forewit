@@ -868,7 +868,7 @@
       "beat": "You beat the market by {p} points: your miss score {y}, the market’s {m}",
       "behind": "The market was closer by {p} points: your miss score {y}, the market’s {m}",
       "level": "Level with the market",
-      "scored": "Scored (no market price at the time of your forecast)",
+      "scored": "Not counted: there was no reliable market price at the time of your forecast",
       "void": "Void: not counted",
       "forfeited": "Missed: not revealed in time, counted as a loss"
     }

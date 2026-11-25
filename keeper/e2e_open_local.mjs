@@ -39,7 +39,7 @@ say(`OpenForecasts ${ledger} (local)`);
 
 // fake Predict.fun API: one market ending in 2 minutes, a two sided Yes book at 0.55 / 0.59 (middle 57%)
 const endsAt = new Date(Date.now() + 120_000).toISOString();
-const market = { id: 777, title: 'Bitcoin Up or Down, next 2 minutes', question: 'Bitcoin Up or Down, next 2 minutes', conditionId: cid, isYieldBearing: false, isNegRisk: false, categorySlug: 'btc-2m', tradingStatus: 'OPEN', status: 'REGISTERED', outcomes: [{ name: 'Up', indexSet: 1 }, { name: 'Down', indexSet: 2 }] };
+const market = { id: 777, title: 'Bitcoin Up or Down, next 2 minutes', question: 'Bitcoin Up or Down, next 2 minutes', conditionId: cid, isYieldBearing: false, isNegRisk: false, categorySlug: 'btc-2m', tradingStatus: 'OPEN', status: 'REGISTERED', stats: { volume24hUsd: 5000 }, outcomes: [{ name: 'Up', indexSet: 1 }, { name: 'Down', indexSet: 2 }] };
 const server = createServer((req, res) => {
   const body = req.url.startsWith('/v1/markets/777/orderbook') ? { bids: [[0.55, 200]], asks: [[0.59, 200]], updateTimestampMs: Date.now() }
     : req.url.startsWith('/v1/markets/777') ? market : req.url.startsWith('/v1/categories/btc-2m') ? { slug: 'btc-2m', title: 'Bitcoin 2 minute', endsAt, tradingSession: { closesAt: endsAt } } : null;
@@ -70,7 +70,7 @@ const keeperPass = () => new Promise((ok) => {
   c.stderr.on('data', (d) => (out += d));
   c.on('close', () => ok(out.trim().split('\n').filter((l) => l && !/beacon received/.test(l)).map((l) => '    keeper ' + l.replace(/^\S+Z /, '')).join('\n')));
 });
-await new Promise((r) => setTimeout(r, 5000)); // the keeper reads 3 blocks behind the tip
+await new Promise((r) => setTimeout(r, 18000)); // the keeper reads 15 blocks behind the tip (about 7 s on BSC, 15 s here)
 console.log(await keeperPass());
 const key = plan.receipt.key;
 const f1 = await pub.readContract({ address: ledger, abi: art('OpenForecasts').abi, functionName: 'forecasts', args: [key, user.address] });
@@ -79,7 +79,7 @@ say(`market price recorded within seconds: ${Number(f1[5]) / 100}% (flags ${f1[3
 // the market ends and resolves Up (slot 0 gets the full payout); the drand round opens just after the end
 await new Promise((r) => setTimeout(r, Date.parse(endsAt) + 75_000 - Date.now()));
 await write(deployer, ctf, 'MockConditionalTokens', 'resolve', [cid, [1n, 0n]]);
-await new Promise((r) => setTimeout(r, 5000)); // the keeper reads 3 blocks behind the tip
+await new Promise((r) => setTimeout(r, 18000)); // the keeper reads 15 blocks behind the tip (about 7 s on BSC, 15 s here)
 console.log(await keeperPass());
 const s = await pub.readContract({ address: ledger, abi: art('OpenForecasts').abi, functionName: 'getStats', args: [user.address] });
 const brier = 3000 ** 2, base = 4300 ** 2; // you 70% Up, market 57% Up, outcome Up

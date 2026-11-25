@@ -230,6 +230,13 @@ contract OpenForecastsTest is Test {
         assertEq(of_.getStats(alice).forfeited, 0);
     }
 
+    function test_no_reveal_delay_without_a_sealed_copy() public {
+        bytes32 h = of_.computeCommitHash(address(ctf), cid, 0, alice, 8000, salt);
+        vm.prank(alice);
+        vm.expectRevert(OpenForecasts.BadRevealStart.selector);
+        of_.commit(address(ctf), cid, 0, 42, h, uint64(block.timestamp + 30 days), "");
+    }
+
     function test_reveal_rejects_probabilities_outside_1_to_99_percent() public {
         bytes32 h = of_.computeCommitHash(address(ctf), cid, 0, alice, 10_000, salt);
         vm.prank(alice);
