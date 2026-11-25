@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import en from '../locales/en.json';
-import { START_COMMANDS, Start, WINDOWS_COMMANDS } from '../pages/Start';
+import { QUICK_COMMAND, QUICK_COMMAND_WINDOWS, START_COMMANDS, Start, WINDOWS_COMMANDS } from '../pages/Start';
 
 const read = (p: string) => readFileSync(new URL(p, import.meta.url), 'utf8');
 const cli = read('../../../agent/forewit.mjs');
@@ -11,9 +11,8 @@ const bin = read('../../../mcp/bin/forewit.mjs');
 const bawLib = read('../../../agent/lib/baw.mjs');
 const docs = [read('../../../docs/QUICKSTART.md'), read('../../../docs/QUICKSTART.zh.md')];
 
-// mainnet runs from the repository (node agent/forewit.mjs); npm forewit 0.0.1 is testnet only
-const CLI = /^(npx forewit|node agent\/forewit\.mjs) /;
-const lines = [...START_COMMANDS.flat(), ...docs.flatMap((d) => d.split('\n'))].filter((l) => CLI.test(l));
+const CLI = /^(npx(\.cmd)? forewit(@latest)?|node agent\/forewit\.mjs) /;
+const lines = [QUICK_COMMAND, QUICK_COMMAND_WINDOWS, ...START_COMMANDS.flat(), ...docs.flatMap((d) => d.split('\n'))].filter((l) => CLI.test(l));
 
 describe('start commands', () => {
   it('has one command group per step', () => expect(START_COMMANDS).toHaveLength(en.start.steps.length));
@@ -37,6 +36,7 @@ describe('start commands', () => {
     expect(out).toContain('node agent/forewit.mjs commit --execute --from 0xYourAgenticWallet');
     expect(out).toContain('npm.cmd install -g @binance/agentic-wallet@1.12.0');
     expect(out).toContain('Screenshot placeholder');
+    expect(out.indexOf('npx forewit@latest start')).toBeLessThan(out.indexOf('node agent/forewit.mjs commit'));
   });
 });
 

@@ -561,9 +561,9 @@
     "adminBlock": "区块 {n}"
   },
   "start": {
-    "title": "开始：从 Agent ID 到首次提交",
-    "intro": "这是从持有 Agent ID 到首次在链上提交预测的最短路径，约需十分钟。每次预测都会积累你的技能记录，这份记录无法购买，也无法转让。",
-    "preview": "已在 BSC 主网上线。可使用 npx forewit（npm 0.1.1，带来源证明发布），或在代码仓库中运行 node agent/forewit.mjs；两者默认都指向主网。",
+    "title": "开始：三步完成你的第一次预测",
+    "intro": "大约五分钟。你需要一台电脑（Windows、Mac 或 Linux），以及手机上已拥有 Agent ID 的币安 App。Forewit 不涉及任何资金：你只需支付极少的网络费用。",
+    "preview": "已在 BSC 主网上线。npx forewit 运行已发布的 npm 包（带来源证明）；手动步骤在代码仓库中运行 node agent/forewit.mjs。两者默认都指向主网。",
     "step": "第 {n} 步。",
     "shot": "截图占位：{what}",
     "windows": "在 Windows 上，PowerShell 可能报错 \"running scripts is disabled on this system\"（禁止运行脚本）。请改用下面的 .cmd 形式（无需修改策略），并在本页所有写 baw 的地方输入 baw.cmd。",
@@ -642,6 +642,17 @@
       ],
       "cta": "打开先见智能体模板",
       "note": "请保持你的副本为私有：它会保存你的 salt 直到每次揭示。单纯的聊天窗口（claude.ai、ChatGPT）无法签名，需要云端智能体。安全提示：该 Agentic Wallet 里只保留少量用于 gas 的 BNB，并让智能体在每次会话结束时退出登录。"
+    },
+    "quick": {
+      "title": "最简单的方法",
+      "steps": [
+        "如果还没有 Node.js，请从 nodejs.org 安装 LTS 版本。",
+        "打开终端（Windows 用 PowerShell，Mac 用“终端”），运行下面的命令。",
+        "按提示回答问题。登录和发送预测都在手机上的币安 App 里确认。提示时开启自动揭示，就完成了：不需要第二步。"
+      ],
+      "windows": "在 Windows PowerShell 中请用这个写法（PowerShell 常常会阻止不带 .cmd 的 npx）：",
+      "after": "之后，你的成绩页会显示每一轮，以及你比市场高出多少分。",
+      "manual": "想自己逐步操作？完整的手动步骤"
     }
   },
   "banner": {

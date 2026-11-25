@@ -10,8 +10,11 @@ type Block = Parameters<typeof Blocks>[0]['blocks'][number];
 
 // Commands per step, in the same order as start.steps in the locales. Code, not prose: the locale files allow no hyphens.
 // Every forewit subcommand and flag here exists in agent/forewit.mjs and every baw line is one the CLI prints or the baw
-// 1.12.0 help lists (checked by src/test/start.test.tsx). Mainnet runs from the repository: npm forewit 0.0.1 is testnet only.
+// 1.12.0 help lists (checked by src/test/start.test.tsx). The easy way is the npm package's guided start (forewit start);
+// the manual path runs the same CLI from the repository.
 const ROUND_FILE = 'web/public/data/rounds/1.json';
+export const QUICK_COMMAND = 'npx forewit@latest start';
+export const QUICK_COMMAND_WINDOWS = 'npx.cmd forewit@latest start';
 export const START_COMMANDS: string[][] = [
   ['git clone https://github.com/owaisahmad870/forewit.git', 'cd forewit', 'npm ci'],
   ['npm install -g @binance/agentic-wallet@1.12.0', 'baw wallet status --json', 'baw auth signin'],
@@ -43,6 +46,14 @@ export function Start() {
     <article className="space-y-5">
       <h1 className="text-2xl font-semibold">{t('start.title')}</h1>
       <p className="max-w-[68ch]">{t('start.intro')}</p>
+      <section aria-labelledby="quick-h" className="max-w-[68ch] rounded-lg border border-accent bg-surface p-4">
+        <h2 id="quick-h" className="mb-2 text-lg font-semibold">{t('start.quick.title')}</h2>
+        <ol className="list-decimal space-y-2 pl-5">{raw<string[]>('start.quick.steps').map((x, i) => <li key={i}>{x}</li>)}</ol>
+        <CopyBlock text={QUICK_COMMAND} />
+        <p className="mt-3 text-sm">{t('start.quick.windows')}</p>
+        <CopyBlock text={QUICK_COMMAND_WINDOWS} />
+        <p className="mt-3 text-sm text-muted">{t('start.quick.after')} <a href="#/me" className="text-accent underline underline-offset-4">{t('me.title')}</a></p>
+      </section>
       <Explain terms={['agentId', 'forecast', 'commit', 'salt', 'reveal', 'forfeit']} summary="help.whatTerms" />
       <p className="max-w-[68ch] rounded-lg border border-accent bg-surface-2 p-3 font-semibold">{t('start.preview')}</p>
       <section aria-labelledby="phone-h" className="max-w-[68ch] rounded-lg border border-line bg-surface p-4">
@@ -54,7 +65,9 @@ export function Start() {
         <a href={TEMPLATE_URL} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center rounded-md bg-accent px-4 font-semibold text-accent-ink">{t('start.phone.cta')}</a>
         <p className="mt-2 text-sm text-muted">{t('start.phone.note')}</p>
       </section>
-      <ol className="space-y-4">
+      <details className="max-w-full">
+      <summary className="inline-flex min-h-11 cursor-pointer items-center text-lg font-semibold">{t('start.quick.manual')}</summary>
+      <ol className="mt-3 space-y-4">
         {steps.map((s, i) => (
           <li key={i}>
             <Card>
@@ -67,6 +80,7 @@ export function Start() {
           </li>
         ))}
       </ol>
+      </details>
       <p className="flex flex-wrap gap-x-4">
         <a href="#/proof" className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('start.toProof')}</a>
         <a href="#/docs/agents" className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('docs.pages.agents.title')}</a>

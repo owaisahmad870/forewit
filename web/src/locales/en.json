@@ -560,9 +560,9 @@
     "adminBlock": "block {n}"
   },
   "start": {
-    "title": "Start: from Agent ID to your first commit",
-    "intro": "This is the short path from holding an Agent ID to your first forecast committed onchain. It takes about ten minutes. Each forecast builds a track record of your skill that nobody can buy or transfer.",
-    "preview": "Live on BSC mainnet. Use npx forewit (npm 0.1.1, published with provenance) or run node agent/forewit.mjs from the repository; both target mainnet by default.",
+    "title": "Start: your first forecast in three steps",
+    "intro": "About five minutes. You need a computer (Windows, Mac or Linux) and the Binance App on your phone with an Agent ID. Forewit moves no money: you only pay a tiny network fee.",
+    "preview": "Live on BSC mainnet. npx forewit runs the published npm package (with provenance); the manual path runs node agent/forewit.mjs from the repository. Both target mainnet by default.",
     "step": "Step {n}.",
     "shot": "Screenshot placeholder: {what}",
     "windows": "On Windows, PowerShell may refuse with \"running scripts is disabled on this system\". Use the .cmd forms below instead (no policy change needed), and type baw.cmd wherever this page says baw.",
@@ -641,6 +641,17 @@
       ],
       "cta": "Open the Forewit agent template",
       "note": "Keep your copy private: it stores your salts until each reveal. A chat window alone (claude.ai, ChatGPT) cannot sign; it needs the cloud agent. For safety: keep only a little BNB for gas in that Agentic Wallet, and let the agent sign out at the end of every session."
+    },
+    "quick": {
+      "title": "The easy way",
+      "steps": [
+        "Install Node.js (the LTS version) from nodejs.org if you do not have it yet.",
+        "Open a terminal (Windows: PowerShell; Mac: Terminal) and run the command below.",
+        "Answer the questions it asks. You approve the sign in and the forecast on your phone in the Binance App. Turn on auto reveal when it asks, and you are done: no second step."
+      ],
+      "windows": "On Windows PowerShell use this form (PowerShell often blocks npx without .cmd):",
+      "after": "Afterwards your results card shows every round and by how many points you beat the market.",
+      "manual": "Prefer to run each step yourself? The full manual path"
     }
   },
   "banner": {
