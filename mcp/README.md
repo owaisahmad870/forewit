@@ -58,6 +58,7 @@ Run with `npx forewit mcp` (after publish) or `node mcp/bin/forewit.mjs mcp` fro
 
 Tools:
 
+* Wallet tools (run your own `baw`): `wallet_status`, `commit_forecast {probabilities_percent, round_id?, auto_reveal?}`, `reveal_forecast {round_id?}`. A send needs you to type yes in a confirmation form the client shows (MCP elicitation); the assistant cannot fill it in, and a client without forms is refused. Sign in stays with the wallet CLI (`baw auth signin`); Forewit never sees the pairing code.
 * `prepare_commit {from, probabilities_percent, round_id?, network?}`: reads the round from the ledger, refuses after the commit deadline or on a wrong question count, makes a 32 byte salt with `crypto.randomBytes`, checks the hash encoding against the ledger's `computeCommitHash` with a throwaway salt, saves the receipt to `~/.forewit/` with owner only permissions (`agent/lib/secure_file.mjs`, icacls on Windows), then returns the commit hash, calldata, `{to, value: "0", data}` and the exact `baw contract-call preview` command. The salt is not returned (`salt_returned: false`).
 * `prepare_reveal {from, round_id?, network?}`: refused before the commit deadline (chain time). After it, finds the receipt matching the onchain commit and returns the reveal calldata. That calldata contains the salt by construction; it is returned only when the salt is about to be public onchain anyway.
 * `prepare_profile {from, is_public, label?, network?}`: `setPublicProfile(bool,string)` calldata, checked against viem in the tests. Opting out always clears the name.
