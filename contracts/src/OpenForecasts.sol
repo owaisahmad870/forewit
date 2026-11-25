@@ -87,6 +87,7 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
         address ctf,
         bytes32 conditionId,
         uint8 slot,
+        uint256 marketId,
         bytes32 commitHash,
         bytes sealedCopy
     );
@@ -193,12 +194,18 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
     // Forecaster
 
     /// @notice Commit a hidden forecast for one outcome slot of a binary market. Once per wallet per market.
+    /// @param marketId The Predict.fun market id, emitted only so the keeper can read the market price at the commit;
+    /// the contract trusts only ctf and conditionId.
     /// @param sealedCopy The forecast and salt sealed with the drand time lock to the market's end (opt in; may be
     /// empty). Emitted so the keeper can reveal for the forecaster after resolution; nobody can read it earlier.
-    function commit(address ctf, bytes32 conditionId, uint8 slot, bytes32 commitHash, bytes calldata sealedCopy)
-        external
-        whenNotPaused
-    {
+    function commit(
+        address ctf,
+        bytes32 conditionId,
+        uint8 slot,
+        uint256 marketId,
+        bytes32 commitHash,
+        bytes calldata sealedCopy
+    ) external whenNotPaused {
         if (commitHash == bytes32(0)) revert ZeroHash();
         if (sealedCopy.length > MAX_SEALED) revert SealedTooLarge();
         if (slot > 1) revert BadSlot();
@@ -215,7 +222,7 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
         f.committedAt = uint64(block.timestamp);
         f.slot = slot;
         _stats[msg.sender].forecasts += 1;
-        emit Committed(key, msg.sender, ctf, conditionId, slot, commitHash, sealedCopy);
+        emit Committed(key, msg.sender, ctf, conditionId, slot, marketId, commitHash, sealedCopy);
     }
 
     /// @notice Reveal your own forecast after the market resolved onchain (finalize first).

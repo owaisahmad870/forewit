@@ -18,9 +18,21 @@ Owais, 25 Nov 2026: "any market, any question, any time ... using its agentic wa
 * Outcomes come only from the Conditional Tokens payouts onchain (Yes, No, or Void for a split), recorded by a public finalize call that also stamps the resolution time.
 * Reveal window: 3 days after that onchain resolution time. Revealed forecasts are scored; unrevealed ones are scored as a forfeit (worst Brier), as in v1.
 
-## Record
-* v2 forecasts form their own record (accuracy, skill where a baseline exists, count, calibration). They are kept out of the v1 ranked leaderboard and the ForewitScores root, because self chosen questions are not comparable with a common round. A combined view may come later as a separately pre registered rule.
+## Record (Owais decision 25 Nov 2026: one merged record)
+* v1 round forecasts and v2 open forecasts form one track record per wallet and one leaderboard.
+* Per question, skill = market Brier minus the forecaster's Brier, counted only where a market price exists (v1 baseline, v2 price within 120 s on a two sided book). Merged score = (v1 sumSkill + v2 sumSkill) / (v1 baseline questions + v2 baseline forecasts + K), K = 20.
+* Ranking eligibility: at least 20 scored questions with a market price across both, and at least 5 distinct scoring days (v1 rounds or v2 resolution days), replacing v1's 5 rounds rule for the merged board.
+* Forfeits count in both (worst Brier). Void forecasts and split payouts never count.
+* The ForewitScores root carries the merged numbers from the first root built after OpenForecasts goes live; roots before that stay v1 only.
 * /proof counts distinct Agent ID holders across both contracts.
+
+## Commit fields
+* commit(ctf, conditionId, slot, marketId, commitHash, sealedCopy). marketId is the Predict.fun market id, emitted so the keeper can read the price; the contract trusts only ctf and conditionId.
+
+## Market data and the Predict.fun terms
+* Predict.fun's terms forbid scraping and redistributing their data, so Forewit does not publish market lists or prices for everyone.
+* Each user browses and searches markets in their own agent with their own free API key from https://developers.predict.fun (set PREDICT_API_KEY). The site and connector publish only aggregate counts per market group.
+* Live prices on forewit.xyz are shown only for markets a Forewit user has a forecast on, fetched with Forewit's own key, cached, and labelled as Predict.fun data.
 
 ## Gas (measured on v1 calls, 25 Nov 2026)
 * Keeper per forecast: baseline about 55k, reveal about 85k, finalize about 48k (once per market), score about 55k: about 240k gas, about 0.000012 BNB at 0.05 gwei. 1,000 forecasts cost about 0.012 BNB. The v2 keeper uses its own wallet and its own job, so it can never starve the v1 deadline duties.

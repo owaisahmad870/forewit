@@ -37,7 +37,7 @@ contract OpenForecastsTest is Test {
     function _commit(address who, uint8 slot, uint16 bps) internal {
         bytes32 h = of_.computeCommitHash(address(ctf), cid, slot, who, bps, salt);
         vm.prank(who);
-        of_.commit(address(ctf), cid, slot, h, hex"46574152");
+        of_.commit(address(ctf), cid, slot, 42, h, hex"46574152");
     }
 
     function _resolve(uint256 p0, uint256 p1) internal {
@@ -89,34 +89,34 @@ contract OpenForecastsTest is Test {
         bytes32 h = of_.computeCommitHash(address(ctf), cid, 1, alice, 5000, salt);
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.AlreadyCommitted.selector);
-        of_.commit(address(ctf), cid, 1, h, "");
+        of_.commit(address(ctf), cid, 1, 42, h, "");
     }
 
     function test_commit_gates() public {
         bytes32 h = keccak256("h");
         vm.prank(nobody);
         vm.expectRevert(OpenForecasts.NoAgentID.selector);
-        of_.commit(address(ctf), cid, 0, h, "");
+        of_.commit(address(ctf), cid, 0, 42, h, "");
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(OpenForecasts.CtfNotAllowed.selector, address(0xDEAD)));
-        of_.commit(address(0xDEAD), cid, 0, h, "");
+        of_.commit(address(0xDEAD), cid, 0, 42, h, "");
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.BadSlot.selector);
-        of_.commit(address(ctf), cid, 2, h, "");
+        of_.commit(address(ctf), cid, 2, 42, h, "");
         bytes32 three = keccak256("three way");
         ctf.prepare(three, 3);
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.NotBinary.selector);
-        of_.commit(address(ctf), three, 0, h, "");
+        of_.commit(address(ctf), three, 0, 42, h, "");
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.SealedTooLarge.selector);
-        of_.commit(address(ctf), cid, 0, h, new bytes(2049));
+        of_.commit(address(ctf), cid, 0, 42, h, new bytes(2049));
         uint256[] memory p = new uint256[](2);
         p[0] = 1;
         ctf.resolve(cid, p);
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.AlreadyResolved.selector); // a resolved market takes no new forecast
-        of_.commit(address(ctf), cid, 0, h, "");
+        of_.commit(address(ctf), cid, 0, 42, h, "");
     }
 
     function test_baseline_only_by_keeper_once_and_within_120s() public {
@@ -161,7 +161,7 @@ contract OpenForecastsTest is Test {
         ctf.prepare(c2, 2);
         bytes32 h = of_.computeCommitHash(address(ctf), c2, 0, bob, 5000, salt);
         vm.prank(bob);
-        of_.commit(address(ctf), c2, 0, h, "");
+        of_.commit(address(ctf), c2, 0, 42, h, "");
     }
 
     function test_unrevealed_is_a_forfeit_after_the_window() public {
@@ -201,7 +201,7 @@ contract OpenForecastsTest is Test {
         bytes32 h = keccak256("h");
         vm.prank(bob);
         vm.expectRevert();
-        of_.commit(address(ctf), cid, 0, h, "");
+        of_.commit(address(ctf), cid, 0, 42, h, "");
         _resolve(1, 0);
         of_.revealFor(key, alice, 8000, salt, address(ctf), cid); // reveals and scoring never pause
         of_.score(key, alice);
