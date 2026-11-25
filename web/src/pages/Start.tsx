@@ -13,7 +13,8 @@ type Block = Parameters<typeof Blocks>[0]['blocks'][number];
 // 1.12.0 help lists (checked by src/test/start.test.tsx). The easy way is the npm package's guided start (forewit start);
 // the manual path runs the same CLI from the repository.
 const ROUND_FILE = 'web/public/data/rounds/1.json';
-export const SKILL_COMMANDS = ['npx skills add binance/binance-skills-hub --skill binance-agentic-wallet', 'npx skills add owaisahmad870/forewit --skill forewit'];
+export const SKILL_COMMANDS = ['npx skills add binance/binance-skills-hub --skill binance-agentic-wallet
+npm install -g @binance/agentic-wallet@1.12.0', 'npx skills add owaisahmad870/forewit --skill forewit'];
 export const QUICK_COMMAND = 'npx forewit@latest start';
 export const QUICK_COMMAND_WINDOWS = 'npx.cmd forewit@latest start';
 export const START_COMMANDS: string[][] = [

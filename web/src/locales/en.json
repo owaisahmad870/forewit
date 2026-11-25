@@ -657,7 +657,7 @@
       "title": "The easiest way: your own AI agent",
       "intro": "Use the agent you already use with your Binance Agentic Wallet (Claude Code, the Code tab of the Claude desktop app, Codex, OpenClaw or Hermes). Your only approvals are in your own wallet.",
       "steps": [
-        "Set up your agent and the Binance Agentic Wallet skill, as the Binance App shows under Agentic Wallet, Use My Own AI Agent. Skip this if you already did.",
+        "Set up your agent, then install the Binance Agentic Wallet skill and its command line wallet, baw (the two lines below), as the Binance App shows under Agentic Wallet, Use My Own AI Agent. On Windows PowerShell type npm.cmd instead of npm. Skip this if you already did.",
         "In that same agent, add Forewit with the one line below.",
         "Say \"Play Forewit\". Your agent signs you in (you approve in the Binance App), shows the questions, asks your chances, offers auto reveal, and sends only after your yes."
       ],

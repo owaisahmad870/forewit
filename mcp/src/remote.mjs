@@ -24,7 +24,7 @@ const START = {
   en: {
     summary: 'You play from the AI agent you use with your Binance Agentic Wallet (Claude Code, the Code tab of the Claude desktop app, Codex, OpenClaw or Hermes). Three steps; the only approvals are in your own wallet.',
     steps: [
-      { step: 1, do: 'Set up your agent and the Binance Agentic Wallet skill, as the Binance App shows under Agentic Wallet, Use My Own AI Agent. Skip this if you already did.', command: 'npx skills add binance/binance-skills-hub --skill binance-agentic-wallet' },
+      { step: 1, do: 'Set up your agent, then install the Binance Agentic Wallet skill and its command line wallet, baw, as the Binance App shows under Agentic Wallet, Use My Own AI Agent. On Windows PowerShell type npm.cmd instead of npm. Skip this if you already did.', command: 'npx skills add binance/binance-skills-hub --skill binance-agentic-wallet && npm install -g @binance/agentic-wallet@1.12.0' },
       { step: 2, do: 'In that same agent, add Forewit with one line.', command: 'npx skills add owaisahmad870/forewit --skill forewit' },
       { step: 3, do: 'Say "Play Forewit". Your agent signs you in to your wallet (you approve in the Binance App), shows the round, asks your chance for each question, offers auto reveal (say yes), shows the wallet preview and sends only after your yes.', command: null },
     ],
@@ -34,7 +34,7 @@ const START = {
   zh: {
     summary: '你在与币安 Agentic Wallet 配合使用的 AI 代理中参与（Claude Code、Claude 桌面应用的 Code 标签、Codex、OpenClaw 或 Hermes）。共三步；唯一的确认都在你自己的钱包里。',
     steps: [
-      { step: 1, do: '按照币安 App 中 Agentic Wallet、Use My Own AI Agent 的说明，设置你的代理和币安 Agentic Wallet 技能。已完成可跳过。', command: 'npx skills add binance/binance-skills-hub --skill binance-agentic-wallet' },
+      { step: 1, do: '设置好你的代理，然后安装币安 Agentic Wallet 技能及其命令行钱包 baw，步骤与币安 App 中 Agentic Wallet、Use My Own AI Agent 的说明一致。在 Windows PowerShell 中请用 npm.cmd 代替 npm。已完成可跳过。', command: 'npx skills add binance/binance-skills-hub --skill binance-agentic-wallet && npm install -g @binance/agentic-wallet@1.12.0' },
       { step: 2, do: '在同一个代理中，用一行命令添加 Forewit。', command: 'npx skills add owaisahmad870/forewit --skill forewit' },
       { step: 3, do: '说“Play Forewit”。你的代理会帮你登录钱包（在币安 App 中确认），展示本轮问题，询问你对每个问题的概率，提供自动揭示（选是），展示钱包预览，并只在你确认后发送。', command: null },
     ],
