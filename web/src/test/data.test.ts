@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { bins10, calibrationError, crowdVsMarket, bannerRounds, joinRounds, leaderboard, liveRound, phase, unpack, type RoundFile, type Snapshot, type SnapRound } from '../lib/data';
+import { bins10, calibrationError, crowdVsMarket, bannerRounds, joinRounds, leaderboard, liveRound, phase, unpack, walletResults, type RoundFile, type Snapshot, type SnapRound } from '../lib/data';
 
 const json = <T,>(p: string): T => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const pack = (bps: number[]) => bps.reduce((a, p, i) => a | (BigInt(p) << BigInt(16 * i)), 0n).toString();
@@ -154,5 +154,29 @@ describe('published dataset in public/data (sample or real)', () => {
         expect(r.scored[a]).toMatchObject({ questions: String(q), brier: String(brier), skill: String(b - brier) });
       }
     }
+  });
+});
+
+describe('wallet results card', () => {
+  const gold = { questions: '3', brier: '25250000', skill: '24750000' };
+  const lost = { questions: '3', brier: '60000000', skill: '-10000000' };
+  it('says beat or behind the market per round, forfeits, owed reveals and the overall average', () => {
+    const s = snap([
+      goldRound(1, { '0xA': gold }),
+      goldRound(2, { '0xA': lost }),
+      goldRound(3, {}, { committers: ['0xA'], revealed: [], forfeited: { '0xa': lost } }),
+      goldRound(4, {}, { committers: ['0xa'], revealed: [], revealDeadline: String(Date.parse('2026-11-24T00:00:00Z') / 1000) }),
+      goldRound(5, {}, { committers: ['0xa'], revealed: ['0xA'] }),
+    ]);
+    const w = walletResults(s, '0xa');
+    expect(w.rounds.map((r) => [r.roundId, r.verdict])).toEqual([[5, 'waiting'], [4, 'reveal'], [3, 'forfeited'], [2, 'behind'], [1, 'beat']]);
+    expect(w.rounds[4].skill).toBeCloseTo(0.0825);
+    expect(w.rounds[4].marketBrier).toBeCloseTo(0.1667, 3);
+    expect([w.committed, w.revealed, w.beat, w.behind, w.forfeited]).toEqual([5, 3, 1, 1, 1]);
+    expect(w.avgSkill).toBeCloseTo((24750000 - 10000000 - 10000000) / 9 / 1e8);
+    expect(w.rank).toBeNull();
+  });
+  it('a wallet that never committed has an empty card', () => {
+    expect(walletResults(snap([goldRound(1, { '0xb': gold })]), '0xa')).toMatchObject({ committed: 0, rounds: [], avgSkill: null });
   });
 });

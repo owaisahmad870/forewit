@@ -163,6 +163,17 @@ export function liveRound(rounds: Round[], now: number): Round | null {
   return soonest((r) => r.commitDeadline.getTime()) ?? soonest((r) => r.revealDeadline.getTime()) ?? rounds[0] ?? null;
 }
 
+// Upcoming: rounds open for commits now (nearest deadline first), and when the next daily round opens. The keeper opens
+// the daily round from 03:07 UTC (keeper.yml cron "7 3 * * *"; GitHub can start it late), so the site says "about 03:10 UTC".
+export const DAILY_OPEN_UTC = { h: 3, m: 10 };
+export function upcoming(rounds: Round[], now: number) {
+  const open = rounds.filter((r) => phase(r, now) === 'commit').sort((a, b) => a.commitDeadline.getTime() - b.commitDeadline.getTime());
+  const d = new Date(now);
+  let next = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), DAILY_OPEN_UTC.h, DAILY_OPEN_UTC.m);
+  if (next <= now) next += 86400000;
+  return { open, nextOpen: new Date(next) };
+}
+
 // The banner: every round in its reveal window (it overlaps the next round's commit window) plus the open round with the nearest commit deadline.
 export function bannerRounds(rounds: Round[], now: number) {
   const reveal = rounds.filter((r) => phase(r, now) === 'reveal').sort((a, b) => a.revealDeadline.getTime() - b.revealDeadline.getTime());
@@ -216,7 +227,7 @@ export interface Row {
 }
 
 // Leaderboard per docs/SCORING.md. Every forecaster is computed (for aggregate counts); only opt in rows are shown.
-export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number; publicCount: number } {
+export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number; publicCount: number; all: Row[] } {
   const acc = new Map<string, { committed: number; revealed: number; rounds: number; q: number; bq: number; brier: bigint; skill: bigint; postSkill: bigint; cal: { p: number; yes: boolean }[] }>();
   const get = (a: string) => {
     const k = a.toLowerCase();
@@ -269,7 +280,56 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
     };
   });
   const rows = all.filter((r) => r.isPublic).sort((a, b) => Number(b.ranked) - Number(a.ranked) || b.shrunkSkill - a.shrunkSkill);
-  return { rows, forecasters: all.length, publicCount: rows.length };
+  return { rows, forecasters: all.length, publicCount: rows.length, all };
+}
+
+// One wallet's results card: no money moves in Forewit, so a round is won or lost against the market price.
+// beat: skill above 0 (closer to the truth than the market); behind: below 0; level: exactly 0;
+// forfeited: committed but never revealed; waiting: revealed, questions not scored yet; reveal: reveal still owed.
+export type RoundVerdict = 'beat' | 'behind' | 'level' | 'scored' | 'forfeited' | 'waiting' | 'reveal' | 'missed';
+export interface WalletRound { roundId: number; verdict: RoundVerdict; questions: number | null; skill: number | null; brier: number | null; marketBrier: number | null }
+export interface WalletResults {
+  addr: string; rounds: WalletRound[];
+  committed: number; revealed: number; beat: number; behind: number; forfeited: number;
+  avgSkill: number | null; shrunkSkill: number; rank: number | null; ranked: boolean; isPublic: boolean;
+}
+
+export function walletResults(snap: Snapshot, addr: string): WalletResults {
+  const a = addr.toLowerCase();
+  const has = (list: string[]) => list.some((x) => x.toLowerCase() === a);
+  const pick = (rec: Record<string, Sums>) => Object.entries(rec).find(([k]) => k.toLowerCase() === a)?.[1];
+  const builtAt = Date.parse(snap.builtAt) / 1000;
+  let bq = 0, skillSum = 0;
+  const rounds = snap.rounds
+    .filter((r) => has(r.committers))
+    .map((r): WalletRound => {
+      const s = pick(r.scored), f = pick(r.forfeited), sums = s ?? f;
+      const q = sums ? Number(sums.questions) : null;
+      const per = (v: string | undefined) => (sums && q ? Number(v) / q / BRIER_MAX : null);
+      const skill = r.baseline ? per(sums?.skill) : null;
+      if (sums && r.baseline) { bq += Number(sums.questions); skillSum += Number(sums.skill); }
+      const verdict: RoundVerdict = f ? 'forfeited'
+        : s ? (skill === null ? 'scored' : skill > 0 ? 'beat' : skill < 0 ? 'behind' : 'level')
+        : has(r.revealed) ? 'waiting'
+        : Number(r.revealDeadline) > builtAt ? 'reveal' : 'missed';
+      const brier = per(sums?.brier);
+      return { roundId: Number(r.roundId), verdict, questions: q, skill, brier, marketBrier: brier !== null && skill !== null ? brier + skill : null };
+    })
+    .sort((x, y) => y.roundId - x.roundId);
+  const lb = leaderboard(snap);
+  const row = lb.all.find((r) => r.addr === a);
+  const rank = row?.ranked ? lb.rows.filter((r) => r.ranked).findIndex((r) => r.addr === a) + 1 : null;
+  return {
+    addr: a, rounds,
+    committed: rounds.length,
+    revealed: rounds.filter((r) => !['reveal', 'missed', 'forfeited'].includes(r.verdict)).length,
+    beat: rounds.filter((r) => r.verdict === 'beat').length,
+    behind: rounds.filter((r) => r.verdict === 'behind').length,
+    forfeited: rounds.filter((r) => r.verdict === 'forfeited').length,
+    avgSkill: bq ? skillSum / bq / BRIER_MAX : null,
+    shrunkSkill: skillSum / (bq + K) / BRIER_MAX,
+    rank, ranked: !!row?.ranked, isPublic: !!row?.isPublic,
+  };
 }
 
 export interface Dataset { manifest: Manifest; snapshot: Snapshot; rounds: Round[] }

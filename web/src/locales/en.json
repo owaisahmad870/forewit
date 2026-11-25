@@ -14,7 +14,8 @@
     "menu": "Menu",
     "main": "Main",
     "start": "Start",
-    "proof": "Proof"
+    "proof": "Proof",
+    "me": "My results"
   },
   "ui": {
     "toLight": "Light theme",
@@ -802,5 +803,36 @@
         "d": "Distinct wallets that sent at least one commit. Only Agent ID holders can commit, so each one is a holder."
       }
     }
+  },
+  "me": {
+    "title": "My results",
+    "intro": "Paste the wallet address that holds your Agent ID to see every round you played and how you did against the market. No sign in, nothing is sent anywhere: it reads the public record.",
+    "walletLabel": "Your wallet address",
+    "show": "Show my results",
+    "badAddr": "That does not look like a wallet address (0x followed by 40 letters and numbers).",
+    "overall": "Overall",
+    "none": "This wallet has not played a round yet. Start with the Start page; it takes a few minutes.",
+    "noneScored": "No round scored yet. Results appear once the questions are settled, up to 7 days after a round closes.",
+    "beatOf": "You beat the market in {b} of {n} scored rounds",
+    "avg": "Average: {p} points per question against the market (above 0 means you were closer to the truth)",
+    "counts": "{c} rounds played, {r} revealed, {f} missed.",
+    "rank": "Leaderboard rank {n}.",
+    "round": "Round {n}",
+    "v": {
+      "beat": "You beat the market by {p} points: your miss score {y}, the market’s {m}",
+      "behind": "The market was closer by {p} points: your miss score {y}, the market’s {m}",
+      "level": "Level with the market",
+      "scored": "Scored (this round had no market price)",
+      "forfeited": "Missed: not revealed in time, counted as a loss",
+      "waiting": "Revealed, waiting for the questions to settle",
+      "reveal": "Reveal needed now",
+      "missed": "Reveal window closed; scoring soon"
+    },
+    "noMoney": "Forewit moves no money: you never stake or receive funds, you only pay a tiny network fee. What you build is a track record tied to your Agent ID.",
+    "nextTitle": "Upcoming rounds",
+    "openRound": "Round {n} is open ({q} questions)",
+    "closes": "closes",
+    "nextOpens": "The next round opens at about",
+    "miss": "Miss score: how far your forecasts were from what happened, from 0 (perfect) to 100 (fully wrong), averaged per question. Points = the market’s miss score minus yours."
   }
 }

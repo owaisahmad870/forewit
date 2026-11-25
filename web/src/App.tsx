@@ -4,6 +4,7 @@ import { loadData, type Dataset } from './lib/data';
 import { fmtUtc } from './lib/format';
 import { Home } from './pages/Home';
 import { RoundPage, Rounds } from './pages/Round';
+import { MyResults } from './pages/MyResults';
 import { Leaderboard } from './pages/Leaderboard';
 import { Crowd, DocPage, DocsIndex, Play, Profile } from './pages/Static';
 import { Proof } from './pages/Proof';
@@ -31,6 +32,7 @@ const NAV = [
   ['start', 'nav.start'],
   ['rounds', 'nav.rounds'],
   ['leaderboard', 'nav.leaderboard'],
+  ['me', 'nav.me'],
   ['crowd', 'nav.crowd'],
   ['play', 'nav.play'],
   ['docs', 'nav.docs'],
@@ -152,6 +154,7 @@ function DataPage({ head, arg, data }: { head?: string; arg?: string; data: Data
   if (head === 'rounds') return <Rounds data={data} />;
   if (head === 'round') return <RoundPage data={data} id={Number(arg)} />;
   if (head === 'leaderboard') return <Leaderboard data={data} />;
+  if (head === 'me') return <MyResults data={data} />;
   if (head === 'crowd') return <Crowd data={data} />;
   if (head === 'proof') return <Proof data={data} />;
   return <p className="text-muted">{t('ui.notFound')} <a href="#/" className="text-accent underline">{t('ui.backHome')}</a></p>;
