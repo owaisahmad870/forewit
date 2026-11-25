@@ -67,7 +67,7 @@ test('commit saves the salt first, never sends it, and reveal finds it', async (
     rmSync(home, { recursive: true, force: true });
   });
 
-  await main(['commit', '--network', 'testnet', '--from', FROM, '--p', '70,0']);
+  await main(['commit', '--network', 'testnet', '--from', FROM, '--p', '70,0', '--auto-reveal']);
   const [receipt, ...extra] = findReceipts({ chainId: 97, roundId: 1, forecaster: FROM }, home);
   assert.equal(extra.length, 0);
   assert.deepEqual(receipt.probabilitiesBps, [7000, 100]);
@@ -80,7 +80,7 @@ test('commit saves the salt first, never sends it, and reveal finds it', async (
   }
   const printed = out.join('\n');
   assert.ok(printed.includes(`--to ${net.ledger} --value 0 --inputData 0xf2f03877`), 'commit preview targets the pinned ledger');
-  // auto reveal is on by default: the time locked copy follows the commit arguments and the receipt records its drand round
+  // with --auto-reveal (opt in): the time locked copy follows the commit arguments and the receipt records its drand round
   assert.match(printed, /--inputData 0xf2f03877[0-9a-f]{128}46574152/);
   assert.ok(receipt.autoReveal.drandRound > 0 && /Auto reveal is on/.test(printed));
 

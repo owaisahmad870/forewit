@@ -47,7 +47,7 @@ test('local server', async (t) => {
     assert.equal(data.salt_returned, false);
     assert.equal(data.transaction.to, net.ledger);
     assert.equal(data.transaction.value, '0');
-    assert.ok(data.transaction.data.slice(0, 138).endsWith(data.commit_hash.slice(2)) && data.auto_reveal && data.transaction.data.slice(138, 146) === '46574152');
+    assert.ok(data.transaction.data.slice(0, 138).endsWith(data.commit_hash.slice(2)) && data.auto_reveal === false && data.transaction.data.length === 138);
     assert.equal(data.baw_preview_command, `baw contract-call preview --binanceChainId 56 --from ${FROM} --to ${net.ledger} --value 0 --inputData ${data.transaction.data} --json`);
     assert.equal(data.baw_can_sign_this_network, true);
     const receipt = JSON.parse(readFileSync(data.receipt_file, 'utf8'));

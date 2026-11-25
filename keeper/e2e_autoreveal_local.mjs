@@ -44,7 +44,7 @@ console.log(`ledger ${ledger}, round 1, commit deadline in 45 s`);
 // the CLI's own commit path, pointed at the local ledger
 const net = { name: 'testnet', chainId: 97, ledger, rpc: RPC, explorer: '' };
 const home = mkdtempSync(join(tmpdir(), 'forewit_ar_'));
-const plan = await commitPlan({ net, from: user.address, bps: [7300, 2100], home, loaded: await loadRound(net, '1') });
+const plan = await commitPlan({ net, from: user.address, bps: [7300, 2100], home, loaded: await loadRound(net, '1'), autoReveal: true });
 if (!plan.autoReveal || !plan.data.includes('46574152')) throw new Error('commit has no auto reveal tail');
 await pub.waitForTransactionReceipt({ hash: await wallet(user).sendTransaction({ to: ledger, data: plan.data }) });
 const onchain = await pub.readContract({ address: ledger, abi: art('ForecastLedger').abi, functionName: 'getCommit', args: [1n, user.address] });
@@ -55,7 +55,7 @@ const run = () => execFileSync(process.execPath, ['keeper/keeper.mjs', 'autoreve
   encoding: 'utf8', env: { ...process.env, BSC_TESTNET_RPC_URL: RPC, LOGS_RPC_URL: RPC, LEDGER_TESTNET: ledger, KEEPER_PRIVATE_KEY: KEYS[1], PUBLISH: '0', TOPIC_ROUNDS: '' },
 }).trim();
 console.log('keeper before the deadline:', run() || '(nothing, as expected)');
-await new Promise((r) => setTimeout(r, (Number(deadline) + 70 - Math.floor(Date.now() / 1000)) * 1000));
+await new Promise((r) => setTimeout(r, (Number(deadline) + 130 - Math.floor(Date.now() / 1000)) * 1000));
 await pub.request({ method: 'evm_mine', params: [] }); // a fresh block so chain time is past the deadline
 console.log('keeper after:', run());
 const [packed, status] = await pub.readContract({ address: ledger, abi: art('ForecastLedger').abi, functionName: 'getReveal', args: [1n, user.address] });

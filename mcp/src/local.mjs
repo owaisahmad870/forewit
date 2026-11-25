@@ -86,13 +86,13 @@ export function createLocalServer({ home } = {}) {
 
   tool('prepare_commit', {
     title: 'Prepare a commit',
-    description: 'Makes a random salt, saves the reveal receipt (salt included) in ~/.forewit with owner only access, and returns the commit hash, calldata and baw preview command. Probabilities are percentages, one per question, clamped to 1 to 99. The salt is not returned. Auto reveal is on by default: a copy of the forecast and salt, time locked to just after the commit deadline (drand quicknet), rides in the calldata, and Forewit reveals it for the user after the deadline; the user needs no second step.',
+    description: 'Makes a random salt, saves the reveal receipt (salt included) in ~/.forewit with owner only access, and returns the commit hash, calldata and baw preview command. Probabilities are percentages, one per question, clamped to 1 to 99. The salt is not returned. Optional auto reveal (opt in, ask the user; recommended): with auto_reveal true a copy of the forecast and salt, locked until just after the commit deadline (drand quicknet), rides in the calldata and the Forewit keeper reveals it after the deadline, so the user needs no second step.',
     inputSchema: {
       from: address.describe('Agentic wallet address that will send the commit.'),
       probabilities_percent: z.array(z.number().min(0).max(100)).min(1).max(16),
       round_id: roundInput,
       network: networkInput,
-      auto_reveal: z.boolean().optional().describe('Default true. False keeps the salt only on this machine; the user must then reveal after the deadline.'),
+      auto_reveal: z.boolean().optional().describe('Default false (opt in). True: Forewit reveals after the deadline from a time locked copy in the commit. False: the salt stays only on this machine and the user reveals after the deadline.'),
     },
     outputSchema: {
       network: z.string(), ledger: z.string(), round_id: z.number().int(), from: z.string(),
@@ -102,7 +102,7 @@ export function createLocalServer({ home } = {}) {
       receipt_file: z.string(), salt_returned: z.literal(false),
       ...walletShape,
     },
-  }, async ({ from, probabilities_percent, round_id, network: name, auto_reveal = true }) => {
+  }, async ({ from, probabilities_percent, round_id, network: name, auto_reveal = false }) => {
     const net = network(name);
     const { bps, clamped } = parseProbabilities(probabilities_percent.join(','));
     const loaded = await loadRound(net, round_id === undefined ? undefined : String(round_id));

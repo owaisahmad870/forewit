@@ -331,34 +331,56 @@ async function commitLogsScan(r) {
 const AR_MAX_PER_RUN = Number(process.env.AUTO_REVEAL_MAX || 50); // keeper gas guard per tick
 async function autoReveal(r, round) {
   const now = Math.floor(Date.now() / 1000);
-  if (now < Number(round.commitDeadline) + AR_MARGIN_S + 5 || now > Number(round.revealDeadline) - 120) return;
+  // commits are impossible after the deadline, so one scan 2 minutes after it sees them all (cached per round)
+  if (now < Number(round.commitDeadline) + 120 || now > Number(round.revealDeadline) - 120) return;
+  // never spend RPC calls or gas next to the newest round's baseline window
+  const latest = await read('getRound', [await read('roundCount')]);
+  const t = Number(latest.commitDeadline);
+  if (!latest.isSealed && now > t - 30 * 60 && now < t + 120) return log(`auto reveal round ${r}: paused near the round deadline (baseline window)`);
+  const file = `keeper/state/autoreveal_${NET.chain.id}_${r}.json`;
+  const st = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+  const logs = st?.logs ?? (await commitLogsScan(r)).map((l) => ({ f: l.args.forecaster, tx: l.transactionHash, b: String(l.blockNumber), i: l.logIndex }));
+  const state = { logs, done: st?.done ?? [], lateAlerted: st?.lateAlerted ?? false };
   const byWallet = new Map();
-  for (const l of (await commitLogsScan(r)).sort((a, b) => Number(b.blockNumber - a.blockNumber) || b.logIndex - a.logIndex)) {
-    const k = l.args.forecaster.toLowerCase();
-    if (!byWallet.has(k)) byWallet.set(k, []);
-    byWallet.get(k).push(l);
+  for (const l of [...logs].sort((a, b) => Number(BigInt(b.b) - BigInt(a.b)) || b.i - a.i)) {
+    const k = l.f.toLowerCase();
+    if (!state.done.includes(k)) (byWallet.get(k) ?? byWallet.set(k, []).get(k)).push(l);
   }
   let sent = 0;
-  for (const [, list] of byWallet) {
+  const owed = [];
+  for (const [k, list] of byWallet) {
     if (sent >= AR_MAX_PER_RUN) { log(`auto reveal round ${r}: per tick cap ${AR_MAX_PER_RUN} reached, the rest next tick`); break; }
-    const f = list[0].args.forecaster;
+    const f = list[0].f;
     try {
-      if ((await read('flags', [r, f])) & 1) continue; // already revealed (by the user or an earlier tick)
+      if ((await read('flags', [r, f])) & 1) { state.done.push(k); continue; } // revealed by the user or an earlier tick
       const onchain = await read('getCommit', [r, f]);
+      let tail = false;
       for (const l of list) {
-        const ct = ciphertextOf((await pub.getTransaction({ hash: l.transactionHash })).input);
+        const ct = ciphertextOf((await pub.getTransaction({ hash: l.tx })).input);
         if (!ct) continue;
+        tail = true;
         const { packed, salt } = await openSealed(ct);
         if ((await read('computeCommitHash', [r, f, packed, salt])) !== onchain) continue; // an older or foreign copy
         await send('revealFor', [r, f, packed, salt]);
         log(`auto reveal round ${r}: revealed for ${f}`);
+        state.done.push(k);
         sent++;
         break;
       }
+      if (!tail) state.done.push(k); // no time locked copy: this wallet reveals itself
+      else if (!state.done.includes(k)) owed.push(f);
     } catch (e) {
-      log(`auto reveal round ${r} ${f}: ${(e.shortMessage || e.message).split(String.fromCharCode(10))[0]}`);
+      const msg = (e.shortMessage || e.message).split(String.fromCharCode(10))[0];
+      if (/too early/i.test(msg)) log(`auto reveal round ${r} ${f}: drand round not reached yet`);
+      else { owed.push(f); await alert(`auto reveal round ${r} for ${f} failed: ${msg}`); }
     }
   }
+  if (owed.length && now > Number(round.revealDeadline) - 3 * 3600 && !state.lateAlerted) {
+    state.lateAlerted = true;
+    await alert(`auto reveal round ${r}: ${owed.length} wallet(s) with a time locked copy are still unrevealed with under 3 hours left: ${owed.join(', ')}`);
+  }
+  mkdirSync('keeper/state', { recursive: true });
+  writeFileSync(file, JSON.stringify(state));
 }
 
 async function score(rIn) {

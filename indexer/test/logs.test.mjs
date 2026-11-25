@@ -11,8 +11,9 @@ test('a provider that silently returns nothing cannot hide a log another provide
   assert.deepEqual(await get({}), [log('0xb', 1, 1n), log('0xa', 0, 2n)]);
 });
 
-test('a range error from anyone is thrown so the caller halves the span', async () => {
-  await assert.rejects(unionLogs([ok([])], [fail('block range limit')])({}), /range limit/);
+test('a range error from a trusted provider is thrown so the caller halves the span; the optional one cannot do that', async () => {
+  await assert.rejects(unionLogs([fail('block range limit')], [ok([])])({}), /range limit/);
+  assert.deepEqual(await unionLogs([ok([log('0xa', 0)])], [fail('rate limit exceeded')])({}), [log('0xa', 0)]);
 });
 
 test('one keyed provider down is tolerated; only the public provider answering is not', async () => {
