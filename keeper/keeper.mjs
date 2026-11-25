@@ -647,7 +647,10 @@ async function topics() {
   }
   const cats = {};
   let calls = 0;
-  for (const slug of new Set(raw.filter((m) => sel.isBinary(m) && !sel.isCryptoUpDown(m) && !sel.isSports(m)).map((m) => m.categorySlug))) {
+  // optional boards (owner 25 Nov 2026: sports and elections on, rule v3.3); sports categories are fetched only for liquid
+  // markets, which bounds the API calls (about 10,900 sports markets are open on a normal day)
+  const SPORTS = process.env.TOPIC_SPORTS === 'on', ELECTIONS = process.env.TOPIC_ELECTIONS === 'on';
+  for (const slug of new Set(raw.filter((m) => sel.isBinary(m) && !sel.isCryptoUpDown(m) && (!sel.isSports(m) || (SPORTS && sel.isLiquid(m)))).map((m) => m.categorySlug))) {
     cats[slug] = (await apiGet('/v1/categories/' + slug).catch(() => ({ data: null }))).data;
     if (++calls % 200 === 0) await new Promise((r) => setTimeout(r, 60_000)); // API limit 250 a minute
   }
@@ -661,7 +664,7 @@ async function topics() {
   const countFile = `keeper/state/topics_${NET.chain.id}_${day}.opened.json`;
   const done = existsSync(countFile) ? JSON.parse(readFileSync(countFile, 'utf8')) : { scored: 0, open: 0, optional: 0 };
   const left = (k, d) => Math.max(0, num(process.env[`TOPIC_${k.toUpperCase()}_CAP`], d) - done[k]);
-  const plan = planTopicRounds(raw, cats, d.getTime(), { asked, featured, caps: { scored: left('scored', 6), open: left('open', 10), optional: left('optional', 5) } });
+  const plan = planTopicRounds(raw, cats, d.getTime(), { asked, featured, sports: SPORTS, elections: ELECTIONS, caps: { scored: left('scored', 6), open: left('open', 10), optional: left('optional', 5) } });
   log(`topics: ${plan.rounds.length} rounds planned (${plan.dropped} over the caps)`);
   let opened = 0;
   const saved = { selection: args.selection, days: args['resolution-days'] };
@@ -677,7 +680,7 @@ async function topics() {
     const dir = `keeper/archive/${args.network || 'testnet'}/${day}_topics`;
     mkdirSync(dir, { recursive: true });
     const file = `${dir}/${String(i).padStart(3, '0')}_${r.board}_${r.topic}_${r.horizon}.json`;
-    writeFileSync(file, JSON.stringify({ rule: 'QUESTION_SELECTION v3.2', kind: 'topic', board: r.board, topic: r.topic, horizon: r.horizon, optional: r.optional, featured: false, commitDeadline: d.toISOString(), resolutionDays: r.resolutionDays, chosen }, null, 2));
+    writeFileSync(file, JSON.stringify({ rule: SPORTS || ELECTIONS ? 'QUESTION_SELECTION v3.3' : 'QUESTION_SELECTION v3.2', kind: 'topic', board: r.board, topic: r.topic, horizon: r.horizon, optional: r.optional, featured: false, commitDeadline: d.toISOString(), resolutionDays: r.resolutionDays, chosen }, null, 2));
     Object.assign(args, { selection: file, 'resolution-days': String(r.resolutionDays) });
     await open();
     opened++;

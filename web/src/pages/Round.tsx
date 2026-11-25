@@ -18,7 +18,7 @@ export function Rounds({ data }: { data: Dataset }) {
           {(['featured', 'topics', 'open', 'sports', 'elections'] as const).map((k) => (
             <li key={k} className="flex flex-wrap items-start justify-between gap-2">
               <span><span className="font-semibold">{t(`round.boards.${k}.name`)}</span> <span className="text-muted">{t(`round.boards.${k}.what`)}</span></span>
-              <Badge tone={k === 'featured' ? 'accent' : 'neutral'}>{t(`round.boards.status.${k === 'featured' ? 'live' : k === 'topics' || k === 'open' ? 'rolling' : 'planned'}`)}</Badge>
+              <Badge tone={k === 'featured' ? 'accent' : 'neutral'}>{t(`round.boards.status.${k === 'featured' ? 'live' : k === 'topics' || k === 'open' || k === 'sports' || k === 'elections' ? 'rolling' : 'planned'}`)}</Badge>
             </li>
           ))}
         </ul>

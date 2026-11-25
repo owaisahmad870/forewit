@@ -92,6 +92,8 @@ jobs:
           HC_PING_NIGHT: ${{ secrets.HC_PING_BASELINE }}
           HC_PING_TICK: ${{ secrets.HC_PING_TICK }}
           TOPIC_ROUNDS: ${{ vars.TOPIC_ROUNDS }}
+          TOPIC_SPORTS: ${{ vars.TOPIC_SPORTS }}
+          TOPIC_ELECTIONS: ${{ vars.TOPIC_ELECTIONS }}
           ALERT_ISSUE_NUMBER: ${{ vars.ALERT_ISSUE_NUMBER }}
           GITHUB_TOKEN: ${{ github.token }}
           TOPIC_SCORED_CAP: ${{ vars.TOPIC_SCORED_CAP }}

@@ -7,8 +7,8 @@ export const GROUPS = ['crypto_short', 'crypto_daily', 'sports', 'esports', 'twe
 export const WHY = {
   crypto_short: 'resolves within minutes or hours: commits stay open at least 2 hours, so it would settle before the deadline',
   crypto_daily: 'eligible: daily crypto questions are in the daily round',
-  sports: 'excluded from scored rounds by the owner (23 Nov 2026); a planned optional board',
-  esports: 'excluded from scored rounds by the owner (23 Nov 2026); a planned optional board',
+  sports: 'approved for the optional sports board (25 Nov 2026); liquid markets join topic rounds once they switch on',
+  esports: 'approved for the optional sports board (25 Nov 2026); liquid markets join topic rounds once they switch on',
   tweets: 'eligible when liquid and resolving 6 to 72 hours after a deadline',
   other: 'eligible when liquid, not politics, and resolving 6 to 72 hours after a deadline',
 };

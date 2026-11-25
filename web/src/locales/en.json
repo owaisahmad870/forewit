@@ -151,11 +151,11 @@
       },
       "sports": {
         "name": "Sports",
-        "what": "Planned as an optional board."
+        "what": "Liquid sports and esports markets, an optional board approved by the owner on 25 Nov 2026. Starts when topic rounds switch on."
       },
       "elections": {
         "name": "Elections",
-        "what": "Elections and candidates, planned as an optional board. Policy outcomes are already under macro."
+        "what": "Elections and candidates, an optional board approved by the owner on 25 Nov 2026. Policy outcomes stay under macro. Starts when topic rounds switch on."
       }
     }
   },
@@ -864,8 +864,8 @@
       "other": "Yes when liquid, not politics, and settling 6 to 72 hours after a round deadline.",
       "crypto_daily": "Yes: daily crypto questions are in the daily round.",
       "crypto_short": "No: commits stay open at least 2 hours, so a 5 or 15 minute question would settle before the deadline and count as void.",
-      "sports": "Not yet: excluded by the owner on 23 Nov 2026; a planned optional board.",
-      "esports": "Not yet: excluded by the owner on 23 Nov 2026; a planned optional board.",
+      "sports": "Approved for the optional sports board (25 Nov 2026): liquid markets join topic rounds once they switch on, at most 5 optional rounds a day.",
+      "esports": "Approved for the optional sports board (25 Nov 2026): liquid markets join topic rounds once they switch on, at most 5 optional rounds a day.",
       "tweets": "Yes when liquid and settling 6 to 72 hours after a round deadline."
     },
     "search": "Search these markets",

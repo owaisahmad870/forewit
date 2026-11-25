@@ -39,6 +39,15 @@ The keeper applies this rule mechanically (keeper/keeper.mjs select --kind daily
 * Baseline timing: the Featured round keeps its 5 minute target. Topic rounds are posted first, from 10 minutes before the deadline, and stop retrying 5.5 minutes before it, so they can never delay the Featured baseline. This widens the copy the market window (THREAT_MODEL item 2) for topic rounds only.
 * The Featured round publishes its selection funnel (open markets, then each filter with its count), so a visitor sees why these questions were chosen. Topic rounds publish their board, topic and horizon.
 
+## v3.3 sports and elections boards (Owais decision 25 Nov 2026, pre registered before any v3.3 round opens)
+* Owais reversed his 23 Nov 2026 exclusions for the optional boards only: "Keep both on" (sports and politics). Applies only to topic rounds opened after this entry, never to a round already open.
+* Sports board: binary sports and esports markets that are liquid (two sided book, at least 100 USD traded in 24 hours), grouped and horizon bucketed like every topic round. Scored when the market has a real price, Open otherwise.
+* Elections board: markets tagged Elections, Trump, or Politics without a macro tag (Economy, Fed stay under macro), same grouping.
+* Both share the optional cap: at most 5 optional rounds a day (TOPIC_OPTIONAL_CAP), after the Scored and Open topic rounds.
+* The Featured daily round is unchanged: no sports, no politics (v3.1), so the headline round stays neutral.
+* Switches: repository variables TOPIC_SPORTS=on and TOPIC_ELECTIONS=on; nothing opens while TOPIC_ROUNDS is not on.
+* Gas, measured 25 Nov 2026 on the local full lifecycle run (2 questions): createRound 207,928, setBaseline 54,262, sealRound 65,323, finalizeQuestion about 47,500 each, scoreBatch 54,883, revealFor 83,345. Estimate for a 16 question round: about 1.8 million gas, about 0.00009 BNB at 0.05 gwei. At the full caps (6 Scored, 10 Open, 5 optional a day) about 0.002 BNB a day. The keeper held 0.0047 BNB on 25 Nov, so TOPIC_ROUNDS stays off until it is topped up.
+
 ## Pre registered predictions
 * Crypto question skill versus the market averages about zero; any measurable skill comes from non crypto questions (Owais, 23 Nov 2026). Checked by category with sample sizes.
 
