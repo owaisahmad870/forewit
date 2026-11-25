@@ -57,9 +57,9 @@ const dl = Math.floor(Date.now() / 1000) + 6 * 60 + 30; // baseline at 5 minutes
 mkdirSync(join(W, 'keeper/state'), { recursive: true });
 const sel = join(W, 'keeper/state/e2e_selection.json');
 writeFileSync(sel, JSON.stringify({ rule: 'local e2e', kind: 'daily', board: 'scored', featured: true, commitDeadline: new Date(dl * 1000).toISOString(), chosen: markets.map((m, i) => ({ marketId: m.id, conditionId: conds[i], ctf, eventQuestion: `Local e2e question ${i + 1} (mock outcome, real testnet book ${m.id})`, label: 'Yes', marketQuestion: null, endsAt: null, tags: ['Mock'] })) }));
-console.log(keeperRun('open', '--selection', sel, '--reveal-hours', '0.05', '--resolution-days', '1'));
+console.log(keeperRun('open', '--selection', sel, '--reveal-hours', '0.1', '--resolution-days', '1'));
 const r = await read('roundCount');
-say(`round ${r} open, commit deadline ${new Date(dl * 1000).toISOString()}, reveal window 3 minutes`);
+say(`round ${r} open, commit deadline ${new Date(dl * 1000).toISOString()}, reveal window 6 minutes`);
 
 // the player: the CLI's own commit path with auto reveal, fixed forecasts 80% and 30%
 const { commitPlan, loadRound } = await import(`file://${join(W, 'agent/forewit.mjs').replace(/\\/g, '/')}`);
