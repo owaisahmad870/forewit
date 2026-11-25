@@ -1,0 +1,5 @@
+# Cloudflare Pages project "forewit": the site (web/dist) plus one Pages Function, functions/mcp.js (the read only MCP connector).
+name = "forewit"
+pages_build_output_dir = "web/dist"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]

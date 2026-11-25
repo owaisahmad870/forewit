@@ -204,3 +204,14 @@ test('remote server', async (t) => {
     }
   });
 });
+
+test('worker handler (forewit.xyz/mcp): web standard requests, read only tools, GET refused', async () => {
+  const { handleMcp } = await import('../src/worker.mjs');
+  const call = async (body) => (await handleMcp(new Request('https://forewit.xyz/mcp', { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' }, body: JSON.stringify(body) }), { data: 'https://data.invalid/' })).json();
+  const init = await call({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 't', version: '1' } } });
+  assert.equal(init.result.serverInfo.name, 'forewit');
+  const list = await call({ jsonrpc: '2.0', id: 2, method: 'tools/list' });
+  assert.ok(list.result.tools.every((t) => t.annotations.readOnlyHint === true));
+  assert.ok(!list.result.tools.some((t) => /prepare|commit/.test(t.name)), 'no tool can prepare a commit (it would put a salt on the server)');
+  assert.equal((await handleMcp(new Request('https://forewit.xyz/mcp'))).status, 405);
+});

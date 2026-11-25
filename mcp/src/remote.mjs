@@ -14,8 +14,9 @@ import { loadRound, ethCall, SIG, decodeReveal, phaseOf } from '../vendor/agent/
 import { encodeCall, wordUint, wordAddress, decodeWords, wordToBytes32 } from '../vendor/agent/lib/keccak.mjs';
 import { NETWORKS, MIN_BPS, MAX_BPS, MAX_QUESTIONS, RISK_WARNING } from '../vendor/agent/config.mjs';
 import { ok, guarded, paginate, cursorInput, address, roundId, VERSION } from './common.mjs';
+import SCORING from '../vendor/scoring.json' with { type: 'json' }; // a static import, so the Workers bundle carries it
 
-const SCORING = JSON.parse(await readFile(new URL('../vendor/scoring.json', import.meta.url), 'utf8'));
+
 export const DEFAULT_DATA = 'https://forewit.xyz/data/';
 const DATA_TTL_MS = 60_000;
 const CHAIN_TTL_MS = 30_000;
