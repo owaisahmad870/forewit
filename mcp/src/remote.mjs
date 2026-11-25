@@ -30,7 +30,8 @@ async function readJson(base, path) {
   if (!/^[a-z0-9_/]+\.json$/i.test(path) || path.includes('//')) throw new Error('published data lists an unexpected file path');
   let text;
   if (/^https:\/\//i.test(base)) {
-    const res = await fetch(new URL(path, base), { signal: AbortSignal.timeout(10_000), redirect: 'error' });
+    // manual, not error: Workers refuses redirect 'error'; a 3xx is not ok below, so a redirect is still never followed
+    const res = await fetch(new URL(path, base), { signal: AbortSignal.timeout(10_000), redirect: 'manual' });
     if (!res.ok) throw new Error(`published data ${path}: HTTP ${res.status}`);
     text = await res.text();
   } else {
