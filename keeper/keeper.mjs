@@ -18,6 +18,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { takeBaseline } from './lib/baseline.mjs';
+import { logsClient } from '../indexer/lib/logs.mjs';
 import * as sel from './lib/selection.mjs';
 
 const args = Object.fromEntries(process.argv.slice(3).reduce((a, v, i, arr) => (v.startsWith('--') ? [...a, [v.slice(2), arr[i + 1]?.startsWith('--') || arr[i + 1] === undefined ? 'true' : arr[i + 1]]] : a), []));
@@ -40,7 +41,9 @@ const SECOND_RPC = isMainnet ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-t
 const transport = (first) => fallback([...new Set([first, NET.rpc2, SECOND_RPC].filter(Boolean))].map((u) => http(u)));
 const pub = createPublicClient({ chain: NET.chain, transport: transport(NET.rpc) });
 // event logs need an RPC that serves eth_getLogs ranges (the bnbchain dataseed endpoints refuse them); override with LOGS_RPC_URL
-const logsPub = createPublicClient({ chain: NET.chain, transport: transport(process.env.LOGS_RPC_URL || SECOND_RPC) });
+// and a public RPC can answer with an empty list instead of an error, so logs are merged across every RPC (indexer/lib/logs.mjs)
+const KEYED_RPCS = [process.env.LOGS_RPC_URL, isMainnet && process.env.RPC_MAINNET_PRIMARY, NET.rpc2, !isMainnet && process.env.BSC_TESTNET_RPC_URL].filter(Boolean);
+const logsPub = logsClient(NET.chain, KEYED_RPCS, [SECOND_RPC]);
 // committed ABI so the keeper host needs no Foundry; CI fails if it drifts from contracts/out
 const ABI = JSON.parse(readFileSync(process.env.KEEPER_ABI || 'keeper/abi/ForecastLedger_v1_2.json', 'utf8'));
 const CTF_ABI = [parseAbiItem('function getOutcomeSlotCount(bytes32) view returns (uint256)'), parseAbiItem('function payoutDenominator(bytes32) view returns (uint256)')];
@@ -681,7 +684,7 @@ try {
   const fromBlock = process.env[`INDEXER_FROM_BLOCK_${isMainnet ? 'MAINNET' : 'TESTNET'}`];
   if (['open', 'baseline', 'seal', 'night', 'loop', 'scores', 'finalize', 'score', 'tick', 'daily'].includes(cmd) && process.env.PUBLISH !== '0' && fromBlock) {
     const { publish } = await import('../indexer/publish.mjs');
-    const p = await publish({ network: args.network || 'testnet', ledger: await ledger(), fromBlock, rpc: process.env.LOGS_RPC_URL }).catch(async (e) => { await alert(`publish failed: ${e.message.split('\n')[0]}`); return null; });
+    const p = await publish({ network: args.network || 'testnet', ledger: await ledger(), fromBlock, rpc: KEYED_RPCS }).catch(async (e) => { await alert(`publish failed: ${e.message.split('\n')[0]}`); return null; });
     if (p) log(`published ${p.rounds} rounds, ${p.files} round files to web/public/data`);
   }
   if (hc) await fetch(process.exitCode ? `${hc}/fail` : hc).catch(() => log('healthcheck ping failed'));

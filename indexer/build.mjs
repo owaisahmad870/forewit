@@ -2,11 +2,12 @@
 // and daily metrics from ForecastLedger events only. Anyone can rerun it from chain data:
 //   node indexer/build.mjs --network testnet|mainnet --ledger <address> --from-block <n> [--abi <file>] [--rpc <url>]
 // Writes indexer/out/<network>/<ledger>/snapshot.json. Logs are cached per ledger so reruns only fetch new blocks.
-import { createPublicClient, http, parseAbi, keccak256, toHex } from 'viem';
+import { parseAbi, keccak256, toHex } from 'viem';
 import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { crowdV1, METHOD } from './lib/crowd.mjs';
 import { roundFlags, roleHolders, operators, commitTiming } from './lib/flags.mjs';
+import { logsClient } from './lib/logs.mjs';
 
 const big = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
 const unpack = (packed, n) => Array.from({ length: n }, (_, i) => Number((BigInt(packed) >> BigInt(16 * i)) & 0xffffn));
@@ -38,7 +39,8 @@ export function adminLog(logs) {
 export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, abiPath, rpc }) {
   const chain = network === 'mainnet' ? bsc : bscTestnet;
   // eth_getLogs ranges need a capable RPC (the bnbchain dataseed endpoints refuse them)
-  const pub = createPublicClient({ chain, transport: http(rpc || (chain.id === 56 ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com')) });
+  // rpc: one URL or a list of keyed URLs; logs are merged across them and publicnode, never read from one provider alone
+  const pub = logsClient(chain, [rpc].flat(), [chain.id === 56 ? 'https://bsc-rpc.publicnode.com' : 'https://bsc-testnet-rpc.publicnode.com']);
   if (!ledger || fromBlock === undefined) throw new Error('ledger and fromBlock are required');
   // older testnet instances need their own ABI: keeper/abi/ForecastLedger_v1.json or _v1_1.json
   const ABI = JSON.parse(readFileSync(abiPath || 'keeper/abi/ForecastLedger_v1_2.json', 'utf8'));
@@ -50,7 +52,8 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
   const cacheFile = `${dir}/logs_cache.json`;
   let cache = existsSync(cacheFile) ? JSON.parse(readFileSync(cacheFile, 'utf8')) : null;
   // caches written before transactionHash was kept are refetched once from fromBlock so /proof gets every commit tx
-  if (!cache || cache.logs.some((l) => l.eventName === 'Committed' && !l.transactionHash)) cache = { lastBlock: String(BigInt(fromBlock) - 1n), logs: [], blockTimes: cache?.blockTimes ?? {} };
+  // v2: caches built from a single provider may miss logs (publicnode returned empty lists), so they are refetched once
+  if (!cache || cache.v !== 2 || cache.logs.some((l) => l.eventName === 'Committed' && !l.transactionHash)) cache = { v: 2, lastBlock: String(BigInt(fromBlock) - 1n), logs: [], blockTimes: cache?.blockTimes ?? {} };
   const head = await pub.getBlockNumber();
   let span = 5000n;
   for (let from = BigInt(cache.lastBlock) + 1n; from <= head; ) {
