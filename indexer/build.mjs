@@ -52,8 +52,13 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
   const cacheFile = `${dir}/logs_cache.json`;
   let cache = existsSync(cacheFile) ? JSON.parse(readFileSync(cacheFile, 'utf8')) : null;
   // caches written before transactionHash was kept are refetched once from fromBlock so /proof gets every commit tx
-  // v2: caches built from a single provider may miss logs (publicnode returned empty lists), so they are refetched once
-  if (!cache || cache.v !== 2 || cache.logs.some((l) => l.eventName === 'Committed' && !l.transactionHash)) cache = { v: 2, lastBlock: String(BigInt(fromBlock) - 1n), logs: [], blockTimes: cache?.blockTimes ?? {} };
+  // v2: caches built from a single provider may miss logs (publicnode returned empty lists), so the range is rescanned
+  // once and merged with what the cache already holds: a rescan can add logs, never drop them
+  if (!cache || cache.v !== 2 || cache.logs.some((l) => l.eventName === 'Committed' && !l.transactionHash)) {
+    const keep = (cache?.logs ?? []).filter((l) => l.transactionHash);
+    cache = { v: 2, lastBlock: String(BigInt(fromBlock) - 1n), logs: keep, blockTimes: cache?.blockTimes ?? {} };
+  }
+  const seenLog = new Set(cache.logs.map((l) => `${l.transactionHash}:${l.logIndex}`));
   const head = await pub.getBlockNumber();
   let span = 5000n;
   for (let from = BigInt(cache.lastBlock) + 1n; from <= head; ) {
@@ -65,10 +70,11 @@ export async function buildSnapshot({ network = 'testnet', ledger, fromBlock, ab
       if (span > 50n && /limit|range|exceed/i.test(e.shortMessage || e.message)) { span /= 2n; continue; }
       throw e;
     }
-    for (const l of got) cache.logs.push(JSON.parse(JSON.stringify({ eventName: l.eventName, blockNumber: l.blockNumber, logIndex: l.logIndex, transactionHash: l.transactionHash, args: l.args }, big)));
+    for (const l of got) if (!seenLog.has(`${l.transactionHash}:${l.logIndex}`)) seenLog.add(`${l.transactionHash}:${l.logIndex}`), cache.logs.push(JSON.parse(JSON.stringify({ eventName: l.eventName, blockNumber: l.blockNumber, logIndex: l.logIndex, transactionHash: l.transactionHash, args: l.args }, big)));
     cache.lastBlock = String(to);
     from = to + 1n;
   }
+  cache.logs.sort((a, b) => Number(BigInt(a.blockNumber) - BigInt(b.blockNumber)) || a.logIndex - b.logIndex); // merged logs replay in chain order
   const needTime = cache.logs.filter((l) => ['Committed', 'Revealed', 'Scored', 'Forfeited', 'BaselineSet'].includes(l.eventName));
   for (const l of needTime) cache.blockTimes[l.blockNumber] ??= String((await pub.getBlock({ blockNumber: BigInt(l.blockNumber) })).timestamp);
   writeFileSync(cacheFile, JSON.stringify(cache));

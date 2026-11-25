@@ -11,7 +11,12 @@ test('a provider that silently returns nothing cannot hide a log another provide
   assert.deepEqual(await get({}), [log('0xb', 1, 1n), log('0xa', 0, 2n)]);
 });
 
-test('a required provider error is thrown (so range errors halve the span); an optional one is ignored', async () => {
-  await assert.rejects(unionLogs([ok([]), fail('block range limit')])({}), /range limit/);
-  assert.deepEqual(await unionLogs([ok([log('0xa', 0)])], [fail('down')])({}), [log('0xa', 0)]);
+test('a range error from anyone is thrown so the caller halves the span', async () => {
+  await assert.rejects(unionLogs([ok([])], [fail('block range limit')])({}), /range limit/);
+});
+
+test('one keyed provider down is tolerated; only the public provider answering is not', async () => {
+  assert.deepEqual(await unionLogs([fail('down'), ok([log('0xa', 0)])], [])({}), [log('0xa', 0)]);
+  await assert.rejects(unionLogs([fail('key down')], [ok([])])({}), /key down/);
+  assert.deepEqual(await unionLogs([], [ok([log('0xa', 0)])])({}), [log('0xa', 0)]); // no keyed RPC configured
 });
