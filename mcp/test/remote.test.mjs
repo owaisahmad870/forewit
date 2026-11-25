@@ -30,9 +30,9 @@ test('remote server', async (t) => {
   const client = await connect(createRemoteServer({ data: dir }));
   t.after(() => { restore(); rmSync(dir, { recursive: true, force: true }); });
 
-  await t.test('lists the ten read only tools with strict inputs and output schemas', async () => {
+  await t.test('lists the eleven read only tools with strict inputs and output schemas', async () => {
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((x) => x.name).sort(), ['explain_scoring', 'get_baseline', 'get_crowd', 'get_current_round', 'get_leaderboard', 'get_markets', 'get_my_status', 'get_question', 'get_round', 'get_upcoming']);
+    assert.deepEqual(tools.map((x) => x.name).sort(), ['explain_scoring', 'get_baseline', 'get_crowd', 'get_current_round', 'get_leaderboard', 'get_markets', 'get_my_status', 'get_question', 'get_round', 'get_started', 'get_upcoming']);
     for (const x of tools) {
       assert.equal(x.annotations.readOnlyHint, true, x.name);
       assert.equal(x.inputSchema.additionalProperties, false, x.name);
@@ -140,6 +140,13 @@ test('remote server', async (t) => {
     assert.ok(['beat', 'behind', 'level', 'scored'].includes(r1.verdict) && r1.says.length > 10);
     const op = await call(client, 'get_my_status', { address: OP });
     assert.equal(op.data.leaderboard, null);
+  });
+
+  await t.test('get_started gives the three step path with the exact install lines', async () => {
+    const { data } = await call(client, 'get_started');
+    assert.equal(data.steps.length, 3);
+    assert.equal(data.steps[1].command, 'npx skills add owaisahmad870/forewit --skill forewit');
+    assert.match(data.why_this_connector_cannot_send, /own machine/);
   });
 
   await t.test('get_upcoming lists open rounds and the next daily open', async () => {

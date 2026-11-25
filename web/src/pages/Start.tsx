@@ -13,6 +13,7 @@ type Block = Parameters<typeof Blocks>[0]['blocks'][number];
 // 1.12.0 help lists (checked by src/test/start.test.tsx). The easy way is the npm package's guided start (forewit start);
 // the manual path runs the same CLI from the repository.
 const ROUND_FILE = 'web/public/data/rounds/1.json';
+export const SKILL_COMMANDS = ['npx skills add binance/binance-skills-hub --skill binance-agentic-wallet', 'npx skills add owaisahmad870/forewit --skill forewit'];
 export const QUICK_COMMAND = 'npx forewit@latest start';
 export const QUICK_COMMAND_WINDOWS = 'npx.cmd forewit@latest start';
 export const START_COMMANDS: string[][] = [
@@ -46,7 +47,15 @@ export function Start() {
     <article className="space-y-5">
       <h1 className="text-2xl font-semibold">{t('start.title')}</h1>
       <p className="max-w-[68ch]">{t('start.intro')}</p>
-      <section aria-labelledby="quick-h" className="max-w-[68ch] rounded-lg border border-accent bg-surface p-4">
+      <section aria-labelledby="skill-h" className="max-w-[68ch] rounded-lg border border-accent bg-surface p-4">
+        <h2 id="skill-h" className="mb-2 text-lg font-semibold">{t('start.skill.title')}</h2>
+        <p>{t('start.skill.intro')}</p>
+        <ol className="mt-3 list-decimal space-y-2 pl-5">
+          {raw<string[]>('start.skill.steps').map((x, i) => <li key={i}>{x}{i < 2 && <CopyBlock text={SKILL_COMMANDS[i]} />}</li>)}
+        </ol>
+        <p className="mt-3 text-sm text-muted">{t('start.skill.connector')}</p>
+      </section>
+      <section aria-labelledby="quick-h" className="max-w-[68ch] rounded-lg border border-line bg-surface p-4">
         <h2 id="quick-h" className="mb-2 text-lg font-semibold">{t('start.quick.title')}</h2>
         <ol className="list-decimal space-y-2 pl-5">{raw<string[]>('start.quick.steps').map((x, i) => <li key={i}>{x}</li>)}</ol>
         <CopyBlock text={QUICK_COMMAND} />

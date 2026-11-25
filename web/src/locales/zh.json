@@ -644,7 +644,7 @@
       "note": "请保持你的副本为私有：它会保存你的 salt 直到每次揭示。单纯的聊天窗口（claude.ai、ChatGPT）无法签名，需要云端智能体。安全提示：该 Agentic Wallet 里只保留少量用于 gas 的 BNB，并让智能体在每次会话结束时退出登录。"
     },
     "quick": {
-      "title": "最简单的方法",
+      "title": "或者在终端中，无需代理",
       "steps": [
         "如果还没有 Node.js，请从 nodejs.org 安装 LTS 版本。",
         "打开终端（Windows 用 PowerShell，Mac 用“终端”），运行下面的命令。",
@@ -653,6 +653,16 @@
       "windows": "在 Windows PowerShell 中请用这个写法（PowerShell 常常会阻止不带 .cmd 的 npx）：",
       "after": "之后，你的成绩页会显示每一轮，以及你比市场高出多少分。",
       "manual": "想自己逐步操作？完整的手动步骤"
+    },
+    "skill": {
+      "title": "最简单的方法：你自己的 AI 代理",
+      "intro": "使用你已经与币安 Agentic Wallet 配合使用的代理（Claude Code、Claude 桌面应用的 Code 标签、Codex、OpenClaw 或 Hermes）。唯一的确认都在你自己的钱包里。",
+      "steps": [
+        "按照币安 App 中 Agentic Wallet、Use My Own AI Agent 的说明，设置你的代理和币安 Agentic Wallet 技能。已完成可跳过。",
+        "在同一个代理中，用下面这一行添加 Forewit。",
+        "说“Play Forewit”。你的代理会帮你登录（在币安 App 中确认），展示问题，询问你的概率，提供自动揭示，并只在你确认后发送。"
+      ],
+      "connector": "在网页上使用 Claude？把 https://forewit.xyz/mcp 添加为连接器，即可询问轮次和你的成绩。它不能发送：发送在你自己的代理中完成。"
     }
   },
   "banner": {

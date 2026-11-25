@@ -643,7 +643,7 @@
       "note": "Keep your copy private: it stores your salts until each reveal. A chat window alone (claude.ai, ChatGPT) cannot sign; it needs the cloud agent. For safety: keep only a little BNB for gas in that Agentic Wallet, and let the agent sign out at the end of every session."
     },
     "quick": {
-      "title": "The easy way",
+      "title": "Or in a terminal, with no agent",
       "steps": [
         "Install Node.js (the LTS version) from nodejs.org if you do not have it yet.",
         "Open a terminal (Windows: PowerShell; Mac: Terminal) and run the command below.",
@@ -652,6 +652,16 @@
       "windows": "On Windows PowerShell use this form (PowerShell often blocks npx without .cmd):",
       "after": "Afterwards your results card shows every round and by how many points you beat the market.",
       "manual": "Prefer to run each step yourself? The full manual path"
+    },
+    "skill": {
+      "title": "The easiest way: your own AI agent",
+      "intro": "Use the agent you already use with your Binance Agentic Wallet (Claude Code, the Code tab of the Claude desktop app, Codex, OpenClaw or Hermes). Your only approvals are in your own wallet.",
+      "steps": [
+        "Set up your agent and the Binance Agentic Wallet skill, as the Binance App shows under Agentic Wallet, Use My Own AI Agent. Skip this if you already did.",
+        "In that same agent, add Forewit with the one line below.",
+        "Say \"Play Forewit\". Your agent signs you in (you approve in the Binance App), shows the questions, asks your chances, offers auto reveal, and sends only after your yes."
+      ],
+      "connector": "Using Claude on the web? Add https://forewit.xyz/mcp as a connector to ask about rounds and your results. It cannot send: sending happens in your own agent."
     }
   },
   "banner": {

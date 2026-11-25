@@ -18,6 +18,31 @@ import SCORING from '../vendor/scoring.json' with { type: 'json' }; // a static 
 
 
 export const DEFAULT_DATA = 'https://forewit.xyz/data/';
+
+// get_started: the same short path as the site's Start page and the Binance App's "Use My Own AI Agent" screen
+const START = {
+  en: {
+    summary: 'You play from the AI agent you use with your Binance Agentic Wallet (Claude Code, the Code tab of the Claude desktop app, Codex, OpenClaw or Hermes). Three steps; the only approvals are in your own wallet.',
+    steps: [
+      { step: 1, do: 'Set up your agent and the Binance Agentic Wallet skill, as the Binance App shows under Agentic Wallet, Use My Own AI Agent. Skip this if you already did.', command: 'npx skills add binance/binance-skills-hub --skill binance-agentic-wallet' },
+      { step: 2, do: 'In that same agent, add Forewit with one line.', command: 'npx skills add owaisahmad870/forewit --skill forewit' },
+      { step: 3, do: 'Say "Play Forewit". Your agent signs you in to your wallet (you approve in the Binance App), shows the round, asks your chance for each question, offers auto reveal (say yes), shows the wallet preview and sends only after your yes.', command: null },
+    ],
+    why_this_connector_cannot_send: 'The Binance Agentic Wallet signs only through an agent on your own machine or sandbox, and the hackathon rules forbid any server holding your wallet session. This connector reads rounds, markets and your results; sending happens in your own agent.',
+    after: 'With auto reveal there is no second step. When the questions settle, ask here "how did I do?" or open https://forewit.xyz/#/me. On a computer without an agent, the command npx forewit@latest start does all of it in a terminal.',
+  },
+  zh: {
+    summary: '你在与币安 Agentic Wallet 配合使用的 AI 代理中参与（Claude Code、Claude 桌面应用的 Code 标签、Codex、OpenClaw 或 Hermes）。共三步；唯一的确认都在你自己的钱包里。',
+    steps: [
+      { step: 1, do: '按照币安 App 中 Agentic Wallet、Use My Own AI Agent 的说明，设置你的代理和币安 Agentic Wallet 技能。已完成可跳过。', command: 'npx skills add binance/binance-skills-hub --skill binance-agentic-wallet' },
+      { step: 2, do: '在同一个代理中，用一行命令添加 Forewit。', command: 'npx skills add owaisahmad870/forewit --skill forewit' },
+      { step: 3, do: '说“Play Forewit”。你的代理会帮你登录钱包（在币安 App 中确认），展示本轮问题，询问你对每个问题的概率，提供自动揭示（选是），展示钱包预览，并只在你确认后发送。', command: null },
+    ],
+    why_this_connector_cannot_send: '币安 Agentic Wallet 只能通过你自己设备或沙盒中的代理签名，黑客松规则也禁止任何服务器持有你的钱包会话。此连接器读取轮次、市场和你的成绩；发送在你自己的代理中完成。',
+    after: '开启自动揭示后无需第二步。问题结算后，在这里问“我表现如何？”或打开 https://forewit.xyz/#/me。在没有代理的电脑上，命令 npx forewit@latest start 可在终端中完成全部步骤。',
+  },
+};
+
 const DATA_TTL_MS = 60_000;
 const CHAIN_TTL_MS = 30_000;
 const MAX_JSON = 4 << 20;
@@ -236,7 +261,7 @@ function flattenBlocks(blocks) {
   return blocks.flatMap((b) => (typeof b === 'string' ? [b] : b.h ? [b.h] : b.strong ? [b.strong] : b.list ?? b.ol ?? []));
 }
 
-/** One McpServer with the ten read only tools. `data` is an https base URL or a local folder of published JSON. */
+/** One McpServer with the eleven read only tools. `data` is an https base URL or a local folder of published JSON. */
 export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_DATA } = {}) {
   const server = new McpServer({ name: 'forewit', version: VERSION, title: 'Forewit (read only)' });
   const tool = (name, config, fn) =>
@@ -433,6 +458,18 @@ export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_
       markets: list.map((m) => ({ id: String(m.id), untrusted_question: cleanText(m.question || m.title), yes_pct: m.yesPct ?? null, in_round: !!m.inRound })),
     });
   });
+
+  tool('get_started', {
+    title: 'How to start playing',
+    description: 'The shortest way for a person to start playing Forewit, in plain words: the agent they use with their Binance Agentic Wallet, one line that adds Forewit, then "Play Forewit". Use it when someone asks how to play, how to commit, or why this connector cannot send. Show the steps and commands exactly.',
+    inputSchema: { lang: z.enum(['en', 'zh']).optional() },
+    outputSchema: {
+      summary: z.string(),
+      steps: z.array(z.object({ step: z.number().int(), do: z.string(), command: z.string().nullable() })),
+      why_this_connector_cannot_send: z.string(),
+      after: z.string(),
+    },
+  }, async ({ lang = 'en' }) => ok(START[lang]));
 
   tool('explain_scoring', {
     title: 'Scoring rules',
