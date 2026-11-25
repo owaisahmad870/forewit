@@ -339,8 +339,12 @@ async function autoReveal(r, round) {
   if (!latest.isSealed && now > t - 30 * 60 && now < t + 120) return log(`auto reveal round ${r}: paused near the round deadline (baseline window)`);
   const file = `keeper/state/autoreveal_${NET.chain.id}_${r}.json`;
   const st = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
-  const logs = st?.logs ?? (await commitLogsScan(r)).map((l) => ({ f: l.args.forecaster, tx: l.transactionHash, b: String(l.blockNumber), i: l.logIndex }));
-  const state = { logs, done: st?.done ?? [], lateAlerted: st?.lateAlerted ?? false };
+  // rescan at most hourly and merge, so one empty answer from the RPCs can never hide a wallet for the whole window
+  const fresh = !st || Date.now() - (st.scannedAt ?? 0) > 3600_000;
+  const scanned = fresh ? (await commitLogsScan(r)).map((l) => ({ f: l.args.forecaster, tx: l.transactionHash, b: String(l.blockNumber), i: l.logIndex })) : [];
+  const logs = [...(st?.logs ?? [])];
+  for (const l of scanned) if (!logs.some((x) => x.tx === l.tx && x.i === l.i)) logs.push(l);
+  const state = { logs, scannedAt: fresh ? Date.now() : st.scannedAt, done: st?.done ?? [], lateAlerted: st?.lateAlerted ?? false };
   const byWallet = new Map();
   for (const l of [...logs].sort((a, b) => Number(BigInt(b.b) - BigInt(a.b)) || b.i - a.i)) {
     const k = l.f.toLowerCase();
