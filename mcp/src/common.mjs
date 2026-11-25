@@ -1,8 +1,8 @@
 // Helpers shared by both Forewit MCP servers.
 import { z } from 'zod';
 
-import { createRequire } from 'node:module';
-export const VERSION = createRequire(import.meta.url)('../package.json').version; // single source: package.json
+import pkg from '../package.json' with { type: 'json' };
+export const VERSION = pkg.version; // single source: package.json (a static import, so the Workers bundle carries it)
 
 /** Wraps structured output the way MCP 2025-06-18 and later expect: structuredContent plus the same JSON as text. */
 export const ok = (data) => ({ structuredContent: data, content: [{ type: 'text', text: JSON.stringify(data) }] });
