@@ -1,6 +1,6 @@
 # Forewit MCP servers
 
-0.1.1: BSC mainnet (ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6) by default, testnet with network testnet. Published from GitHub Actions with npm provenance.
+BSC mainnet by default: daily rounds on ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6 and open forecasts on any binary Predict.fun market, any time, on OpenForecasts 0xa034D7B62d04c8c4ac57a8C62047015C00DD6404; testnet with network testnet. Published from GitHub Actions with npm provenance.
 
 Two Model Context Protocol servers for Forewit, the commit and reveal forecasting ledger for Agent ID holders on BNB Smart Chain. One npm package, `forewit`, with one bin:
 
@@ -8,9 +8,10 @@ Two Model Context Protocol servers for Forewit, the commit and reveal forecastin
 * `forewit mcp remote`: read only server over stateless Streamable HTTP, for hosting at `https://mcp.forewit.xyz/mcp`.
 * `forewit results --from <wallet>`: your results card in plain words (per round: beat or behind the market and by how many points; overall average).
 * `forewit upcoming`: rounds open now and when the next daily round opens.
-* `forewit <round|forecast|commit|reveal|status|receipt|agent|schedule>`: the Forewit CLI (same code as `agent/forewit.mjs`).
+* `forewit markets --search "<words>"` and `forewit predict --market <id> --p <chance> --auto-reveal`: forecast any binary Predict.fun market at any time, scored against its price at your commit. Needs your own free key from https://developers.predict.fun as `PREDICT_API_KEY` (Forewit never sees it). The signed in Agentic Wallet is used when `--from` is omitted.
+* `forewit <start|round|forecast|commit|reveal|status|receipt|predictions|agent|schedule>`: the Forewit CLI (same code as `agent/forewit.mjs`).
 
-Status: npm `forewit` 0.1.2 (provenance), listed in the MCP Registry as io.github.owaisahmad870/forewit. Both servers target the BSC mainnet ledger pinned in `agent/config.mjs`. The remote server is not hosted yet.
+Status: published on npm with provenance and listed in the MCP Registry as io.github.owaisahmad870/forewit. Both servers target the BSC mainnet contracts pinned in `agent/config.mjs`. The remote server is hosted at https://forewit.xyz/mcp (add it as a connector in Claude).
 
 ## Protocol and SDK
 
@@ -58,7 +59,7 @@ Run with `npx forewit mcp` (after publish) or `node mcp/bin/forewit.mjs mcp` fro
 
 Tools:
 
-* Wallet tools (run your own `baw`): `wallet_status`, `commit_forecast {probabilities_percent, round_id?, auto_reveal?}`, `reveal_forecast {round_id?}`. A send needs you to type yes in a confirmation form the client shows (MCP elicitation); the assistant cannot fill it in, and a client without forms is refused. Sign in stays with the wallet CLI (`baw auth signin`); Forewit never sees the pairing code.
+* Wallet tools (run your own `baw`): `wallet_status`, `commit_forecast {probabilities_percent, round_id?, auto_reveal?}`, `reveal_forecast {round_id?}`, `search_markets {query}` and `predict_market {market_id, percent, outcome?, auto_reveal?}` (open forecasts on any market; needs `PREDICT_API_KEY`). A send needs you to type yes in a confirmation form the client shows (MCP elicitation); the assistant cannot fill it in, and a client without forms is refused. Sign in stays with the wallet CLI (`baw auth signin`); Forewit never sees the pairing code.
 * `prepare_commit {from, probabilities_percent, round_id?, network?}`: reads the round from the ledger, refuses after the commit deadline or on a wrong question count, makes a 32 byte salt with `crypto.randomBytes`, checks the hash encoding against the ledger's `computeCommitHash` with a throwaway salt, saves the receipt to `~/.forewit/` with owner only permissions (`agent/lib/secure_file.mjs`, icacls on Windows), then returns the commit hash, calldata, `{to, value: "0", data}` and the exact `baw contract-call preview` command. The salt is not returned (`salt_returned: false`).
 * `prepare_reveal {from, round_id?, network?}`: refused before the commit deadline (chain time). After it, finds the receipt matching the onchain commit and returns the reveal calldata. That calldata contains the salt by construction; it is returned only when the salt is about to be public onchain anyway.
 * `prepare_profile {from, is_public, label?, network?}`: `setPublicProfile(bool,string)` calldata, checked against viem in the tests. Opting out always clears the name.
@@ -84,12 +85,7 @@ npm test        # builds vendor/ then runs node --test test/
 
 Recorded in `mcp/INSPECTOR.md`.
 
-## Ready for the publish step (owner approval needed, not done)
+## Releases
 
-* `npm pack` output is checked (see `INSPECTOR.md`): bin, src, vendor, README only.
-* Releases: tag vX.Y.Z matching package.json, then run the publish workflow on that tag (GitHub Actions trusted publishing with provenance; no npm token on any machine). 0.0.1 was a manual testnet preview; 0.1.1 and later target mainnet.
-* MCP Registry: needs a `server.json` and a namespace (`io.github.owaisahmad870/forewit` or a domain namespace `xyz.forewit/forewit` with DNS verification). Not created.
-* Hosting the remote server: run `node bin/forewit.mjs mcp remote` behind TLS at `mcp.forewit.xyz`, with `HOST=0.0.0.0` and a proxy rate limit.
-* Reserve the npm name `forewit` before the docs page goes live: the page tells users to run `npx forewit mcp`, and the name is unregistered today.
-* Provenance needs a public repository and a publish workflow with `id-token: write`; neither exists yet.
-* `agent/config.mjs` is copied at pack time: a package published before the mainnet ledger is pinned stays testnet only until republished.
+* Tag vX.Y.Z matching package.json; the publish workflow releases it with GitHub Actions trusted publishing and provenance (no npm token on any machine), and the MCP Registry workflow updates the listing.
+* `agent/config.mjs` is copied at pack time, so a contract address change reaches npx users only after a release.
