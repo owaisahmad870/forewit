@@ -1,4 +1,5 @@
-// Auto reveal: the commit transaction carries a time locked copy of (packed, salt) after its ABI arguments. It is
+// Auto reveal: v1 (ForecastLedger) carries the time locked copy of (packed, salt) after the commit's ABI arguments;
+// v2 (OpenForecasts) passes the same bytes as the commit's sealedCopy argument. It is
 // encrypted with tlock to a drand quicknet round that starts 60 s after the commit deadline, so nobody (Forewit
 // included) can read it while commits are open; after that anyone can decrypt it and call revealFor. The keeper does so
 // and checks the decrypted values against the onchain commit hash first. The ledger ignores trailing calldata, so the

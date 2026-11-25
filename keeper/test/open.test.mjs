@@ -1,13 +1,32 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { priceFromBook, voidReason } from '../open.mjs';
 
-process.env.OPEN_LEDGER = '0x' + '11'.repeat(20); // module load needs a ledger; nothing runs at import
-const { priceFromBook } = await import('../open.mjs');
+const CTF = '0x22DA1810B194ca018378464a58f6Ac2B10C9d244';
+const CID = '0x' + 'ab'.repeat(32);
 
-test('market price: middle of a two sided Yes book, mirrored for slot 1, refused when thin', () => {
-  const book = { bids: [[0.62, 100]], asks: [[0.66, 50]] };
+test('market price: middle of a deep two sided Yes book, mirrored for slot 1', () => {
+  const book = { bids: [[0.62, 200]], asks: [[0.66, 100]] };
   assert.deepEqual(priceFromBook(book, 0), { ok: true, bps: 6400 });
   assert.deepEqual(priceFromBook(book, 1), { ok: true, bps: 3600 });
-  assert.equal(priceFromBook({ bids: [], asks: [[0.5, 1]] }, 0).ok, false);
-  assert.match(priceFromBook({ bids: [[0.3, 1]], asks: [[0.45, 1]] }, 0).why, /spread 15 points/);
+  assert.equal(priceFromBook({ bids: [[0.55, 200]], asks: [[0.65, 200]] }, 0).ok, true); // exactly 10 points counts (integer compare)
+});
+
+test('review H1: dust orders cannot set the price; thin or wide books score on accuracy only', () => {
+  assert.match(priceFromBook({ bids: [[0.9, 1]], asks: [[0.94, 1]] }, 0).why, /less than 50 USD/);
+  assert.equal(priceFromBook({ bids: [], asks: [[0.5, 1000]] }, 0).ok, false);
+  assert.match(priceFromBook({ bids: [[0.3, 1000]], asks: [[0.45, 1000]] }, 0).why, /spread 15 points/);
+});
+
+test('void only on positive evidence', () => {
+  const f = { conditionId: CID, ctf: CTF, committedAt: 1000 };
+  const ok = { conditionId: CID, isYieldBearing: false, isNegRisk: false, tradingStatus: 'OPEN', outcomes: [{ indexSet: 1 }, { indexSet: 2 }] };
+  assert.equal(voidReason({ f, market: ok, endsAtS: 2000, readAtS: 1005, chainId: 56 }), 0);
+  assert.equal(voidReason({ f, market: null, endsAtS: NaN, readAtS: 1005, chainId: 56 }), 3); // review M1: no such market
+  assert.equal(voidReason({ f, market: { ...ok, conditionId: '0x' + 'cd'.repeat(32) }, endsAtS: 2000, readAtS: 1005, chainId: 56 }), 3);
+  assert.equal(voidReason({ f, market: { ...ok, isYieldBearing: true }, endsAtS: 2000, readAtS: 1005, chainId: 56 }), 3); // wrong CTF
+  assert.equal(voidReason({ f, market: { ...ok, outcomes: [{ indexSet: 2 }, { indexSet: 1 }] }, endsAtS: 2000, readAtS: 1005, chainId: 56 }), 3); // review M7
+  assert.equal(voidReason({ f, market: ok, endsAtS: 1000, readAtS: 1005, chainId: 56 }), 1);
+  assert.equal(voidReason({ f, market: { ...ok, tradingStatus: 'CLOSED' }, endsAtS: 2000, readAtS: 1010, chainId: 56 }), 2);
+  assert.equal(voidReason({ f, market: { ...ok, tradingStatus: 'CLOSED' }, endsAtS: 2000, readAtS: 1100, chainId: 56 }), 0); // review L2: read late, no void
 });

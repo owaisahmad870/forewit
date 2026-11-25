@@ -23,11 +23,16 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
     uint256 public constant BPS = 10_000;
     uint256 public constant MAX_BRIER = BPS * BPS;
     uint256 public constant MAX_CTFS = 4;
-    uint256 public constant MAX_SEALED = 2048;
+    uint256 public constant MAX_SEALED = 2112; // 7 header bytes plus up to 2048 bytes of time locked ciphertext
     /// @notice The keeper must post the market price within this time of the commit block (rule: 120 seconds).
     uint256 public constant BASELINE_WINDOW = 120;
-    /// @notice The keeper may void a forecast (committed after the market ended, or the book was closed) only this soon.
-    uint256 public constant VOID_WINDOW = 10 minutes;
+    /// @notice The keeper may void a forecast (committed after the market ended, or the book was closed) only this soon,
+    /// the same as the price window, so even a 5 minute market cannot be voided with hindsight (review L1).
+    uint256 public constant VOID_WINDOW = 120;
+    /// @notice Latest a forecaster may ask the reveal window to start (sealed copies open at the market end).
+    uint256 public constant MAX_REVEAL_DELAY = 120 days;
+    uint256 public constant MIN_BPS = 100;
+    uint256 public constant MAX_BPS = 9900;
     /// @notice Reveals stay open this long after the market's onchain resolution is recorded here.
     uint256 public constant REVEAL_WINDOW = 3 days;
     uint48 public constant ADMIN_TRANSFER_DELAY = 1 days;
@@ -56,6 +61,7 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
         uint8 flags; // 1 revealed, 2 scored, 4 forfeited, 8 void, 16 baseline set
         uint16 bps; // revealed probability for `slot`, in basis points
         uint16 baselineBps; // market price for `slot` at the commit, in basis points
+        uint64 revealNotBefore; // when the sealed copy opens; the reveal window never closes before 3 days after it
     }
 
     struct Stats {
@@ -89,6 +95,7 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
         uint8 slot,
         uint256 marketId,
         bytes32 commitHash,
+        uint64 revealNotBefore,
         bytes sealedCopy
     );
     event BaselineSet(bytes32 indexed key, address indexed forecaster, uint16 bps);
@@ -196,6 +203,9 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
     /// @notice Commit a hidden forecast for one outcome slot of a binary market. Once per wallet per market.
     /// @param marketId The Predict.fun market id, emitted only so the keeper can read the market price at the commit;
     /// the contract trusts only ctf and conditionId.
+    /// @param revealNotBefore When the sealed copy opens (the market end plus a margin). The reveal window closes 3 days
+    /// after the later of the onchain resolution and this time (capped at 120 days after the commit), so a market that
+    /// resolves early can never turn a sealed copy into a forfeit (review M4).
     /// @param sealedCopy The forecast and salt sealed with the drand time lock to the market's end (opt in; may be
     /// empty). Emitted so the keeper can reveal for the forecaster after resolution; nobody can read it earlier.
     function commit(
@@ -204,6 +214,7 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
         uint8 slot,
         uint256 marketId,
         bytes32 commitHash,
+        uint64 revealNotBefore,
         bytes calldata sealedCopy
     ) external whenNotPaused {
         if (commitHash == bytes32(0)) revert ZeroHash();
@@ -221,8 +232,10 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
         f.commitHash = commitHash;
         f.committedAt = uint64(block.timestamp);
         f.slot = slot;
+        uint256 cap = block.timestamp + MAX_REVEAL_DELAY;
+        f.revealNotBefore = uint64(revealNotBefore > cap ? cap : revealNotBefore);
         _stats[msg.sender].forecasts += 1;
-        emit Committed(key, msg.sender, ctf, conditionId, slot, marketId, commitHash, sealedCopy);
+        emit Committed(key, msg.sender, ctf, conditionId, slot, marketId, commitHash, f.revealNotBefore, sealedCopy);
     }
 
     /// @notice Reveal your own forecast after the market resolved onchain (finalize first).
@@ -245,7 +258,7 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
         Forecast storage f = _forecast(key, forecaster);
         if (bps > BPS) revert BadBps();
         if (block.timestamp > uint256(f.committedAt) + BASELINE_WINDOW) revert TooLate();
-        if (f.flags & (F_BASELINE | F_VOID) != 0) revert AlreadyDone();
+        if (f.flags & (F_BASELINE | F_VOID | F_REVEALED) != 0 || markets[key].resolvedAt != 0) revert AlreadyDone();
         f.baselineBps = bps;
         f.flags |= F_BASELINE;
         emit BaselineSet(key, forecaster, bps);
@@ -256,7 +269,7 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
     function voidForecast(bytes32 key, address forecaster, uint8 reason) external onlyRole(KEEPER_ROLE) {
         Forecast storage f = _forecast(key, forecaster);
         if (block.timestamp > uint256(f.committedAt) + VOID_WINDOW) revert TooLate();
-        if (f.flags & (F_VOID | F_SCORED) != 0) revert AlreadyDone();
+        if (f.flags & (F_VOID | F_SCORED | F_REVEALED) != 0 || markets[key].resolvedAt != 0) revert AlreadyDone();
         f.flags |= F_VOID;
         emit ForecastVoided(key, forecaster, reason);
     }
@@ -295,7 +308,9 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
         Forecast storage f = _forecast(key, forecaster);
         if (f.flags & (F_SCORED | F_VOID) != 0) revert AlreadyDone();
         bool revealed = f.flags & F_REVEALED != 0;
-        if (!revealed && block.timestamp <= uint256(m.resolvedAt) + REVEAL_WINDOW) revert TooEarly();
+        // a void may still land within VOID_WINDOW of the commit: never score before it closes (review L12)
+        if (block.timestamp <= uint256(f.committedAt) + VOID_WINDOW) revert TooEarly();
+        if (!revealed && block.timestamp <= _revealDeadline(m, f)) revert TooEarly();
         f.flags |= F_SCORED;
         if (m.split) {
             // a split payout is Void for everyone: marked done, never counted
@@ -330,14 +345,19 @@ contract OpenForecasts is AccessControlDefaultAdminRules, Pausable {
         if (marketKey(ctf, conditionId) != key) revert HashMismatch();
         Market storage m = markets[key];
         if (m.resolvedAt == 0) revert NotFinalized();
-        if (block.timestamp > uint256(m.resolvedAt) + REVEAL_WINDOW) revert RevealClosed();
         Forecast storage f = _forecast(key, forecaster);
+        if (block.timestamp > _revealDeadline(m, f)) revert RevealClosed();
         if (f.flags & (F_REVEALED | F_SCORED) != 0) revert AlreadyRevealed();
-        if (bps > BPS) revert BadBps();
+        if (bps < MIN_BPS || bps > MAX_BPS) revert BadBps();
         if (computeCommitHash(ctf, conditionId, f.slot, forecaster, bps, salt) != f.commitHash) revert HashMismatch();
         f.bps = bps;
         f.flags |= F_REVEALED;
         emit Revealed(key, forecaster, bps, msg.sender);
+    }
+
+    function _revealDeadline(Market storage m, Forecast storage f) internal view returns (uint256) {
+        uint256 start = m.resolvedAt > f.revealNotBefore ? m.resolvedAt : f.revealNotBefore;
+        return start + REVEAL_WINDOW;
     }
 
     function _forecast(bytes32 key, address forecaster) internal view returns (Forecast storage f) {

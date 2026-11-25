@@ -8,7 +8,7 @@ import {
 import { sealForDeadline, AR_MARGIN_S } from './autoreveal.mjs';
 
 export const OPEN_SIG = Object.freeze({
-  commit: 'commit(address,bytes32,uint8,uint256,bytes32,bytes)',
+  commit: 'commit(address,bytes32,uint8,uint256,bytes32,uint64,bytes)',
   reveal: 'reveal(bytes32,uint16,bytes32,address,bytes32)',
   revealFor: 'revealFor(bytes32,address,uint16,bytes32,address,bytes32)',
   forecasts: 'forecasts(bytes32,address)',
@@ -34,12 +34,12 @@ export function openCommitHash({ chainId, ledger, ctf, conditionId, slot, foreca
     wordUint(slot), wordAddress(forecaster), wordUint(bps), wordBytes32(salt)]);
 }
 
-/** commit(address,bytes32,uint8,uint256,bytes32,bytes): six head words, then the sealed bytes (may be empty). */
-export function openCommitCalldata({ ctf, conditionId, slot, marketId, commitHash, sealedHex = '' }) {
+/** commit(address,bytes32,uint8,uint256,bytes32,uint64,bytes): seven head words, then the sealed bytes (may be empty). */
+export function openCommitCalldata({ ctf, conditionId, slot, marketId, commitHash, revealNotBefore = 0, sealedHex = '' }) {
   const data = sealedHex.replace(/^0x/, '');
   if (!/^([0-9a-f]{2})*$/i.test(data)) throw new Error('sealed copy is not hex');
   const len = data.length / 2;
-  return encodeCall(OPEN_SIG.commit, [wordAddress(ctf), wordBytes32(conditionId), wordUint(slot), wordUint(marketId), wordBytes32(commitHash), wordUint(192), wordUint(len)])
+  return encodeCall(OPEN_SIG.commit, [wordAddress(ctf), wordBytes32(conditionId), wordUint(slot), wordUint(marketId), wordBytes32(commitHash), wordUint(revealNotBefore), wordUint(224), wordUint(len)])
     + data.padEnd(Math.ceil(len / 32) * 64, '0');
 }
 
@@ -58,7 +58,10 @@ export async function predictApi(chainId, path, { key = process.env.PREDICT_API_
   return res.json();
 }
 
-export const ctfFor = (chainId, m) => (!m.isYieldBearing ? CTFS[chainId].std : m.isNegRisk ? CTFS[chainId].ybnr : CTFS[chainId].yb);
+export const ctfFor = (chainId, m) => {
+  if (chainId === 97 && process.env.FOREWIT_TEST_CTF) return process.env.FOREWIT_TEST_CTF; // local and testnet runs only
+  return !m.isYieldBearing ? CTFS[chainId].std : m.isNegRisk ? CTFS[chainId].ybnr : CTFS[chainId].yb;
+};
 const clean = (s) => String(s ?? '').replace(/[^\x20-\x7e -￿]/g, '?').slice(0, 200);
 
 /** One market by id, with what a forecast needs: chain identifiers, the two outcomes, status and the end time. */
@@ -106,17 +109,21 @@ export async function prepareOpen({ chainId, ledger, forecaster, market, slot, b
   const salt = bytesToHex(randomBytes(32));
   const commitHash = openCommitHash({ chainId, ledger, ctf: market.ctf, conditionId: market.conditionId, slot, forecaster, bps, salt });
   let sealedHex = '';
+  let revealNotBefore = 0;
   if (autoReveal) {
-    // the copy opens just after the market ends (no end time known: 1 hour from now, still after any 5 or 15 minute market)
-    const deadline = Math.floor((market.endsAtMs ?? nowMs + 3600_000) / 1000);
+    // the copy opens just after the market ends; without a published end time it could open while the market still
+    // trades, so auto reveal is refused then (review M3)
+    if (!market.endsAtMs) throw new Error(`market ${market.marketId} publishes no end time, so auto reveal is off for it: commit without --auto-reveal and reveal yourself after it resolves`);
+    const deadline = Math.floor(market.endsAtMs / 1000);
     sealedHex = (await sealForDeadline({ packed: BigInt(bps), salt, commitDeadline: deadline })).tail;
+    revealNotBefore = deadline + AR_MARGIN_S;
   }
-  const data = openCommitCalldata({ ctf: market.ctf, conditionId: market.conditionId, slot, marketId: market.marketId, commitHash, sealedHex });
+  const data = openCommitCalldata({ ctf: market.ctf, conditionId: market.conditionId, slot, marketId: market.marketId, commitHash, revealNotBefore, sealedHex });
   const key = marketKey(market.ctf, market.conditionId);
   const receipt = {
     version: 2, kind: 'open', chainId, ledger, key, marketId: market.marketId, ctf: market.ctf, conditionId: market.conditionId,
     slot, outcome: market.outcomes[slot] ?? null, bps, salt, commitHash, forecaster, autoReveal: !!autoReveal,
-    endsAt: market.endsAtMs ? new Date(market.endsAtMs).toISOString() : null, opensAfter: autoReveal ? new Date((market.endsAtMs ?? nowMs + 3600_000) + AR_MARGIN_S * 1000).toISOString() : null,
+    endsAt: market.endsAtMs ? new Date(market.endsAtMs).toISOString() : null, opensAfter: autoReveal ? new Date(revealNotBefore * 1000).toISOString() : null,
     createdAt: new Date(nowMs).toISOString(),
   };
   return { receipt, data, key };

@@ -4,7 +4,7 @@ import { encodeFunctionData, encodeAbiParameters, keccak256, parseAbi } from 'vi
 import { openCommitHash, openCommitCalldata, openRevealCalldata, marketKey, prepareOpen, OPEN_TYPEHASH, predictApi } from '../lib/open.mjs';
 
 const ABI = parseAbi([
-  'function commit(address ctf, bytes32 conditionId, uint8 slot, uint256 marketId, bytes32 commitHash, bytes sealedCopy)',
+  'function commit(address ctf, bytes32 conditionId, uint8 slot, uint256 marketId, bytes32 commitHash, uint64 revealNotBefore, bytes sealedCopy)',
   'function reveal(bytes32 key, uint16 bps, bytes32 salt, address ctf, bytes32 conditionId)',
 ]);
 const CTF = '0x22DA1810B194ca018378464a58f6Ac2B10C9d244';
@@ -16,8 +16,8 @@ const SALT = '0x' + '11'.repeat(32);
 test('encodings match the contract ABI (viem as the reference)', () => {
   const h = '0x' + '22'.repeat(32);
   for (const sealed of ['', '46574152010003aabbcc', 'ff'.repeat(70)]) {
-    assert.equal(openCommitCalldata({ ctf: CTF, conditionId: CID, slot: 1, marketId: '4752900', commitHash: h, sealedHex: sealed }),
-      encodeFunctionData({ abi: ABI, functionName: 'commit', args: [CTF, CID, 1, 4752900n, h, sealed ? '0x' + sealed : '0x'] }));
+    assert.equal(openCommitCalldata({ ctf: CTF, conditionId: CID, slot: 1, marketId: '4752900', commitHash: h, revealNotBefore: 1800000060, sealedHex: sealed }),
+      encodeFunctionData({ abi: ABI, functionName: 'commit', args: [CTF, CID, 1, 4752900n, h, 1800000060n, sealed ? '0x' + sealed : '0x'] }));
   }
   const key = marketKey(CTF, CID);
   assert.equal(key, keccak256(encodeAbiParameters([{ type: 'address' }, { type: 'bytes32' }], [CTF, CID])));
@@ -35,6 +35,7 @@ test('prepareOpen refuses ended or closed markets and builds a receipt with the 
   await assert.rejects(prepareOpen({ chainId: 56, ledger: LEDGER, forecaster: FROM, market: { ...market, endsAtMs: Date.now() - 1 }, slot: 0, bps: 6500 }), /already ended/);
   await assert.rejects(prepareOpen({ chainId: 56, ledger: LEDGER, forecaster: FROM, market: { ...market, tradingStatus: 'CLOSED' }, slot: 0, bps: 6500 }), /not open/);
   await assert.rejects(prepareOpen({ chainId: 56, ledger: LEDGER, forecaster: FROM, market, slot: 0, bps: 50 }), /1 to 99/);
+  await assert.rejects(prepareOpen({ chainId: 56, ledger: LEDGER, forecaster: FROM, market: { ...market, endsAtMs: null }, slot: 0, bps: 6500, autoReveal: true }), /no end time/);
 });
 
 test('mainnet market data needs the user\'s own key and says where to get it', async () => {

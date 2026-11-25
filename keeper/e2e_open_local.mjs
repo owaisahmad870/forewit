@@ -41,7 +41,7 @@ say(`OpenForecasts ${ledger} (local)`);
 const endsAt = new Date(Date.now() + 120_000).toISOString();
 const market = { id: 777, title: 'Bitcoin Up or Down, next 2 minutes', question: 'Bitcoin Up or Down, next 2 minutes', conditionId: cid, isYieldBearing: false, isNegRisk: false, categorySlug: 'btc-2m', tradingStatus: 'OPEN', status: 'REGISTERED', outcomes: [{ name: 'Up', indexSet: 1 }, { name: 'Down', indexSet: 2 }] };
 const server = createServer((req, res) => {
-  const body = req.url.startsWith('/v1/markets/777/orderbook') ? { bids: [[0.55, 100]], asks: [[0.59, 80]], updateTimestampMs: Date.now() }
+  const body = req.url.startsWith('/v1/markets/777/orderbook') ? { bids: [[0.55, 200]], asks: [[0.59, 200]], updateTimestampMs: Date.now() }
     : req.url.startsWith('/v1/markets/777') ? market : req.url.startsWith('/v1/categories/btc-2m') ? { slug: 'btc-2m', title: 'Bitcoin 2 minute', endsAt, tradingSession: { closesAt: endsAt } } : null;
   res.writeHead(body ? 200 : 404, { 'content-type': 'application/json' });
   res.end(JSON.stringify({ success: !!body, data: body }));
@@ -55,13 +55,12 @@ process.env.FOREWIT_OPEN_LEDGER = ledger;
 const { openPlan } = await import(`file://${join(REPO, 'agent/forewit.mjs').replace(/\\/g, '/')}`);
 const home = mkdtempSync(join(tmpdir(), 'forewit_open_'));
 const net = { name: 'testnet', chainId: 97, ledger: '0x' + '00'.repeat(20), open: ledger, rpc: RPC, explorer: '' };
-const origCtf = (await import(`file://${join(REPO, 'agent/lib/open.mjs').replace(/\\/g, '/')}`)).CTFS;
-origCtf[97].std = ctf; // point the testnet "normal" Conditional Tokens at the mock for this run
+process.env.FOREWIT_TEST_CTF = ctf; // the mock Conditional Tokens stand in for the Predict ones on this local chain
 const plan = await openPlan({ net, from: user.address, marketId: 777, outcome: 1, percent: 70, autoReveal: true, home });
 await pub.waitForTransactionReceipt({ hash: await wallet(user).sendTransaction({ to: ledger, data: plan.data }) });
 say(`player forecast 70% Up on market 777 with auto reveal; one transaction`);
 
-const env = { ...process.env, OPEN_LEDGER: ledger, OPEN_FROM_BLOCK: '0', OPEN_NETWORK: 'testnet', OPEN_CHAIN_ID: '97', BSC_TESTNET_RPC_URL: RPC, LOGS_RPC_URL: RPC, KEEPER_PRIVATE_KEY: KEYS[1], OPEN_API_URL: API, OPEN_ONCE: '1' };
+const env = { ...process.env, FOREWIT_TEST_CTF: ctf, OPEN_LEDGER: ledger, OPEN_FROM_BLOCK: '0', OPEN_NETWORK: 'testnet', OPEN_CHAIN_ID: '97', BSC_TESTNET_RPC_URL: RPC, LOGS_RPC_URL: RPC, KEEPER_PRIVATE_KEY: KEYS[1], OPEN_API_URL: API, OPEN_ONCE: '1' };
 const W = mkdtempSync(join(tmpdir(), 'forewit_openk_'));
 // async child: the fake API lives in this process, so a blocking exec would starve it
 const keeperPass = () => new Promise((ok) => {
@@ -71,6 +70,7 @@ const keeperPass = () => new Promise((ok) => {
   c.stderr.on('data', (d) => (out += d));
   c.on('close', () => ok(out.trim().split('\n').filter((l) => l && !/beacon received/.test(l)).map((l) => '    keeper ' + l.replace(/^\S+Z /, '')).join('\n')));
 });
+await new Promise((r) => setTimeout(r, 5000)); // the keeper reads 3 blocks behind the tip
 console.log(await keeperPass());
 const key = plan.receipt.key;
 const f1 = await pub.readContract({ address: ledger, abi: art('OpenForecasts').abi, functionName: 'forecasts', args: [key, user.address] });
@@ -79,6 +79,7 @@ say(`market price recorded within seconds: ${Number(f1[5]) / 100}% (flags ${f1[3
 // the market ends and resolves Up (slot 0 gets the full payout); the drand round opens just after the end
 await new Promise((r) => setTimeout(r, Date.parse(endsAt) + 75_000 - Date.now()));
 await write(deployer, ctf, 'MockConditionalTokens', 'resolve', [cid, [1n, 0n]]);
+await new Promise((r) => setTimeout(r, 5000)); // the keeper reads 3 blocks behind the tip
 console.log(await keeperPass());
 const s = await pub.readContract({ address: ledger, abi: art('OpenForecasts').abi, functionName: 'getStats', args: [user.address] });
 const brier = 3000 ** 2, base = 4300 ** 2; // you 70% Up, market 57% Up, outcome Up

@@ -536,7 +536,7 @@ async function cmdPredict(o, io) {
   if (o.execute) await sendWithConfirmation({ net: onet, from, data, what: `forecast on market ${market.marketId}`, io });
   else printWalletSteps(onet, from, data, `forecast on market ${market.marketId}`);
   say('', receipt.autoReveal
-    ? 'Auto reveal is on: Forewit reveals after the market resolves. Nothing more to do.'
+    ? `Auto reveal is on: Forewit reveals after the market resolves. Keep the receipt: if Forewit ever cannot, reveal yourself with ${CMD} predict --reveal --market ${market.marketId} --from ${from}`
     : `After the market resolves, reveal with: ${CMD} predict --reveal --market ${market.marketId} --from ${from}`,
   `Check it any time: ${CMD} predictions --from ${from}`);
   footer();

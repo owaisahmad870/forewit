@@ -37,7 +37,7 @@ contract OpenForecastsTest is Test {
     function _commit(address who, uint8 slot, uint16 bps) internal {
         bytes32 h = of_.computeCommitHash(address(ctf), cid, slot, who, bps, salt);
         vm.prank(who);
-        of_.commit(address(ctf), cid, slot, 42, h, hex"46574152");
+        of_.commit(address(ctf), cid, slot, 42, h, 0, hex"46574152");
     }
 
     function _resolve(uint256 p0, uint256 p1) internal {
@@ -45,6 +45,7 @@ contract OpenForecastsTest is Test {
         p[0] = p0;
         p[1] = p1;
         ctf.resolve(cid, p);
+        vm.warp(block.timestamp + 121); // past the void window, so scoring is allowed
         of_.finalize(address(ctf), cid);
     }
 
@@ -89,34 +90,34 @@ contract OpenForecastsTest is Test {
         bytes32 h = of_.computeCommitHash(address(ctf), cid, 1, alice, 5000, salt);
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.AlreadyCommitted.selector);
-        of_.commit(address(ctf), cid, 1, 42, h, "");
+        of_.commit(address(ctf), cid, 1, 42, h, 0, "");
     }
 
     function test_commit_gates() public {
         bytes32 h = keccak256("h");
         vm.prank(nobody);
         vm.expectRevert(OpenForecasts.NoAgentID.selector);
-        of_.commit(address(ctf), cid, 0, 42, h, "");
+        of_.commit(address(ctf), cid, 0, 42, h, 0, "");
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(OpenForecasts.CtfNotAllowed.selector, address(0xDEAD)));
-        of_.commit(address(0xDEAD), cid, 0, 42, h, "");
+        of_.commit(address(0xDEAD), cid, 0, 42, h, 0, "");
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.BadSlot.selector);
-        of_.commit(address(ctf), cid, 2, 42, h, "");
+        of_.commit(address(ctf), cid, 2, 42, h, 0, "");
         bytes32 three = keccak256("three way");
         ctf.prepare(three, 3);
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.NotBinary.selector);
-        of_.commit(address(ctf), three, 0, 42, h, "");
+        of_.commit(address(ctf), three, 0, 42, h, 0, "");
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.SealedTooLarge.selector);
-        of_.commit(address(ctf), cid, 0, 42, h, new bytes(2049));
+        of_.commit(address(ctf), cid, 0, 42, h, 0, new bytes(2113));
         uint256[] memory p = new uint256[](2);
         p[0] = 1;
         ctf.resolve(cid, p);
         vm.prank(alice);
         vm.expectRevert(OpenForecasts.AlreadyResolved.selector); // a resolved market takes no new forecast
-        of_.commit(address(ctf), cid, 0, 42, h, "");
+        of_.commit(address(ctf), cid, 0, 42, h, 0, "");
     }
 
     function test_baseline_only_by_keeper_once_and_within_120s() public {
@@ -161,7 +162,7 @@ contract OpenForecastsTest is Test {
         ctf.prepare(c2, 2);
         bytes32 h = of_.computeCommitHash(address(ctf), c2, 0, bob, 5000, salt);
         vm.prank(bob);
-        of_.commit(address(ctf), c2, 0, 42, h, "");
+        of_.commit(address(ctf), c2, 0, 42, h, 0, "");
     }
 
     function test_unrevealed_is_a_forfeit_after_the_window() public {
@@ -201,14 +202,45 @@ contract OpenForecastsTest is Test {
         bytes32 h = keccak256("h");
         vm.prank(bob);
         vm.expectRevert();
-        of_.commit(address(ctf), cid, 0, 42, h, "");
+        of_.commit(address(ctf), cid, 0, 42, h, 0, "");
         _resolve(1, 0);
         of_.revealFor(key, alice, 8000, salt, address(ctf), cid); // reveals and scoring never pause
         of_.score(key, alice);
     }
 
+    function test_void_and_baseline_never_after_reveal_or_finalize() public {
+        _commit(alice, 0, 8000);
+        _resolve(1, 0);
+        vm.prank(keeper);
+        vm.expectRevert(); // past the window and finalized
+        of_.voidForecast(key, alice, 1);
+    }
+
+    function test_reveal_window_starts_at_the_sealed_time_when_the_market_resolves_early() public {
+        bytes32 h = of_.computeCommitHash(address(ctf), cid, 0, alice, 8000, salt);
+        vm.prank(alice);
+        of_.commit(address(ctf), cid, 0, 42, h, uint64(block.timestamp + 30 days), hex"46574152");
+        _resolve(1, 0); // resolves on day 0
+        vm.warp(block.timestamp + 10 days);
+        vm.expectRevert(OpenForecasts.TooEarly.selector); // no forfeit: the sealed copy is not open yet
+        of_.score(key, alice);
+        vm.warp(block.timestamp + 21 days); // day 31: sealed copy open, inside its 3 day window
+        of_.revealFor(key, alice, 8000, salt, address(ctf), cid);
+        of_.score(key, alice);
+        assertEq(of_.getStats(alice).forfeited, 0);
+    }
+
+    function test_reveal_rejects_probabilities_outside_1_to_99_percent() public {
+        bytes32 h = of_.computeCommitHash(address(ctf), cid, 0, alice, 10_000, salt);
+        vm.prank(alice);
+        of_.commit(address(ctf), cid, 0, 42, h, 0, "");
+        _resolve(1, 0);
+        vm.expectRevert(OpenForecasts.BadBps.selector);
+        of_.revealFor(key, alice, 10_000, salt, address(ctf), cid);
+    }
+
     function testFuzz_brier_and_skill(uint16 bps, uint16 base, bool yes) public {
-        bps = uint16(bound(bps, 0, 10_000));
+        bps = uint16(bound(bps, 100, 9900));
         base = uint16(bound(base, 0, 10_000));
         _commit(alice, 0, bps);
         vm.prank(keeper);
