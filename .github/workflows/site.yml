@@ -10,6 +10,8 @@ on:
     workflows: [keeper]
     types: [completed]
   workflow_dispatch:
+  schedule:
+    - cron: "*/20 * * * *" # fresh data from the chain every 20 minutes, not only when a keeper run ends
 
 permissions:
   contents: read
@@ -31,6 +33,19 @@ jobs:
         run: |
           git fetch --depth 1 origin keeper-state && git worktree add ../state FETCH_HEAD || exit 0
           [ -d ../state/web/public/data ] && cp -r ../state/web/public/data/. web/public/data/ || true
+          for d in keeper/archive indexer/out; do [ -d "../state/$d" ] && mkdir -p "$d" && cp -r "../state/$d/." "$d/" || true; done
+      - run: npm ci --no-audit --no-fund
+      # rebuild the snapshot from chain events now (read only, keyed RPCs merged with publicnode); on any failure the
+      # keeper's last published data above stays in place
+      - name: Fresh data from the chain
+        continue-on-error: true
+        env:
+          RPC: ${{ secrets.RPC_MAINNET_PRIMARY }}
+          LEDGER: ${{ vars.LEDGER_MAINNET }}
+          FROM: ${{ vars.INDEXER_FROM_BLOCK_MAINNET }}
+        run: |
+          [ -n "$LEDGER" ] && [ -n "$FROM" ] || exit 0
+          node indexer/publish.mjs --network mainnet --ledger "$LEDGER" --from-block "$FROM" ${RPC:+--rpc "$RPC"}
       - run: npm ci --no-audit --no-fund
         working-directory: web
       - run: npm run build
