@@ -5,7 +5,9 @@ import { fmtBrier } from '../lib/format';
 import { Headline } from './Home';
 
 type Block = Parameters<typeof Blocks>[0]['blocks'][number];
-export const DOC_SLUGS = ['how', 'scoring', 'selection', 'owner', 'security', 'agents', 'prior', 'risk', 'faq'] as const;
+export const DOC_SLUGS = ['how', 'scoring', 'owner', 'risk', 'faq'] as const;
+// old slugs keep working: security merged into owner; selection stays reachable from the round page
+const ALIAS: Record<string, string> = { security: 'owner' };
 
 export function DocsIndex() {
   const { t } = useT();
@@ -13,9 +15,7 @@ export function DocsIndex() {
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">{t('docs.title')}</h1>
       <p className="text-muted">{t('docs.intro')}</p>
-      <p className="max-w-[68ch]">{t('help.intro.docsOrder')}</p>
       <ul className="grid gap-2 sm:grid-cols-2">
-        <li><a href="#/play" className="flex min-h-11 items-center rounded-xl border border-line bg-surface p-4 font-semibold hover:border-accent">{t('play.title')}</a></li>
         {DOC_SLUGS.map((s) => (
           <li key={s}><a href={`#/docs/${s}`} className="flex min-h-11 items-center rounded-xl border border-line bg-surface p-4 font-semibold hover:border-accent">{t(`docs.pages.${s}.title`)}</a></li>
         ))}
@@ -23,15 +23,16 @@ export function DocsIndex() {
       <section aria-labelledby="glossary" className="space-y-2 pt-2">
         <h2 id="glossary" className="text-lg font-semibold">{t('help.glossary')}</h2>
         <p className="text-sm text-muted">{t('help.glossaryIntro')}</p>
-        <Explain open terms={['agentId', 'forecast', 'commit', 'salt', 'reveal', 'forfeit', 'market', 'baseline', 'brier', 'skill', 'crowd', 'calibration', 'participation', 'ranked', 'commitsOpen', 'revealWindow', 'resolving', 'scored', 'void', 'resolutionWait', 'selectionRule', 'ledger', 'ctf']} />
+        <Explain open terms={['agentId', 'forecast', 'commit', 'reveal', 'forfeit', 'market', 'baseline', 'brier', 'skill', 'crowd', 'void']} />
       </section>
       <NextLinks to={['start', 'rounds']} />
     </div>
   );
 }
 
-export function DocPage({ slug }: { slug: string }) {
+export function DocPage({ slug: asked }: { slug: string }) {
   const { t, raw } = useT();
+  const slug = ALIAS[asked] ?? asked;
   const blocks = raw<Block[] | undefined>(`docs.pages.${slug}.blocks`);
   if (!blocks) return <><p className="text-muted">{t('ui.notFound')}</p><NextLinks to={['docs']} /></>;
   // guided path: previous and next follow DOC_SLUGS, the order of the docs index
@@ -50,19 +51,6 @@ export function DocPage({ slug }: { slug: string }) {
         </nav>
       )}
       <NextLinks to={['start', 'docs']} />
-    </article>
-  );
-}
-
-export function Play() {
-  const { t, raw } = useT();
-  return (
-    <article className="space-y-4">
-      <h1 className="text-2xl font-semibold">{t('play.title')}</h1>
-      <p className="max-w-[68ch] text-muted">{t('help.intro.play')}</p>
-      <Blocks blocks={raw<Block[]>('play.blocks')} />
-      <Explain terms={['commit', 'salt', 'reveal', 'forfeit', 'baseline', 'brier', 'skill']} summary="help.whatTerms" />
-      <NextLinks to={['start', 'scoring', 'docs']} />
     </article>
   );
 }

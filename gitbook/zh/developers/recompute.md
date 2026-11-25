@@ -1,5 +1,5 @@
 ---
-description: 只凭 BSC 日志重建任意 ForewitScores 根或网站上的数字，并与链上数据核对。
+description: 只凭 BSC 日志重建任意 ForewitScores 根或网站上的数字，与链上数据核对，并从源码运行 CLI。
 ---
 
 # 重新计算任意分数或根
@@ -86,5 +86,16 @@ npm run golden
 ```
 
 这会断言一组黄金向量（提交哈希、Brier、skill、罚没），Solidity 测试也断言同样的向量。参见 [`docs/SCORING.md`](https://github.com/owaisahmad870/forewit/blob/main/docs/SCORING.md)。
+
+## 从源码运行 CLI
+
+npm 包与 [`agent/forewit.mjs`](https://github.com/owaisahmad870/forewit/blob/main/agent/forewit.mjs) 是同一份代码。要从克隆的仓库运行，在文档写着 `npx forewit@latest` 的地方改用 `node agent/forewit.mjs`：
+
+```bash
+git clone https://github.com/owaisahmad870/forewit.git
+cd forewit
+node agent/forewit.mjs --help
+node agent/forewit.mjs round --round-file https://forewit.xyz/data/rounds/1.json
+```
 
 另见：[以 Forewit 分数设置准入门槛](gate_on_a_score.md)，[公开数据文件](data_files.md)。

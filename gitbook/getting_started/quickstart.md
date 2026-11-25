@@ -1,178 +1,58 @@
 ---
-description: From an Agent ID to your first sealed forecast on BSC mainnet in about ten minutes.
+description: Make your first Forewit forecast from your computer, your AI agent or your phone.
 ---
 
-# Quickstart: your first commit
+# Quickstart
 
-## What you will have at the end
-
-* Your first forecast committed onchain, sealed so nobody can read it before the deadline.
-* A reveal receipt saved on your computer, plus a private backup of it.
-* A reminder of when to come back and reveal, or auto reveal turned on so Forewit reveals for you.
+Each day Forewit picks a few real questions. You give your chance for each one, it is sealed onchain, and later scored against the market price.
 
 Forecasting scores only. Not financial advice.
 
-It takes about ten minutes. You need the five things in [What you need](what_you_need.md) first.
+## What you need
 
-{% hint style="info" %}
-Honest limit: committing currently needs the `baw` command line wallet on a computer (Windows, macOS or Linux). From a phone, use a cloud AI agent: see [Play from your phone or any browser](play_from_phone.md).
-{% endhint %}
+* An Agent ID, claimed in the Binance App.
+* Developer Mode on: in the Binance App open Agentic Wallet, then Settings (top right icon).
+* A little BNB for gas. Every Forewit transaction has value 0.
 
-## The picture
+## Path 1: your computer
 
-You write your answer, seal it in an envelope, and post the envelope. After the deadline you open it. Read [Commit and reveal](../how_it_works/commit_and_reveal.md) for the full story.
+1. Install Node.js from [nodejs.org](https://nodejs.org) if you do not have it yet.
+2. Run `npx forewit@latest start`. On Windows PowerShell type `npx.cmd forewit@latest start`.
+3. Open the sign in link, check the pairing code in the Binance App and approve. Then type your chance from 1 to 99 for each question.
+4. Say yes to auto reveal (recommended), read the wallet preview and type `yes` to send.
 
-## The easy way: one command
+## Path 2: your AI agent
 
-```bash
-npx forewit@0.1.5 start
-```
+1. Install the Binance Agentic Wallet skill and its command line tool:
+   ```bash
+   npx skills add binance/binance-skills-hub --skill binance-agentic-wallet
+   npm install -g @binance/agentic-wallet@1.12.0
+   ```
+2. Add Forewit:
+   ```bash
+   npx skills add owaisahmad870/forewit --skill forewit
+   ```
+3. Tell your agent: "Play Forewit".
+4. Read the wallet preview it shows you, and type `yes` only if it looks right.
 
-On Windows PowerShell, which often blocks the `npx` script, type `npx.cmd forewit@0.1.5 start` instead. From the repository it is `node agent/forewit.mjs start`.
+## Path 3: your phone
 
-It walks you through five steps in plain words:
+Use a cloud AI agent in your browser: see [Play from your phone or any browser](play_from_phone.md).
 
-1. It checks for the Binance Agentic Wallet CLI and offers to install it (`@binance/agentic-wallet@1.12.0`).
-2. It signs you in: it prints a link and a pairing code, and you approve in the Binance App.
-3. It checks your Agent ID and Developer Mode, and explains the fix if one is missing.
-4. It shows today's questions one by one and asks your chance from 1 to 99 for each.
-5. It asks whether to turn on auto reveal (recommended, see [Commit and reveal](../how_it_works/commit_and_reveal.md#auto-reveal-opt-in)), then shows the wallet preview and sends only after you type `yes`.
+## Any market, any time
 
-At the end it prints your results card link, [forewit.xyz/#/me](https://forewit.xyz/#/me). The steps below do the same by hand.
+You can also forecast any two outcome market on Predict.fun, outside the daily round.
 
-## Steps
+1. Get a free key at [developers.predict.fun](https://developers.predict.fun) and set it as the environment variable `PREDICT_API_KEY`.
+2. Find a market: `npx forewit@latest markets --search "bitcoin"`
+3. Forecast it: `npx forewit@latest predict --market <id> --p 65 --auto-reveal --execute`
 
-These steps use the npm package `forewit` through `npx`, so there is nothing to clone. On Windows, if PowerShell blocks scripts, type `npx.cmd` instead of `npx` and `baw.cmd` instead of `baw`.
+A forecast counts only if it is sent before the market's last 60 seconds, and only if the market traded at least 100 USD in the last 24 hours.
 
-### 1. Check your wallet
+## After you send
 
-```bash
-baw wallet status --json
-baw wallet agent-id --json
-baw wallet settings --json
-```
+* **Reveal.** With auto reveal there is no second step: Forewit reveals for you after the deadline. Without it, reveal within 24 hours after the 23:00 UTC deadline: `npx forewit@latest reveal --execute --round <n>`
+* **Back up your receipt.** Run `npx forewit@latest receipt --show-salt` and keep the output private. Without it you cannot reveal by hand.
+* **See your score.** Open [forewit.xyz/#/me](https://forewit.xyz/#/me) and paste your wallet address.
 
-Expected result: status `CONNECTED`, your claimed Agent ID, and `devMode.enabled: true`. If any is missing, go back to [What you need](what_you_need.md).
-
-### 2. Find your wallet address
-
-```bash
-baw wallet address --json
-```
-
-Expected result: a list of addresses. Use the entry with `binanceChainId` 56. Below it is written `0xYourAgenticWallet`.
-
-### 3. Read the round
-
-First find the latest round number:
-
-```bash
-npx forewit@0.1.5 round
-```
-
-Expected result: the first line reads `Forewit round <n> on mainnet (chain 56), ledger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6`. Questions show only as numbers for now.
-
-Each round has a public round file that adds the questions in words. Replace `1` with your round number:
-
-```bash
-npx forewit@0.1.5 round --round-file https://forewit.xyz/data/rounds/1.json
-```
-
-Expected result: the round number, the commit and reveal deadlines, and each question as its event question plus label. For example:
-
-```
-Forewit round 1 on mainnet (chain 56), ledger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6
-Phase: commit open
-Commit deadline: 24 Nov 2026 23:00 UTC (in 9h 14m)
-Reveal deadline: 25 Nov 2026 23:00 UTC (in 1d 9h)
-Questions: 4
-  1. Bitcoin Up or Down on November 25?
-  ...
-  4. Highest temperature in Tokyo on November 25? · 15°C
-```
-
-The tool checks the round file against the chain and refuses on any mismatch.
-
-### 4. Check your probabilities
-
-Give one percentage per question, in order. Round 1 has 4 questions, so it takes 4 numbers.
-
-```bash
-npx forewit@0.1.5 forecast --p 60,40,50,30
-```
-
-Expected result: each question with your percentage. Nothing is saved or sent. Values below 1 or above 99 are clamped to the 1% to 99% range.
-
-### 5. Commit
-
-```bash
-npx forewit@0.1.5 commit --execute --from 0xYourAgenticWallet --p 60,40,50,30 --round-file https://forewit.xyz/data/rounds/1.json
-```
-
-Expected result, in this order:
-
-1. The tool makes a random salt and saves your reveal receipt in the `.forewit` folder in your home folder, before anything else.
-2. It checks your wallet: signed in, Agent ID claimed, Developer Mode on, no pending transaction.
-3. It shows the wallet preview: `parsedTx`, the simulation result and every risk.
-4. It asks you to type `yes`. Type it only if the preview looks right. Anything else aborts and nothing is sent.
-5. It prints `BROADCASTED` with a transaction link, or `PENDING_CONFIRMATION`.
-
-If you see `PENDING_CONFIRMATION`, approve it in the Binance App. Do not run the command again.
-
-> Screenshot placeholder: the terminal showing the commit preview and the "Type yes to send it" prompt
-
-> Screenshot placeholder: the approval screen in the Binance App for a PENDING_CONFIRMATION commit
-
-Add `--auto-reveal` to let Forewit reveal for you after the deadline. A copy of your forecast and salt rides in the commit, locked until about a minute after the commit deadline, so nobody can read it before then. Your receipt is still saved as a backup. See [Commit and reveal](../how_it_works/commit_and_reveal.md#auto-reveal-opt-in).
-
-Without `--execute` the commit command sends nothing. It still saves the receipt, and prints the `baw contract-call preview` and `execute` commands for you to run yourself.
-
-### 6. Back up your receipt
-
-```bash
-npx forewit@0.1.5 receipt --from 0xYourAgenticWallet --show-salt
-```
-
-Expected result: your receipt as JSON, including the salt. Copy it into a password manager or an offline note.
-
-{% hint style="warning" %}
-Without the salt you cannot reveal, and the round counts as a forfeit with the worst possible score. Do not share the salt or the receipt before the commit deadline: anyone holding it can read your forecast. Without `--show-salt` the salt stays hidden, so that output alone is not a backup.
-{% endhint %}
-
-### 7. Check your status
-
-```bash
-npx forewit@0.1.5 status --from 0xYourAgenticWallet
-```
-
-Expected result: `committed: yes`, `local receipt: matches the onchain commit`, and `Next: wait for the commit deadline, then reveal`.
-
-### 8. Come back to reveal
-
-{% hint style="warning" %}
-Daily rounds take commits until 23:00 UTC. The reveal window then stays open for 24 hours. Reveal from the same computer, because the salt is in your receipt there.
-{% endhint %}
-
-With auto reveal on, you do not need to come back: the Forewit keeper reveals for you and pays the gas. Check `status` about an hour after the deadline, and reveal yourself only if it still shows not revealed.
-
-Go on with [Reveal and check your score](reveal_and_score.md).
-
-## Prefer the repository?
-
-The same tool is in the repository. Clone it and use `node agent/forewit.mjs` wherever this page says `npx forewit@0.1.5`:
-
-```bash
-git clone https://github.com/owaisahmad870/forewit.git
-cd forewit
-node agent/forewit.mjs --help
-```
-
-## Prefer an AI agent?
-
-Let your own model choose the probabilities with `forewit agent`. See [forewit agent](../for_agents/forewit_agent.md).
-
-## If something goes wrong
-
-Every message the tool can print is listed in [Troubleshooting](troubleshooting.md), with a plain fix.
-
-Forecasting scores only. Not financial advice.
+A new daily round opens at about 03:00 UTC and takes forecasts until 23:00 UTC. Something wrong? See [Troubleshooting](troubleshooting.md).

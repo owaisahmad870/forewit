@@ -6,11 +6,7 @@ description: Why your forecast is sealed before the deadline, why the salt stays
 
 ## The picture: a sealed envelope
 
-Imagine writing your answers on a card, sealing it in an envelope, and pinning the envelope to a public board before the deadline. Everyone can see that you posted something, and when. Nobody can see what is inside.
-
-After the deadline you open the envelope in public. Everyone checks that the card inside is the one you sealed. You cannot swap it for a better card, because the seal would not match.
-
-That is commit and reveal:
+You seal your answers in an envelope and pin it to a public board before the deadline. Nobody sees inside. After the deadline you open it in public, and everyone checks it is the card you sealed. So nobody can copy the best forecasts or the crowd.
 
 * The envelope is the **commit hash**, posted onchain.
 * The card is your **forecast**: one probability per question.
@@ -29,76 +25,47 @@ sequenceDiagram
     Note over L: match: forecast stored and later scored
 ```
 
-## Why seal it at all
-
-If forecasts were public before the deadline, a late player could copy the best ones, or wait and copy the crowd. Sealing makes everyone decide alone, with the same information. That is what makes a track record mean something.
-
 ## What the hash binds
 
-The commit hash is computed by the contract's own `computeCommitHash`:
+The contract's own `computeCommitHash`:
 
 ```solidity
 keccak256(abi.encode(COMMIT_TYPEHASH, block.chainid, address(this), roundId, forecaster, packed, salt))
 ```
 
-So one hash fits exactly one chain, one ledger, one round, one wallet, one forecast and one salt. Nobody can reuse your commit elsewhere, and nobody can reveal a different forecast for you. Source: [ForecastLedger.sol](https://github.com/owaisahmad870/forewit/blob/main/contracts/src/ForecastLedger.sol).
+One hash fits exactly one chain, ledger, round, wallet, forecast and salt. Nobody can reuse your commit elsewhere or reveal a different forecast for you. Source: [ForecastLedger.sol](https://github.com/owaisahmad870/forewit/blob/main/contracts/src/ForecastLedger.sol).
 
-The tool checks its own hashing against the live contract before every commit, using a separate throwaway salt. Your real salt is never sent anywhere to do that check.
+## Your salt
 
-## Why the salt stays on your device
+Without a salt, anyone could hash every likely forecast and find yours. The salt is 32 random bytes, so guessing is hopeless, as long as it stays secret:
 
-Your probabilities are numbers between 1 and 99. Without a salt, anyone could try every likely forecast, hash each one, and find yours. The salt is 32 random bytes, so guessing is hopeless.
+* The tool makes the salt on your computer and saves it in a reveal receipt in the `.forewit` folder in your home folder, readable only by your account, before anything can be sent.
+* It never uploads your salt or forecast before the deadline. The one exception is auto reveal, which you turn on yourself.
+* It refuses to reveal before the commit deadline, and `receipt` hides the salt unless you add `--show-salt`.
 
-That only works while the salt is secret. So:
+Back up every receipt right after you commit, into a password manager or an offline note:
 
-* The tool makes the salt on your computer (`crypto.randomBytes(32)`).
-* It saves the salt in a reveal receipt in the `.forewit` folder in your home folder before it prints anything else. If saving fails, nothing is printed and nothing can be sent.
-* The receipt file is readable by your user account only. On Windows the tool removes every other permission and fails closed if any remains.
-* The tool never uploads your salt or your forecast before you commit. The one exception is auto reveal, which you turn on yourself: see [Auto reveal](#auto-reveal-opt-in) below. When `forewit agent` asks your AI model for probabilities, the salt does not exist yet.
-* `receipt` hides the salt unless you add `--show-salt`, so an AI agent running the tool does not see it.
-* The tool refuses to reveal before the commit deadline, so the salt is never exposed while commits are open.
+```bash
+npx forewit@0.1.5 receipt --from 0xYourAgenticWallet --show-salt
+```
 
-Details: [agent/README.md](https://github.com/owaisahmad870/forewit/blob/main/agent/README.md#how-salts-are-stored-and-protected).
-
-## What if the salt is lost
+On a new computer, save the backup as a `.json` file in the `.forewit` folder; the tool finds it by its hash. If you commit twice in a round, it picks the receipt that matches the commit onchain.
 
 {% hint style="warning" %}
-Without the salt your commit cannot be revealed, by you or anyone. A commit not revealed by the reveal deadline is a **forfeit**: every non Void question in that round counts with the worst possible Brier score (1 in probability units), and your skill for that round is measured against the market the same way.
+Without the salt your commit cannot be revealed, by you or anyone. A commit not revealed by the reveal deadline is a **forfeit**: every non Void question in that round counts with the worst possible Brier score (1 in probability units). Revealing is never worse than forfeiting.
 {% endhint %}
-
-A forfeit is always the worst result for that round. Revealing is never worse than forfeiting, whatever you forecast.
-
-To protect yourself:
-
-1. Back up every receipt right after you commit: `npx forewit@0.1.5 receipt --from 0xYourAgenticWallet --show-salt`, into a password manager or an offline note.
-2. If you change computers, save the backup as a `.json` file in the `.forewit` folder in your home folder. The tool then finds it by its hash.
-3. Come back during the reveal window. For daily rounds that is the 24 hours after the commit deadline.
-
-If you commit twice in one round, each commit keeps its own receipt. The tool picks the receipt whose hash matches the commit that is actually onchain.
-
-## Reveal for someone else: `revealFor`
-
-The contract also has `revealFor(roundId, forecaster, packed, salt)`. Anyone may call it to reveal on behalf of a forecaster, for example a helper service that you give your receipt to after the deadline.
-
-It is safe because the hash binds the forecaster's address. A third party can only submit the exact forecast you committed, for your wallet. It cannot change your answer or claim it as its own.
-
-By default the Forewit tool reveals with your own wallet through `reveal`. If you opt in to auto reveal, the Forewit keeper uses `revealFor` for you, as described next.
 
 ## Auto reveal (opt in)
 
-Think of it as a second copy of your card, sealed in an envelope with a time lock that cannot open before the deadline. You attach it to your posted envelope. When the deadline passes, the lock opens, and a helper reads the card and opens your envelope in public for you. Nobody, Forewit included, can open the time lock early.
+A second copy of your card rides along behind a time lock that nobody, Forewit included, can open before the deadline. After the deadline a helper opens it and reveals for you.
 
-How it works:
-
-* You turn it on with `--auto-reveal` on `commit`, with `auto_reveal: true` on the MCP tool `prepare_commit`, or by answering yes in `forewit start`. Without it nothing changes: the salt never leaves your computer.
-* The tool encrypts a copy of your forecast and salt with drand timelock (tlock, the drand quicknet network run by the League of Entropy) to a drand round about 60 seconds after the commit deadline.
-* That ciphertext is appended to the commit transaction's calldata, after the normal arguments. The ledger ignores trailing calldata, so the commit hash is exactly the same as without it.
-* After the deadline the Forewit keeper decrypts it, checks that it hashes to the commit stored onchain with `computeCommitHash`, and calls `revealFor`. Because the hash binds your wallet, nothing else can be revealed for you.
-* You pay no gas for the reveal and need no second step.
-* Your local receipt with the salt is still saved as a backup. If `status` still shows not revealed about an hour after the deadline, reveal yourself as usual.
+* Turn it on with `--auto-reveal` on `commit`, with `auto_reveal: true` on the MCP tool `prepare_commit`, or by answering yes in `forewit start`.
+* The tool encrypts a copy of your forecast and salt with drand timelock (tlock, the drand quicknet network run by the League of Entropy) to a drand round about 60 seconds after the commit deadline, and appends it to the commit calldata. The ledger ignores trailing calldata, so the commit hash is unchanged.
+* After the deadline the Forewit keeper decrypts it, checks it against your onchain commit with `computeCommitHash`, and calls `revealFor`. You pay no gas and need no second step. Anyone may call `revealFor(roundId, forecaster, packed, salt)`; it is safe because the hash binds your wallet, so only your exact forecast can be revealed, for you.
+* Your local receipt is still your backup. If `status` still shows not revealed about an hour after the deadline, reveal yourself.
 
 {% hint style="info" %}
-Trust assumption: drand's threshold network (the League of Entropy) does not release a round early. If a threshold of drand operators colluded, they could read forecasts before the deadline. They could not change them, because the commit hash is already onchain.
+Trust assumption: the drand network does not release a round early. A colluding threshold of drand operators could read forecasts early, but never change them, because the commit hash is already onchain.
 {% endhint %}
 
 ## Rules the contract enforces

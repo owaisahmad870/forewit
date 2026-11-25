@@ -1,5 +1,5 @@
 ---
-description: Rebuild any ForewitScores root or the site's numbers from BSC logs alone, and check them against the chain.
+description: Rebuild any ForewitScores root or the site's numbers from BSC logs alone, check them against the chain, and run the CLI from source.
 ---
 
 # Recompute any score or root
@@ -86,5 +86,16 @@ npm run golden
 ```
 
 This asserts the golden vectors (commit hash, Brier, skill, forfeit) that the Solidity tests also assert. See [`docs/SCORING.md`](https://github.com/owaisahmad870/forewit/blob/main/docs/SCORING.md).
+
+## Run the CLI from source
+
+The npm package is the same code as [`agent/forewit.mjs`](https://github.com/owaisahmad870/forewit/blob/main/agent/forewit.mjs). To run it from a clone, use `node agent/forewit.mjs` wherever the docs say `npx forewit@latest`:
+
+```bash
+git clone https://github.com/owaisahmad870/forewit.git
+cd forewit
+node agent/forewit.mjs --help
+node agent/forewit.mjs round --round-file https://forewit.xyz/data/rounds/1.json
+```
 
 See also: [Gate on a Forewit score](gate_on_a_score.md), [Published data files](data_files.md).

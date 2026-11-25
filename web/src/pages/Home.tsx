@@ -1,8 +1,7 @@
-import { CopyBlock, DateLine, Card, Badge, Explain, NextLinks, ProbRule, QuestionTitle, SampleBadge, ScoresWhen, Tabs, useNow } from '../components';
+import { Card, Badge, Explain, NextLinks, ProbRule, QuestionTitle, SampleBadge, ScoresWhen, useNow } from '../components';
 import { useT } from '../i18n';
 import { crowdVsMarket, liveRound, phase, type Dataset } from '../lib/data';
 import { fmtBrier, fmtCountdown, fmtUtc } from '../lib/format';
-import { CLI_COMMANDS, SKILL_COMMANDS } from '../commands';
 
 export function Headline({ data }: { data: Dataset }) {
   const { t } = useT();
@@ -60,13 +59,11 @@ export function Home({ data }: { data: Dataset }) {
         </p>
       </header>
 
-      <Headline data={data} />
-
       <Card>
         {!r ? <p className="text-muted">{t('home.noRound')}</p> : (
           <>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold">{t('home.liveRound')}: {t('round.title', { n: r.id })}</h2>
+              <h2 className="text-lg font-semibold">{t('home.liveRound')}</h2>
               <span className="flex gap-2"><SampleBadge show={data.manifest.sample} /><Badge tone={ph === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${ph}`)}</Badge></span>
             </div>
             {(ph === 'commit' || ph === 'reveal') && (
@@ -75,10 +72,7 @@ export function Home({ data }: { data: Dataset }) {
                 <span className="text-4xl font-semibold" role="timer" aria-live="off">{fmtCountdown((ph === 'commit' ? r.commitDeadline : r.revealDeadline).getTime() - now, t('ui.dayUnit'))}</span>
               </p>
             )}
-            <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-              <div><dt className="text-muted">{t('home.commitDeadline')}</dt><dd><DateLine d={r.commitDeadline} /></dd></div>
-              <div><dt className="text-muted">{t('home.revealDeadline')}</dt><dd><DateLine d={r.revealDeadline} /></dd></div>
-            </dl>
+            <p className="mt-2 text-sm text-muted">{t('home.picksNote')}</p>
             <ol className="mt-4 divide-y divide-line border-t border-line">
               {visible.map((q) => (
                 <li key={q.index} className="py-3">
@@ -101,6 +95,14 @@ export function Home({ data }: { data: Dataset }) {
       </Card>
 
       <Card>
+        <h2 className="text-lg font-semibold">{t('home.anyTitle')}</h2>
+        <p className="mt-2">{t('home.anyText')}</p>
+        <a href="#/start" className="mt-2 inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('home.anyLink')}</a>
+      </Card>
+
+      <Headline data={data} />
+
+      <Card>
         <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-semibold">{t('home.stats')}</h2><SampleBadge show={data.manifest.sample} /></div>
         <dl className="mt-3 grid grid-cols-2 gap-3">
           <div><dt className="text-sm text-muted">{t('home.statCommitters')}</dt><dd className="text-2xl font-semibold">{data.snapshot.metrics.distinctCommitters}</dd></div>
@@ -109,20 +111,7 @@ export function Home({ data }: { data: Dataset }) {
         <div className="mt-2"><Explain terms={['distinct', 'agentId']} /></div>
       </Card>
 
-      <Card>
-        <h2 className="text-lg font-semibold">{t('home.howTo')}</h2>
-        <div className="mt-3">
-          <Tabs
-            tabs={[
-              { id: 'aipro', label: t('home.tabAiPro'), body: <><p className="text-muted">{t('home.aiProIntro')}</p><CopyBlock text={t('home.aiProPrompt')} /></> },
-              { id: 'skill', label: t('home.tabSkill'), body: <><p className="text-muted">{t('home.skillIntro')}</p><CopyBlock text={SKILL_COMMANDS} /><p className="mt-2 text-sm text-muted">{t('home.repoPending')}</p></> },
-              { id: 'cli', label: t('home.tabCli'), body: <><p className="text-muted">{t('home.cliIntro')}</p><CopyBlock text={CLI_COMMANDS} /></> },
-            ]}
-          />
-        </div>
-        <a href="#/play" className="mt-3 inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('home.morePlay')}</a>
-      </Card>
-      <NextLinks to={['start', 'rounds', 'leaderboard', 'docs']} />
+      <NextLinks to={['start', 'rounds', 'leaderboard']} />
     </div>
   );
 }

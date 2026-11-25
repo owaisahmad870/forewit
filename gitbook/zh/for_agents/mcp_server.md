@@ -15,11 +15,6 @@ flowchart LR
   D --> E{你批准}
 ```
 
-## 完成后你将拥有
-
-* 你的助手可以为你准备提交、揭示和公开资料（profile）交易。
-* 你的盐值保存在本地磁盘。在提交截止时间之前，助手永远看不到盐值。
-
 ## 步骤
 
 1. 安装 Node 22 或更高版本（这是该包的最低要求）。
@@ -49,41 +44,15 @@ flowchart LR
 claude mcp add forewit -- npx -y forewit mcp
 ```
 
-或者在项目根目录的 `.mcp.json` 中写入：
-
-```json
-{
-  "mcpServers": {
-    "forewit": {
-      "command": "npx",
-      "args": ["-y", "forewit", "mcp"]
-    }
-  }
-}
-```
+或者把上面同样的 JSON 写入项目根目录的 `.mcp.json`。
 
 ### Cursor
 
-编辑 `~/.cursor/mcp.json`（或项目中的 `.cursor/mcp.json`）：
-
-```json
-{
-  "mcpServers": {
-    "forewit": {
-      "command": "npx",
-      "args": ["-y", "forewit", "mcp"]
-    }
-  }
-}
-```
+把同样的 JSON 写入 `~/.cursor/mcp.json`（或项目中的 `.cursor/mcp.json`）。
 
 {% hint style="info" %}
 在 Windows 上，如果客户端无法启动 `npx`，请使用 `"command": "cmd"` 并配合 `"args": ["/c", "npx", "-y", "forewit", "mcp"]`。
 {% endhint %}
-
-* `wallet_status {}`：读取本机上你自己的币安 Agentic Wallet（是否登录、Agent ID、开发者模式、BSC 地址），不做任何更改。未登录时会说明如何用钱包 CLI 本身登录：Forewit 从不接触配对码。
-* `commit_forecast {probabilities_percent, round_id?, auto_reveal?}`：从你已登录的钱包提交你自己的预测。它先保存回执，运行钱包预览，然后向**你**显示一个确认表单（MCP elicitation）。只有你在表单中输入 yes 才会发送；助手无法代填。不支持表单的客户端只会被拒绝，绝不会发送。
-* `reveal_forecast {round_id?}`：揭示的相同流程。开启自动揭示后通常不需要，除非截止一小时后状态仍显示未揭示。
 
 ## 本地工具（stdio）
 
@@ -106,6 +75,10 @@ claude mcp add forewit -- npx -y forewit mcp
   * `include_salt: true` 会附带盐值，用于你主动要求的私密备份，并且只有当列出的每个轮次都已过提交截止时间才可用。在此之前调用会被拒绝。
   * 不是有效凭证的文件会被跳过，并列在 `warnings` 中。
 
+* `wallet_status {}`：读取本机上你自己的币安 Agentic Wallet（是否登录、Agent ID、开发者模式、BSC 地址），不做任何更改。未登录时会说明如何用钱包 CLI 本身登录：Forewit 从不接触配对码。
+* `commit_forecast {probabilities_percent, round_id?, auto_reveal?}`：从你已登录的钱包提交你自己的预测。它先保存回执，运行钱包预览，然后向**你**显示一个确认表单（MCP elicitation）。只有你在表单中输入 yes 才会发送；助手无法代填。不支持表单的客户端只会被拒绝，绝不会发送。
+* `reveal_forecast {round_id?}`：揭示的相同流程。开启自动揭示后通常不需要，除非截止一小时后状态仍显示未揭示。
+
 ## 盐值规则
 
 任何人只要同时看到盐值和你的预测，就能揭示或复制你的预测。因此在提交截止时间之前，盐值永远不会进入助手的上下文：
@@ -125,9 +98,18 @@ claude mcp add forewit -- npx -y forewit mcp
 * 网络访问只限于固定的 RPC。主目录或轮次文件 URL 永远不会作为工具输入。
 * 在测试网上 `baw_can_sign_this_network` 为 false：`baw` 只在 BSC 主网上签名。
 
-## 远程只读服务器（即将推出）
+## 远程只读服务器
 
-第二个服务器 `forewit mcp remote` **已部署在 https://forewit.xyz/mcp**（无需登录，只读）。可将其添加为连接器：在 Claude 中打开 设置、连接器、添加自定义连接器，粘贴该网址。它通过 Streamable HTTP 提供只读工具：`get_current_round`、`get_round`、`get_question`、`get_baseline`、`get_crowd`、`get_leaderboard`、`get_markets`、`get_my_status`、`get_upcoming` 和 `explain_scoring`。它不能提交或签名：发送预测始终需要你自己的钱包（在电脑上运行 `npx forewit@latest start`）。`get_markets` 统计每一类当前的 Predict.fun 市场数量（事件、每日加密、几分钟或几小时的加密、体育、电竞、推文数量），并说明每类是否进入 Forewit 轮次。它不列出市场标题或价格，因为 Predict.fun 的条款不允许转发其数据：请在你自己的智能体中使用你自己的免费密钥（https://developers.predict.fun）浏览和搜索市场。`get_my_status` 还会列出你的开放预测（任意市场、任意时间），与你的轮次计入同一份记录。`get_my_status` 包含一张用简单语言写的 `results` 成绩卡：按轮次给出 "You beat the market by X points"（你比市场准 X 分）或 "The market was closer by X points"（市场比你准 X 分），并给出双方的失误分（Brier 乘以 100，0 为完全正确，100 为完全错误）；总体部分给出参与的轮次、比市场更准的次数、每题平均分，以及进入排名后的名次。Forewit 不转移任何资金。`get_upcoming` 列出当前可提交的轮次，以及下一个每日轮次的开放时间（约 UTC 03:10 开放，UTC 23:00 截止提交）。同样的成绩卡也在网站 [forewit.xyz/#/me](https://forewit.xyz/#/me) 上，命令行中可用 `npx forewit@0.1.5 results --from 0xYourAgenticWallet` 和 `npx forewit@0.1.5 upcoming`。市场文本只会放在 `untrusted_market_text` 中返回，公开资料名称只会放在 `untrusted_profile_name` 中返回。
+第二个服务器 `forewit mcp remote` **已部署在 https://forewit.xyz/mcp**（无需登录，只读）。可将其添加为连接器：在 Claude 中打开 设置、连接器、添加自定义连接器，粘贴该网址。它不能提交或签名：发送始终需要你自己的钱包（在电脑上运行 `npx forewit@latest start`）。
+
+它通过 Streamable HTTP 提供的工具：
+
+* `get_current_round`、`get_round`、`get_question`、`get_baseline`、`get_crowd`、`get_leaderboard` 和 `explain_scoring`。
+* `get_markets`：统计每一类当前的 Predict.fun 市场数量，并说明每类是否进入先见轮次。它不列出标题或价格，因为 Predict.fun 的条款不允许转发其数据；请在你自己的智能体中使用你自己的免费密钥（https://developers.predict.fun）搜索市场。
+* `get_my_status`：你的轮次、你在任意市场上的开放预测，以及一张用简单语言写的 `results` 成绩卡（"You beat the market by X points"，即你比市场准 X 分，或 "The market was closer by X points"，即市场比你准 X 分，并给出双方的失误分，即 Brier 乘以 100），与 [forewit.xyz/#/me](https://forewit.xyz/#/me) 上的成绩卡相同。
+* `get_upcoming`：当前可提交的轮次，以及下一个每日轮次的开放时间（约 UTC 03:10 开放，UTC 23:00 截止提交）。
+
+市场文本只会放在 `untrusted_market_text` 中返回，公开资料名称只会放在 `untrusted_profile_name` 中返回。
 
 ## 版本
 

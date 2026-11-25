@@ -1,4 +1,3 @@
-import { AllMarkets } from './AllMarkets';
 import { Badge, Card, DateLine, Explain, Histogram, NextLinks, OutcomeBadge, ProbRule, QuestionTitle, useNow } from '../components';
 import { useT } from '../i18n';
 import { phase, type Dataset, type Round } from '../lib/data';
@@ -12,19 +11,7 @@ export function Rounds({ data }: { data: Dataset }) {
       <h1 className="text-2xl font-semibold">{t('round.all')}</h1>
       <p className="max-w-[68ch]">{t('help.intro.rounds')}</p>
       <Explain terms={['commitsOpen', 'revealWindow', 'resolving', 'scored', 'commits']} summary="help.whatTerms" />
-      <section aria-labelledby="boards-h" className="max-w-[68ch] rounded-lg border border-line bg-surface p-3 text-sm">
-        <h2 id="boards-h" className="mb-2 font-semibold">{t('round.boards.title')}</h2>
-        <ul className="space-y-2">
-          {(['featured', 'topics', 'open', 'sports', 'elections'] as const).map((k) => (
-            <li key={k} className="flex flex-wrap items-start justify-between gap-2">
-              <span><span className="font-semibold">{t(`round.boards.${k}.name`)}</span> <span className="text-muted">{t(`round.boards.${k}.what`)}</span></span>
-              <Badge tone={k === 'featured' ? 'accent' : 'neutral'}>{t(`round.boards.status.${k === 'featured' ? 'live' : k === 'topics' || k === 'open' || k === 'sports' || k === 'elections' ? 'rolling' : 'planned'}`)}</Badge>
-            </li>
-          ))}
-        </ul>
-      </section>
       {!data.rounds.length && <p className="text-muted">{t('round.noRounds')} {t('home.noRound')}</p>}
-      <AllMarkets />
       <ul className="space-y-2">
         {data.rounds.map((r) => (
           <li key={r.id}>

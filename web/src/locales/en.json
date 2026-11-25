@@ -6,10 +6,9 @@
   "riskLocal": "",
   "nav": {
     "home": "Home",
-    "rounds": "Rounds",
+    "rounds": "Today's picks",
     "leaderboard": "Leaderboard",
     "crowd": "Agent ID Crowd",
-    "play": "How to play",
     "docs": "Docs",
     "menu": "Menu",
     "main": "Main",
@@ -41,7 +40,7 @@
     "onX": "@forewitai on X"
   },
   "phase": {
-    "commit": "Commits open",
+    "commit": "Open for forecasts",
     "reveal": "Reveal window",
     "resolving": "Waiting for resolution",
     "scored": "Scored"
@@ -53,9 +52,9 @@
     "Unresolved": "Unresolved"
   },
   "home": {
-    "liveRound": "Current round",
-    "noRound": "No round has been published yet. Rounds open daily; check back soon.",
-    "commitCloses": "Commits close in",
+    "liveRound": "Today's picks",
+    "noRound": "Today's picks are not published yet. They open daily; check back soon.",
+    "commitCloses": "Picks close in",
     "revealCloses": "Reveals close in",
     "closed": "Reveal window closed",
     "commitDeadline": "Commit deadline",
@@ -65,31 +64,25 @@
     "crowd": "Crowd",
     "priceAt": "Market prices published {t}. The baseline is the price posted onchain in the last 15 minutes before the commit deadline.",
     "noPrice": "Market prices appear at the commit deadline.",
-    "openRound": "Open round {n}",
+    "openRound": "See today's picks",
     "headline": "Agent ID Crowd vs Market",
     "headlineStat": "Brier {crowd} vs {market} over {n} questions",
     "crowdAhead": "The crowd forecast scored better than the market price on these questions.",
     "crowdBehind": "The crowd forecast has not beaten the market price on these questions.",
     "crowdEven": "The crowd forecast and the market price scored the same.",
     "headlineEmpty": "No resolved questions with revealed forecasts yet. The first comparison appears after the first round is scored.",
-    "howTo": "How to play in 2 minutes",
-    "tabAiPro": "Binance AI Pro prompt",
-    "tabSkill": "Claude Code skill",
-    "tabCli": "CLI",
-    "aiProIntro": "Paste this into Binance AI Pro, or any agent that has the Binance Agentic Wallet skill.",
-    "aiProPrompt": "Use the Forewit skill. Show me today's Forewit round: every question with its event question, option and market price. Help me think through my own probability for each one. Then prepare a commit from my Agent ID wallet, show me the full preview with risks, and wait for my explicit yes before sending anything. Remind me to reveal after the commit deadline.",
-    "skillIntro": "The skill file agent/SKILL.md teaches Claude Code the preflight checks, the round flow and the hard rules. Install it in a clone of the repository, then ask Claude to play.",
-    "cliIntro": "The zero dependency CLI (Node 26) never signs or sends anything. It prints the exact wallet commands, and you confirm each transaction yourself.",
-    "repoPending": "Source code: github.com/owaisahmad870/forewit (public, MIT).",
-    "morePlay": "Read the full guide, including Developer Mode",
     "stats": "Totals",
     "statCommitters": "Distinct forecasters",
     "statRounds": "Rounds",
-    "statCommits": "Commits in this round"
+    "statCommits": "Forecasts so far",
+    "picksNote": "Everyone forecasts the same few questions. No Predict.fun key needed.",
+    "anyTitle": "Any market, any time",
+    "anyText": "Prefer your own question? Forecast any yes or no market on Predict.fun, scored against its price at the moment you send it.",
+    "anyLink": "How to forecast any market"
   },
   "round": {
-    "title": "Round {n}",
-    "all": "All rounds",
+    "title": "Picks #{n}",
+    "all": "Daily picks",
     "kinds": {
       "daily": "Daily round",
       "long": "Long horizon round"
@@ -129,34 +122,6 @@
       "events": "Different events (one question per event)",
       "chosen": "Chosen for this round (at most 8)",
       "rule": "Read the full selection rule"
-    },
-    "boards": {
-      "title": "Boards",
-      "status": {
-        "live": "Live",
-        "rolling": "Rolling out",
-        "planned": "Planned"
-      },
-      "featured": {
-        "name": "Featured round",
-        "what": "The best 8 liquid questions that resolve soonest, one round a day. Start here."
-      },
-      "topics": {
-        "name": "Topic rounds",
-        "what": "Every other liquid market, grouped by topic and horizon (crypto, macro, tech, weather, other). Scored against the market."
-      },
-      "open": {
-        "name": "Open board",
-        "what": "Markets without a real market price. Brier score only, never counted toward skill."
-      },
-      "sports": {
-        "name": "Sports",
-        "what": "Liquid sports and esports markets, an optional board approved by the owner on 25 Nov 2026. Starts when topic rounds switch on."
-      },
-      "elections": {
-        "name": "Elections",
-        "what": "Elections and candidates, an optional board approved by the owner on 25 Nov 2026. Policy outcomes stay under macro. Starts when topic rounds switch on."
-      }
     }
   },
   "leaderboard": {
@@ -203,54 +168,6 @@
       "There is no search by name for people who have not opted in."
     ]
   },
-  "play": {
-    "title": "How to play",
-    "blocks": [
-      {
-        "h": "What you need"
-      },
-      {
-        "list": [
-          "An Agent ID, claimed in the Binance App.",
-          "The Binance Agentic Wallet with a little BNB for network gas.",
-          "Developer Mode turned on (see below)."
-        ]
-      },
-      {
-        "h": "Developer Mode"
-      },
-      "Commit and reveal are custom contract calls, and the Agentic Wallet allows those only with Developer Mode on. In the Binance App, open Agentic Wallet, then Settings (the top right icon), turn on Developer Mode, read and confirm the risk warning, and approve the signature request.",
-      {
-        "list": [
-          "Developer Mode has its own daily limit.",
-          "It lasts 7 days, and each use extends it.",
-          "Your wallet balance must be under its balance cap."
-        ]
-      },
-      {
-        "h": "You confirm every transaction"
-      },
-      "Your agent prepares each commit or reveal and shows you a preview: the parsed transaction, the simulation result and every risk flag. Nothing is sent until you say yes. If the wallet asks for approval in the Binance App, approve it there. No Forewit prompt or skill skips this step.",
-      {
-        "list": [
-          "Every transaction has value 0 and goes only to the published ledger contract. The only cost is network gas.",
-          "Forewit never asks for seed phrases, private keys, pairing codes or API secrets.",
-          "Keep your salt (the reveal receipt) private until the commit deadline. Without it you cannot reveal, and the round counts as a forfeit."
-        ]
-      },
-      {
-        "h": "One round, step by step"
-      },
-      {
-        "ol": [
-          "Before the commit deadline, your agent commits a hidden hash of your probabilities.",
-          "In the last minutes before the deadline, the market price is posted onchain as the baseline. After the deadline you reveal.",
-          "The markets resolve onchain through Predict.fun.",
-          "The contract scores you: Brier for accuracy, and skill against the market price."
-        ]
-      }
-    ]
-  },
   "docs": {
     "title": "Docs",
     "intro": "How Forewit works, how it scores, and what its owner can and cannot do.",
@@ -258,17 +175,16 @@
       "how": {
         "title": "How it works",
         "blocks": [
-          "Forewit publishes one round of real questions each day. The questions come from Predict.fun prediction markets, the markets inside Binance Wallet.",
+          "Two ways to forecast, one track record:",
           {
             "list": [
-              "Before the commit deadline, your agent sends a hidden hash of your probabilities. Nobody, including us, can read them.",
-              "In the last 15 minutes before the deadline (normally at 5 minutes), the order book mid price of each question is posted onchain in clear, once, as the baseline. The contract refuses it at any other time.",
-              "After the deadline, you reveal. The contract checks that the reveal matches your commit.",
-              "When the markets resolve onchain (Gnosis Conditional Tokens on BSC), the contract scores every forecast with the Brier rule and compares it with the baseline."
+              "Any market, any time: give your chance on any yes or no market on Predict.fun. The market price at your commit is posted onchain within 2 minutes, and you are scored against it when the market settles.",
+              "The daily round: a few featured questions each day with a fixed deadline. The market price just before the deadline is the baseline."
             ]
           },
-          "Your scores form a public track record tied to your Agent ID. An Agent ID is non transferable and limited to one per Binance user, so a track record cannot be bought, sold or faked with many wallets.",
-          "The Agent ID Crowd combines all revealed forecasts into one forecast per question. The site always shows whether it beats the market."
+          "Your forecast stays sealed, so nobody can copy it. With auto reveal on, Forewit opens it for you after the deadline or when the market ends, so there is no second step.",
+          "Scores are tied to your Agent ID. An Agent ID cannot be transferred and there is one per Binance user, so a track record cannot be bought, sold or faked with many wallets.",
+          "The Agent ID Crowd combines all revealed forecasts into one forecast per question, and the site shows whether it beats the market."
         ]
       },
       "scoring": {
@@ -276,12 +192,11 @@
         "blocks": [
           {
             "list": [
-              "Probabilities are stored in basis points, from 0 to 10000. A Yes outcome is 10000 and a No outcome is 0.",
-              "Brier = (p minus outcome) squared. This site divides it by 100,000,000, so 0 is perfect and 1 is the worst possible. Lower is better.",
-              "Baseline Brier is the same formula applied to the market price: the order book mid price posted onchain in the last 15 minutes before the commit deadline. A round without a baseline is still scored, with skill 0.",
-              "Skill = baseline Brier minus your Brier. Positive skill means you beat the market price on that question.",
-              "Void questions (a split payout, a resolution seen before the round was sealed, or a question still unresolved after the reveal deadline plus the round's resolution wait) are skipped for everyone.",
-              "A commit that is never revealed is a forfeit: every non void question counts as the worst possible Brier. Revealing is never worse than forfeiting."
+              "Brier score: (your chance minus what happened) squared, from 0 (perfect) to 1 (fully wrong). Lower is better.",
+              "Skill: the market's Brier minus yours. Above 0 means you were closer to the truth than the market.",
+              "A forecast that is never revealed counts as the worst possible score. Revealing is never worse.",
+              "Void questions (an unclear or early resolution) are skipped for everyone.",
+              "Not counted: a forecast with no reliable market price at its commit (the market's last 60 seconds, under 100 USD traded in 24 hours, or right after a price jump)."
             ]
           },
           {
@@ -289,10 +204,9 @@
           },
           {
             "list": [
-              "Score = sum of skill / (questions with a baseline + 20). The 20 pulls small samples toward zero skill.",
-              "To be ranked you need at least 5 distinct scoring days and 20 questions with a market price, with daily rounds and open forecasts counted together. Sample size and participation rate are shown next to every score.",
-              "Rank uses skill against the market, never raw Brier. Raw Brier mostly measures how easy the questions were; skill rewards only information beyond the market price.",
-              "Raw Brier and calibration are shown as diagnostics and never used for rank."
+              "Score = total skill / (questions with a market price + 20). The 20 keeps a lucky few questions from topping the board.",
+              "You are ranked after 5 scoring days and 20 questions with a market price, daily rounds and any market forecasts together.",
+              "Rank uses skill against the market, never raw Brier."
             ]
           }
         ]
@@ -315,173 +229,43 @@
         ]
       },
       "owner": {
-        "title": "Owner permissions",
+        "title": "Safety and owner permissions",
         "blocks": [
-          "ForecastLedger is non upgradeable: no proxy, no selfdestruct, no delegatecall, no payable function. It holds no funds and no tokens and asks for no approvals.",
-          {
-            "h": "Roles"
-          },
-          {
-            "list": [
-              "ROUND_MANAGER can create rounds, choosing questions by the published selection rule (docs/QUESTION_SELECTION.md) and each round's resolution wait (1 to 120 days, fixed at creation and published before any commit), and can post the baseline once per round, only in the last 15 minutes before the commit deadline.",
-              "PAUSER can pause new commits and new rounds. Pause never blocks reveal, revealFor, seal, finalize, voidStale, score or forfeit.",
-              "DEFAULT_ADMIN can grant and revoke roles. Moving the admin seat itself takes two steps with a 1 day delay, and the pauser role moves with it."
-            ]
-          },
+          "All three contracts cannot be upgraded, hold no funds and ask for no approvals. Every transaction you send has value 0.",
           {
             "h": "Nobody, including the admin, can"
           },
           {
             "list": [
-              "edit or delete commits, reveals, outcomes or scores;",
+              "edit or delete forecasts, reveals, outcomes or scores;",
               "set a market outcome (outcomes come only from the Conditional Tokens payouts onchain, or Void);",
-              "move any asset, because the contract holds none."
+              "move any asset, because the contracts hold none."
             ]
           },
           {
-            "h": "Fixed forever at deploy (immutable, no setter exists)"
+            "h": "What the operator roles can do"
           },
           {
             "list": [
-              "AGENT_ID: the Agent ID contract used for the commit gate.",
-              "The allowlist of up to 4 Conditional Tokens contracts.",
-              "MIN_COMMIT_WINDOW and MIN_REVEAL_WINDOW: the shortest commit and reveal windows a round may have. On BSC mainnet (chain 56) the constructor refuses anything below 2 hours and 12 hours, and the mainnet deploy script fails before broadcasting if the configured windows are lower. Short windows exist only on test networks for fast end to end tests.",
-              "Maximum windows (7 days each), the resolution wait bounds (1 to 120 days), MAX_QUESTIONS (16), MAX_BATCH (100) and the commit hash scheme are compile time constants."
+              "Daily round (ForecastLedger): create rounds by the published selection rule, post the market baseline once in the last 15 minutes before the deadline, and pause new commits. Pause never blocks reveal or scoring.",
+              "Any market (OpenForecasts): post the market price once, or void a forecast, only within 120 seconds of its commit; pause new commits only.",
+              "Admin: grant and revoke roles. Moving the admin seat takes two steps with a 1 day delay."
             ]
           },
           {
-            "h": "Plan after the hackathon"
-          },
-          "Move DEFAULT_ADMIN to a multisig, or renounce roles that are not essential. This will be announced before it happens."
-        ]
-      },
-      "security": {
-        "title": "Security and threat model",
-        "blocks": [
-          "The full threat model names a defence and a test for every item. The main ones:",
-          {
-            "list": [
-              "Copying others: commits are hashes over a 32 byte random salt, so nobody can read a forecast before the deadline.",
-              "Copying the market: skill is measured against the market price, so copying it scores about zero skill.",
-              "Selective reveal: an unrevealed commit is a forfeit with the worst possible Brier.",
-              "Cherry picking rounds: ranking needs 5 rounds and 20 questions, and shows participation.",
-              "Many identities: commit requires an Agent ID, one per Binance user. Residual risk: a person with two Binance accounts.",
-              "Early resolution: a question resolved before the round is sealed is Void for everyone.",
-              "Baseline manipulation: the baseline is posted in clear, once, only in the last 15 minutes before the deadline, the raw order books are archived, and the same baseline applies to everyone. Commits made after it was posted are recorded and can be flagged on the leaderboard.",
-              "Admin abuse: no upgrade path, and pause never blocks reveal or scoring.",
-              "Prompt injection: market titles and all API text are treated as untrusted data and shown as plain text.",
-              "This site: static files, read only, no wallet connection, no secrets, pinned dependencies and a strict Content Security Policy.",
-              "Leaked team key: the admin revokes the leaked keeper role on both contracts and replaces the key (effective in the next block once the admin wallet holds gas); a leak can never edit a commit, reveal, outcome or score. Every key, who holds it and the response plan are in the docs under Keys, secrets and incidents.",
-              "Found a security problem? Report it privately through GitHub security advisories on the forewit repository, not in a public issue."
-            ]
-          },
-          "Status: independent reviews of the mainnet build and of ForewitScores (with its delta review) found no open High or Medium issue; the accepted residual risks are listed in the threat model. Both contracts are live on BSC mainnet and verified on BscScan and Sourcify."
-        ]
-      },
-      "agents": {
-        "title": "Use Forewit from any agent",
-        "blocks": [
-          "Forewit ships two Model Context Protocol (MCP) servers, so any agent that speaks MCP (Claude, ChatGPT, Cursor, VS Code and others) can read rounds and prepare forecasts without custom code. Both support the MCP protocol revision of 25 November 2025; support for the 28 July 2026 revision will come when the official MCP SDK adds it.",
-          {
-            "h": "Install Forewit for your agent"
-          },
-          "One time setup, about two minutes. You need Node.js 22 or newer (nodejs.org). Your agent then reads rounds and prepares your forecast; your wallet still asks you to approve every send.",
-          {
-            "h": "Claude Code"
-          },
-          "Run this once in a terminal. Tested: Claude Code reports “forewit ✔ Connected”.",
-          {
-            "code": "claudeCode"
-          },
-          {
-            "h": "Claude Desktop"
-          },
-          {
-            "ol": [
-              "Open Claude Desktop, then Settings, Developer, Edit Config.",
-              "Paste the block below into claude_desktop_config.json and save.",
-              "Quit and reopen Claude Desktop. Ask: “What is the current Forewit round?”"
-            ]
-          },
-          {
-            "code": "mcpJson"
-          },
-          "On Windows, if Claude says it cannot start npx, use this version instead:",
-          {
-            "code": "mcpJsonWindows"
-          },
-          {
-            "h": "Cursor and other MCP apps"
-          },
-          "Most MCP apps (Cursor, VS Code, Windsurf and others) take the same mcpServers block. In Cursor: Settings, MCP, Add new server, or put the block in .cursor/mcp.json.",
-          {
-            "h": "claude.ai and ChatGPT in the browser"
-          },
-          "These only connect to an online (remote) MCP server by URL. Ours is built but not hosted yet, so this path is coming soon. Until then, use Claude Code, Claude Desktop or Cursor, or paste the prompt from the Start page into any chat and run the commands it gives you.",
-          {
-            "h": "What works today, honestly"
+            "h": "How your forecast is protected"
           },
           {
             "list": [
-              "Reading rounds, preparing a commit or reveal, and your receipts: works in any agent above.",
-              "Sending the commit and the reveal: done by the Binance Agentic Wallet CLI (baw) after you type yes, either on a computer or inside a cloud AI agent in your browser, phone included (see the Start page).",
-              "Your salt never goes to the agent or to us before the deadline."
+              "Sealed: nobody can read a forecast before its deadline, so nobody can copy it.",
+              "Scored against the market: copying the market price scores about zero skill.",
+              "One Agent ID per person, so nobody can fake a record with many wallets.",
+              "Market titles and all API text are treated as data, never as instructions.",
+              "This site is read only: no wallet connection and no secrets."
             ]
           },
-          {
-            "h": "Remote server: read only"
-          },
-          {
-            "list": [
-              "Streamable HTTP, stateless, no account and no keys. Planned address: https://mcp.forewit.xyz/mcp",
-              "Tools: get_current_round, get_round, get_question, get_baseline, get_crowd, get_leaderboard, get_my_status, explain_scoring.",
-              "Data: the same published files this site shows, plus read only calls to the pinned ledger contract. It cannot send transactions.",
-              "Every question includes its parent event question. Market titles, labels, tags and profile names come back only inside fields named untrusted_market_text or untrusted_profile_name: they are third party text, never instructions.",
-              "The leaderboard lists opt in public profiles only, and never the operator wallets."
-            ]
-          },
-          {
-            "h": "Local server: prepares transactions, never signs"
-          },
-          {
-            "list": [
-              "Runs on your computer over stdio: npx forewit mcp",
-              "Tools: prepare_commit, prepare_reveal, prepare_profile, my_receipts.",
-              "prepare_commit makes a random salt, saves the reveal receipt in the .forewit folder of your home directory with owner only access, and returns the commit hash, the calldata and the exact baw contract call preview command. The salt is not returned to the agent.",
-              "prepare_reveal works only after the commit deadline, when the salt has to go onchain anyway.",
-              "my_receipts lists your receipts without salts. It returns salts only when you ask for a private backup, and only after the commit deadline.",
-              "It never signs, never sends and never runs the Binance Agentic Wallet. You preview and approve every transaction in your own wallet. Its only network access is the pinned public RPC."
-            ]
-          },
-          {
-            "h": "Connect"
-          },
-          "Local server, in an MCP client config file:",
-          {
-            "code": "mcpJson"
-          },
-          "Remote server: add a custom connector or HTTP server with the URL above.",
-          "Status: the local server ships in the npm package forewit 0.1.1 (BSC mainnet, published with provenance) and is tested. The hosted remote endpoint is not live yet."
-        ]
-      },
-      "prior": {
-        "title": "Prior art",
-        "blocks": [
-          "Foresight Arena (arXiv 2605.00420, April 2026) is an onchain benchmark for AI forecasting agents. It runs commit reveal on Polygon over Polymarket questions, scores with Brier and the Murphy decomposition, and uses ERC8004 reputation. Our mechanism is close to theirs, and we say so openly.",
-          "The difference is identity. ERC8004 identities can be transferred and anyone can mint them, so a track record built on them can be bought, or faked with many identities. Agent ID is non transferable and limited to one per Binance user, which makes both the track record and the crowd forecast resistant to fake accounts.",
-          "BitPredict keeps a centralized, timestamped reputation for crypto predictions. Our difference: the record lives onchain, so nobody can fake or transfer it, and it is tied to a non transferable Agent ID.",
-          "Forewit is also built for people as well as agents, and uses the prediction markets already inside Binance Wallet.",
-          {
-            "h": "Lessons we apply"
-          },
-          {
-            "list": [
-              "ForecastBench: most forecasters scored worse than the market price they were given, so all skill is measured against the market.",
-              "Good Judgment Open: an improper scoring rule can be gamed, so we use only strictly proper rules.",
-              "Allora: weight the crowd by past skill.",
-              "Always show sample size, and compare forecasters with the crowd as well as the market."
-            ]
-          }
+          "Independent reviews of the mainnet contracts found no open High or Medium issue. The full owner permissions, security reviews and threat model are in the GitBook docs.",
+          "Found a security problem? Report it privately through GitHub security advisories on the forewit repository."
         ]
       },
       "risk": {
@@ -506,7 +290,7 @@
           {
             "h": "Do I need an Agent ID?"
           },
-          "Yes. On mainnet the contract accepts a commit only from a wallet that holds an Agent ID.",
+          "Yes. The contracts accept a forecast only from a wallet that holds an Agent ID.",
           {
             "h": "Does it cost anything?"
           },
@@ -514,19 +298,15 @@
           {
             "h": "What if I forget to reveal?"
           },
-          "The round counts as a forfeit: every non void question gets the worst possible Brier. Keep your reveal receipt safe.",
+          "With auto reveal on, Forewit reveals for you. Without it, the forecast counts as the worst possible score, so keep your receipt safe.",
           {
             "h": "Who can see my forecasts?"
           },
-          "Nobody before the commit deadline. Revealed forecasts are public onchain. Your name appears on the leaderboard only if you opt in.",
-          {
-            "h": "Can I look up someone else?"
-          },
-          "No. Only people who opted in are listed by name, and there is no search by name for anyone else.",
+          "Nobody before the deadline. Revealed forecasts are public onchain. Your name appears on the leaderboard only if you opt in.",
           {
             "h": "Why compare with the market?"
           },
-          "Because the market price is hard to beat. Skill shows whether a forecast added information beyond it."
+          "Because the market price is hard to beat. Skill shows whether you added information beyond it."
         ]
       }
     }
@@ -560,123 +340,60 @@
     "adminBlock": "block {n}"
   },
   "start": {
-    "title": "Start: your first forecast in three steps",
-    "intro": "About five minutes. You need a computer (Windows, Mac or Linux) and the Binance App on your phone with an Agent ID. Forewit moves no money: you only pay a tiny network fee.",
-    "preview": "Live on BSC mainnet. npx forewit runs the published npm package (with provenance); the manual path runs node agent/forewit.mjs from the repository. Both target mainnet by default.",
-    "step": "Step {n}.",
-    "shot": "Screenshot placeholder: {what}",
-    "windows": "On Windows, PowerShell may refuse with \"running scripts is disabled on this system\". Use the .cmd forms below instead (no policy change needed), and type baw.cmd wherever this page says baw.",
-    "toProof": "See your commit counted on the proof page",
-    "steps": [
-      {
-        "h": "What you need",
-        "blocks": [
-          {
-            "list": [
-              "An Agent ID, claimed in the Binance App.",
-              "Node.js 26 or newer, and git, to get the Forewit CLI from the repository.",
-              "A little BNB for network gas. Every Forewit transaction has value 0; Forewit never asks for funds and pays nothing out."
-            ]
-          }
-        ],
-        "shot": "Agent ID shown in the Binance App"
-      },
-      {
-        "h": "Install and sign in to baw",
-        "blocks": [
-          "Install baw, the Binance Agentic Wallet CLI, then check that status shows CONNECTED. If it does not, sign in: the command shows a QR code to scan with the Binance App."
-        ]
-      },
-      {
-        "h": "Turn on Developer Mode",
-        "blocks": [
-          "Commit and reveal are custom contract calls, and the Agentic Wallet allows those only with Developer Mode on. In the Binance App, open Agentic Wallet, then Settings (the top right icon), turn on Developer Mode, read and confirm the risk warning, and approve the signature request.",
-          {
-            "list": [
-              "It lasts 7 days, and each use extends it.",
-              "It has its own daily limit, and your wallet balance must be under its cap."
-            ]
-          },
-          "Then check from your terminal: agent id must show your claimed Agent ID, and settings must show Developer Mode enabled."
-        ],
-        "shot": "Developer Mode switch in Agentic Wallet settings"
-      },
-      {
-        "h": "Read the round",
-        "blocks": [
-          "The round file is the public round JSON in web/public/data/rounds of the repository (run git pull first for the latest round); it adds each event question and label and is checked against the chain. Probabilities are percentages, one per question, from 1 to 99. Round 1 has 4 questions, so it takes 4 numbers."
-        ],
-        "shot": "Round output with the questions"
-      },
-      {
-        "h": "Make your first commit",
-        "blocks": [
-          "Use the address of the binanceChainId 56 entry as your wallet. The commit command makes a random salt, saves your reveal receipt in the .forewit folder in your home folder, shows the wallet preview and sends only after you type yes. Run it in PowerShell or a normal terminal.",
-          {
-            "ol": [
-              "Read the preview: parsedTx, the simulation result and every risk. Type yes only if you agree.",
-              "If the wallet asks, approve it in the Binance App and do not send it again.",
-              "Back up the reveal receipt somewhere private. Without the salt you cannot reveal, and the round counts as a forfeit."
-            ]
-          }
-        ],
-        "shot": "The preview and the approval in the Binance App"
-      },
-      {
-        "h": "Reveal after the deadline",
-        "blocks": [
-          "After the commit deadline and before the reveal deadline, reveal from the same machine; the salt is in your receipt. Your score then joins your track record. The site shows a reveal due banner while a reveal window is open."
-        ]
-      }
-    ],
+    "title": "Start forecasting",
+    "intro": "Pick one way below. The first time takes about five minutes. Forewit moves no money: you only pay a tiny network fee.",
+    "need": {
+      "title": "What you need",
+      "list": [
+        "An Agent ID, claimed in the Binance App.",
+        "Developer Mode on: Binance App, Agentic Wallet, Settings.",
+        "A little BNB on BNB Smart Chain for network fees."
+      ]
+    },
+    "computer": {
+      "title": "On a computer",
+      "steps": [
+        "Install Node.js (the LTS version) from nodejs.org.",
+        "Open a terminal and run:",
+        "Answer its questions. You approve the sign in and each forecast in the Binance App."
+      ],
+      "windows": "On Windows PowerShell use:"
+    },
+    "agent": {
+      "title": "With your AI agent",
+      "steps": [
+        "Add the Binance Agentic Wallet skill and its wallet tool:",
+        "Add Forewit:",
+        "Say \"Play Forewit\". Your agent shows the questions, asks your chances and sends only after your yes."
+      ]
+    },
     "phone": {
-      "title": "From your phone or any browser",
-      "intro": "No computer? A cloud AI agent in your browser (Claude Code on the web) can do the typing. Your keys stay in the Binance app and your salts in your own private repository. Tested from a phone on 24 Nov 2026 up to the wallet preview.",
+      "title": "From your phone",
       "steps": [
-        "Open the template below, click Use this template, and create a Private repository.",
-        "Open claude.ai/code (or the Code tab in the Claude app) and pick your new repository.",
-        "In the environment settings, allow network access to the hosts in the first box below. For any market, also add your free Predict.fun key there as PREDICT_API_KEY.",
-        "Send the message below. Tap the sign in link it shows and approve in the Binance app.",
-        "Give your chance, read the preview, type yes. Auto reveal is on, so there is no second step. Other messages: Forecast today's Forewit round, or How did I do?"
+        "Open the template below, tap Use this template and create a Private repository.",
+        "Open claude.ai/code and pick that repository.",
+        "In its environment settings, allow the websites in the first box below. For any market, also add your Predict.fun key there as PREDICT_API_KEY.",
+        "Send the message in the second box, tap the sign in link and approve in the Binance App.",
+        "Give your chance, check the preview, type yes."
       ],
-      "cta": "Open the Forewit agent template",
-      "note": "Keep your copy private: it stores your salts until each reveal. A chat window alone (claude.ai, ChatGPT) cannot sign; it needs the cloud agent. For safety: keep only a little BNB for gas in that Agentic Wallet, and let the agent sign out at the end of every session."
-    },
-    "quick": {
-      "title": "Or in a terminal, with no agent",
-      "steps": [
-        "Install Node.js (the LTS version) from nodejs.org if you do not have it yet.",
-        "Open a terminal (Windows: PowerShell; Mac: Terminal) and run the command below.",
-        "Answer the questions it asks. You approve the sign in and the forecast on your phone in the Binance App. Turn on auto reveal when it asks, and you are done: no second step."
-      ],
-      "windows": "On Windows PowerShell use this form (PowerShell often blocks npx without .cmd):",
-      "after": "Afterwards your results card shows every round and by how many points you beat the market.",
-      "manual": "Prefer to run each step yourself? The full manual path"
-    },
-    "skill": {
-      "title": "The easiest way: your own AI agent",
-      "intro": "Use the agent you already use with your Binance Agentic Wallet (Claude Code, the Code tab of the Claude desktop app, Codex, OpenClaw or Hermes). Your only approvals are in your own wallet.",
-      "steps": [
-        "Set up your agent, then install the Binance Agentic Wallet skill and its command line wallet, baw (the two lines below), as the Binance App shows under Agentic Wallet, Use My Own AI Agent. On Windows PowerShell type npm.cmd instead of npm. Skip this if you already did.",
-        "In that same agent, add Forewit with the one line below.",
-        "Say \"Play Forewit\". Your agent signs you in (you approve in the Binance App), shows the questions, asks your chances, offers auto reveal, and sends only after your yes."
-      ],
-      "connector": "Using Claude on the web? Add https://forewit.xyz/mcp as a connector to ask about rounds and your results. It cannot send: sending happens in your own agent."
+      "cta": "Open the Forewit agent template"
     },
     "any": {
       "title": "Any market, any time",
-      "intro": "Not only the daily round: forecast any yes or no market on Predict.fun whenever you like. Forewit records the market price at your commit and scores you against it when the market settles, in the same track record.",
+      "intro": "Forecast any yes or no market on Predict.fun whenever you like. You are scored against the market price at the moment you send it.",
       "steps": [
-        "Get a free Predict.fun API key at developers.predict.fun and set it as PREDICT_API_KEY (your agent can do it). Forewit never sees it.",
-        "Find the market (or just ask your agent):",
-        "Forecast it, check the preview, say yes:"
+        "Get a free key at developers.predict.fun and set it as PREDICT_API_KEY.",
+        "Find a market:",
+        "Send your forecast:"
       ],
-      "note": "Commits in the last 60 seconds of a market, on thin markets (under 100 USD traded in 24 hours) or right after a price jump get no market price and do not count."
-    }
+      "note": "It counts when sent before the market's last 60 seconds, on a market that traded at least 100 USD in 24 hours."
+    },
+    "after": "Afterwards, see how you did:",
+    "reveal": "Turned auto reveal off? Reveal after the deadline with:"
   },
   "banner": {
-    "commit": "Round {n} is open. Commits close in",
-    "reveal": "Reveal due for round {n}. If you committed, reveal before the window closes or the round counts as a forfeit. Reveal open until {t}.",
+    "commit": "Today's picks are open. They close in",
+    "reveal": "Reveal due for picks #{n}. If you committed without auto reveal, reveal before {t} or it counts as a forfeit.",
     "revealIn": "Reveal closes in",
     "how": "How to reveal"
   },
@@ -688,21 +405,18 @@
     "glossaryIntro": "Every term and number this site uses, in plain words.",
     "go": {
       "start": "Start: make your first forecast",
-      "rounds": "See all rounds",
+      "rounds": "See all daily picks",
       "docs": "Read the docs",
       "scoring": "How scoring works",
       "leaderboard": "See the leaderboard",
-      "proof": "Check the proof",
-      "play": "How to play"
+      "proof": "Check the proof"
     },
     "intro": {
-      "home": "How it works: each day Forewit opens a round of real questions from Predict.fun prediction markets. You, or your AI agent, commit a probability for each one, hidden until the deadline, and reveal it afterwards. When the markets settle, the contract scores your forecast against the market price, and every score adds to a public track record tied to your Agent ID. Or any market, any time: forecast any yes or no Predict.fun market the moment you want, scored against its market price at your commit, in the same record.",
-      "rounds": "Each round is a small set of questions with a commit deadline and a reveal deadline. Open a round to see its questions and market prices, and after the commit deadline the revealed forecasts.",
+      "home": "Give your chance on real prediction market questions. Forewit records the market price at that moment and, once the market settles, scores whether you beat it. Every score builds a public track record tied to your Agent ID that nobody can buy or fake.",
+      "rounds": "Each day Forewit picks a few featured questions that everyone forecasts together, so the Agent ID Crowd can be compared with the market. No Predict.fun key needed. Your forecast stays sealed until the picks close, and auto reveal opens it afterwards.",
       "round": "Give a probability for each question below before the commit deadline, then reveal it before the reveal deadline. The square shows the market price, the diamond the crowd. Your score compares your forecast with the market price at the deadline.",
       "roundHidden": "Forecasts stay hidden until the commit deadline. The revealed forecasts chart and the crowd forecast appear here as people reveal.",
-      "play": "What you need, and what happens in one round. For the exact commands, follow the Start page step by step.",
-      "profile": "To appear by name, opt in with the forewit profile command of the CLI; you confirm it in your wallet like any other transaction, and the off option removes your name again.",
-      "docsOrder": "New here? Read in this order: How to play, then How it works and Scoring. The rest go deeper, and every page links to the next one at the bottom."
+      "profile": "To appear by name, opt in with the forewit profile command of the CLI; you confirm it in your wallet like any other transaction, and the off option removes your name again."
     },
     "scoresWhen": "Round {n} is scored after its reveal deadline ({t}), once its markets settle onchain. Scores appear here then.",
     "docNav": "Docs pages",
@@ -882,30 +596,5 @@
       "void": "Void: not counted",
       "forfeited": "Missed: not revealed in time, counted as a loss"
     }
-  },
-  "markets": {
-    "title": "Predict.fun markets by group",
-    "toggle": "Show market groups",
-    "intro": "How many Predict.fun markets are open in each group, and why each group is or is not in Forewit rounds. Forewit shows counts only: Predict.fun does not allow its market data to be shared further.",
-    "total": "{n} open markets right now.",
-    "g": {
-      "other": "Events",
-      "crypto_daily": "Daily crypto",
-      "crypto_short": "Crypto in minutes or hours",
-      "sports": "Sports",
-      "esports": "Esports",
-      "tweets": "Tweet counts"
-    },
-    "status": "In Forewit rounds?",
-    "why": {
-      "other": "Yes when liquid, not politics, and settling 6 to 72 hours after a round deadline.",
-      "crypto_daily": "Yes: daily crypto questions are in the daily round.",
-      "crypto_short": "No: commits stay open at least 2 hours, so a 5 or 15 minute question would settle before the deadline and count as void.",
-      "sports": "Approved for the optional sports board (25 Nov 2026): liquid markets join topic rounds once they switch on, at most 5 optional rounds a day.",
-      "esports": "Approved for the optional sports board (25 Nov 2026): liquid markets join topic rounds once they switch on, at most 5 optional rounds a day.",
-      "tweets": "Yes when liquid and settling 6 to 72 hours after a round deadline."
-    },
-    "note": "Counts from the keeper download at {t} UTC.",
-    "browse": "To browse and search markets, use your own agent with your own free Predict.fun API key from https://developers.predict.fun, then run:"
   }
 }

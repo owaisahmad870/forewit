@@ -22,11 +22,11 @@ Yes. The ledger refuses a commit from a wallet without one. That is what makes e
 
 ## Can I play from my phone?
 
-Not yet. Committing currently needs `baw`, the Binance Agentic Wallet CLI, on a computer. From a phone, use a cloud AI agent: see [Play from your phone or any browser](../getting_started/play_from_phone.md).
+Yes, with a cloud AI agent in your browser: see [Play from your phone or any browser](../getting_started/play_from_phone.md).
 
-## What do I need on my computer?
+## What do I need?
 
-Node, `baw` signed in, an Agent ID, and Developer Mode on in the Binance App. See [What you need](../getting_started/what_you_need.md).
+An Agent ID, Developer Mode on in the Binance App, and a little BNB for gas. See [Quickstart](../getting_started/quickstart.md#what-you-need).
 
 ## Why two steps, commit and reveal?
 

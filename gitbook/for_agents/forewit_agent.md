@@ -16,20 +16,9 @@ flowchart LR
   E -->|anything else| G[Nothing sent]
 ```
 
-{% hint style="info" %}
-Committing currently needs `baw` (the Binance Agentic Wallet CLI) on a computer. From a phone, use a cloud AI agent: see [Play from your phone or any browser](../getting_started/play_from_phone.md).
-{% endhint %}
-
-## What you will have at the end
-
-* A daily forecast made by the model you chose, committed onchain from your Agent ID wallet.
-* A reveal receipt saved on your computer, ready for the reveal the next day.
-* Optionally, a daily job that reveals yesterday and forecasts today in one sitting.
-
 ## Before you start
 
-* Node 26 or newer.
-* `baw` installed and signed in, an Agent ID claimed, and Developer Mode on. See [What you need](../getting_started/what_you_need.md).
+* Node 26 or newer, and `baw` signed in with an Agent ID and Developer Mode on. See [What you need](../getting_started/quickstart.md#what-you-need).
 * An API key for your model provider, or a local model server. You pay your provider directly. Forewit sees nothing.
 
 ## Steps
@@ -50,26 +39,22 @@ Committing currently needs `baw` (the Binance Agentic Wallet CLI) on a computer.
    ```bash
    npx -y forewit agent --from 0xYourAgenticWallet --env-file ~/.forewit_llm.env
    ```
-4. When you are happy, run it with `--execute` in your own interactive terminal (PowerShell or Windows Terminal on Windows):
+4. Send it with `--execute` in your own interactive terminal (PowerShell or Windows Terminal on Windows). Read the preview, then type `yes`:
    ```bash
    npx -y forewit agent --from 0xYourAgenticWallet --env-file ~/.forewit_llm.env --execute
    ```
-   Read the preview, then type `yes` to send. Anything else aborts.
 5. Back up the receipt somewhere private:
    ```bash
    npx -y forewit receipt --from 0xYourAgenticWallet --show-salt
    ```
-6. After the commit deadline (23:00 UTC for daily rounds), reveal:
+6. After the commit deadline (23:00 UTC for daily rounds), reveal the newest round you committed whose reveal window is open:
    ```bash
    npx -y forewit agent --reveal --from 0xYourAgenticWallet --execute
    ```
-   This reveals the newest round you committed whose reveal window is open.
 
 {% hint style="info" %}
-On mainnet, `agent` fetches the round file from `https://forewit.xyz/data/rounds/<round>.json`. If forewit.xyz does not load, pass `--round-file https://forewit.pages.dev/data/rounds/<round>.json`. On Windows, if PowerShell blocks `npx`, type `npx.cmd` instead. See [Troubleshooting](../getting_started/troubleshooting.md).
+If forewit.xyz does not load, pass `--round-file https://forewit.pages.dev/data/rounds/<round>.json`. Run `npx -y forewit --help` for every command and flag.
 {% endhint %}
-
-`npx -y forewit <command>` runs the same CLI as `node agent/forewit.mjs <command>` from a clone of the [repository](https://github.com/owaisahmad870/forewit).
 
 ## What goes to your model, and what never does
 
@@ -89,39 +74,11 @@ node agent/forewit.mjs schedule --from 0xYourAgenticWallet --env-file ~/.forewit
 ```
 
 * The job runs once a day at `--at HH:MM` local time (default 12:00 UTC in your local time). It runs `agent --reveal --execute`, then `agent --execute`.
-* Every commit and reveal still needs your typed yes, and the CLI refuses a piped or scripted yes. So the job opens a terminal for you:
+* Every commit and reveal still needs your typed yes, so the job opens a terminal for you:
   * Windows: a Task Scheduler task opens a console window while you are signed in. Remove it with `schtasks /Delete /F /TN "Forewit daily"`.
   * macOS: a launchd agent opens Terminal.
   * Linux: cron has no terminal, so the job only runs the read only `status`, logs it to `~/.forewit/schedule.log` and shows a desktop notice when it can. You then run the two `agent` commands yourself.
-* Run `schedule` from a clone of the repository, not from an npx cache folder, which can disappear.
-
-## All CLI commands
-
-From `node agent/forewit.mjs --help` (abridged: the line listing the `FOREWIT_LLM_*` settings is left out here; see step 1):
-
-```text
-start     The guided first run: wallet check, sign in, Agent ID, today's questions, send (start here)
-round     Show the current round (or --round N) and its questions, read from the chain
-forecast  --p 72,15,50          Validate and clamp percentages, show the packed value
-commit    --from 0x.. --p ..    Make a salt, save the reveal receipt, print the baw commit commands
-          --auto-reveal (opt in, recommended): a copy locked until just after the deadline rides in the commit,
-          and Forewit's keeper reveals it for you; without it the salt stays only on this machine
-reveal    --from 0x..           Load the saved salt, print the baw reveal commands (after the commit deadline)
-          add --execute to commit or reveal to run baw preview, review it and send after typing yes
-          (BSC mainnet only, interactive terminal only, never with a piped or scripted yes)
-status    --from 0x..           Commit, reveal and scoring status for a wallet
-profile   --from 0x.. --label name [--execute]  Opt in publicly with your Agent ID name (leaderboard, ForewitScores); --off opts out
-receipt   [--from 0x..] [--show-salt]  Print saved reveal receipts (salt only with --show-salt) so you can back them up
-agent     --from 0x.. [--env-file path] [--execute]  Your own LLM forecasts the open round, then the commit flow runs
-agent     --reveal --from 0x.. [--execute]  Reveal the newest committed round whose reveal window is open
-schedule  --from 0x.. [--env-file path] [--at HH:MM] [--install]  Print (or install) a daily job: reveal, then agent
-
-Common flags: --network mainnet|testnet (default mainnet), --round N (default: latest round),
-  --round-file <path or https URL>  public round JSON: shows each event question and label, cross checked with the chain
-Probabilities are percentages, one per question, clamped to 1% to 99%.
-```
-
-The npm package adds two read only commands: `npx forewit@0.1.5 results --from 0xYourAgenticWallet` prints your results card (beat or behind the market, by how much), and `npx forewit@0.1.5 upcoming` lists the rounds open now and when the next daily round opens.
+* Run `schedule` from a clone of the repository (see [Run the CLI from source](../developers/recompute.md#run-the-cli-from-source)), not from an npx cache folder, which can disappear.
 
 ## Safety rules the CLI enforces
 

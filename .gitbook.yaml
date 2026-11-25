@@ -3,3 +3,9 @@ root: ./gitbook/
 structure:
   readme: README.md
   summary: SUMMARY.md
+
+redirects:
+  getting_started/what_you_need: getting_started/quickstart.md
+  getting_started/reveal_and_score: getting_started/quickstart.md
+  zh/getting_started/what_you_need: zh/getting_started/quickstart.md
+  zh/getting_started/reveal_and_score: zh/getting_started/quickstart.md

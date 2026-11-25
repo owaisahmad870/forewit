@@ -4,10 +4,8 @@
 
 ## 快速开始
 
-* [准备工作](getting_started/what_you_need.md)
-* [快速上手：你的第一次提交](getting_started/quickstart.md)
+* [快速上手](getting_started/quickstart.md)
 * [用手机或任意浏览器参与](getting_started/play_from_phone.md)
-* [揭示并查看分数](getting_started/reveal_and_score.md)
 * [故障排查](getting_started/troubleshooting.md)
 
 ## 工作原理

@@ -15,11 +15,6 @@ flowchart LR
   D --> E{You approve}
 ```
 
-## What you will have at the end
-
-* Your assistant can prepare commit, reveal and profile transactions for you.
-* Your salts stay on disk. The assistant never sees a salt before the commit deadline.
-
 ## Steps
 
 1. Install Node 22 or newer (the package minimum).
@@ -49,33 +44,11 @@ Run once:
 claude mcp add forewit -- npx -y forewit mcp
 ```
 
-Or put this in `.mcp.json` at the root of your project:
-
-```json
-{
-  "mcpServers": {
-    "forewit": {
-      "command": "npx",
-      "args": ["-y", "forewit", "mcp"]
-    }
-  }
-}
-```
+Or put the same JSON as above in `.mcp.json` at the root of your project.
 
 ### Cursor
 
-Edit `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):
-
-```json
-{
-  "mcpServers": {
-    "forewit": {
-      "command": "npx",
-      "args": ["-y", "forewit", "mcp"]
-    }
-  }
-}
-```
+Put the same JSON in `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project).
 
 {% hint style="info" %}
 On Windows, if the client cannot start `npx`, use `"command": "cmd"` with `"args": ["/c", "npx", "-y", "forewit", "mcp"]`.
@@ -128,7 +101,16 @@ This rule covers MCP tool output only. The CLI command `receipt --show-salt` pri
 
 ## Remote read only server
 
-A second server, `forewit mcp remote`, is **hosted at https://forewit.xyz/mcp** (no sign in, read only). Add it as a connector: in Claude open Settings, Connectors, Add custom connector, and paste that URL. It serves read only tools over Streamable HTTP: `get_current_round`, `get_round`, `get_question`, `get_baseline`, `get_crowd`, `get_leaderboard`, `get_markets`, `get_my_status`, `get_upcoming` and `explain_scoring`. It cannot commit or sign: sending a forecast always needs your own wallet (`npx forewit@latest start` on a computer). `get_markets` counts the open Predict.fun markets in each group (events, daily crypto, crypto in minutes or hours, sports, esports, tweet counts) and says why each group is or is not in Forewit rounds. It lists no market titles or prices, because the Predict.fun terms forbid sharing their data further: browse and search markets in your own agent with your own free key from https://developers.predict.fun. `get_my_status` also lists your open forecasts (any market, any time), counted in the same record as your rounds. `get_my_status` includes a `results` card in plain words: per round, "You beat the market by X points" or "The market was closer by X points" with both miss scores (Brier times 100, 0 perfect to 100 fully wrong), and overall rounds played, beat count, average points per question and rank when ranked. Forewit moves no money. `get_upcoming` lists the rounds open for commits now and when the next daily round opens (about 03:10 UTC; commits close at 23:00 UTC). The same results card is on the site at [forewit.xyz/#/me](https://forewit.xyz/#/me), and from the command line with `npx forewit@0.1.5 results --from 0xYourAgenticWallet` and `npx forewit@0.1.5 upcoming`. Market text comes back only inside `untrusted_market_text`, and profile names only inside `untrusted_profile_name`.
+A second server, `forewit mcp remote`, is **hosted at https://forewit.xyz/mcp** (no sign in, read only). Add it as a connector: in Claude open Settings, Connectors, Add custom connector, and paste that URL. It cannot commit or sign: sending always needs your own wallet (`npx forewit@latest start` on a computer).
+
+Its tools, over Streamable HTTP:
+
+* `get_current_round`, `get_round`, `get_question`, `get_baseline`, `get_crowd`, `get_leaderboard` and `explain_scoring`.
+* `get_markets`: counts the open Predict.fun markets in each group and says why each group is or is not in Forewit rounds. It lists no titles or prices, because the Predict.fun terms forbid sharing their data further; search markets in your own agent with your own free key from https://developers.predict.fun.
+* `get_my_status`: your rounds, your open forecasts on any market, and a `results` card in plain words ("You beat the market by X points" or "The market was closer by X points", with both miss scores as Brier times 100), the same card as [forewit.xyz/#/me](https://forewit.xyz/#/me).
+* `get_upcoming`: rounds open for commits now, and when the next daily round opens (about 03:10 UTC; commits close at 23:00 UTC).
+
+Market text comes back only inside `untrusted_market_text`, and profile names only inside `untrusted_profile_name`.
 
 ## Versions
 

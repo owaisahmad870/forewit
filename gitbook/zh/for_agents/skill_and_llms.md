@@ -4,36 +4,20 @@ description: SKILL.md 教 Claude Code 掌握先见 Forewit 的使用流程；llm
 
 # SKILL.md 和 llms.txt
 
-两个纯文本文件教会 AI 智能体安全地使用先见 Forewit。
+两个纯文本文件教会 AI 智能体安全地使用先见 Forewit。两者都要求智能体只负责准备和解释；每笔交易都由你批准。
 
-* [`agent/SKILL.md`](https://github.com/owaisahmad870/forewit/blob/main/agent/SKILL.md) 是一个 Claude Code 技能文件，包含预检步骤、轮次流程和硬性规则。
+* [`agent/SKILL.md`](https://github.com/owaisahmad870/forewit/blob/main/agent/SKILL.md) 是一个智能体技能：预检步骤、轮次流程和硬性规则。
 * [`agent/llms.txt`](https://github.com/owaisahmad870/forewit/blob/main/agent/llms.txt) 是面向任何智能体的简短机器可读摘要：命令、合约函数、提交哈希公式和盐值规则。
 
-两者都要求智能体只负责准备和解释。每笔交易都由你批准。
+## 安装技能
 
-## 完成后你将拥有
+```bash
+npx skills add owaisahmad870/forewit --skill forewit
+```
 
-* 当你让 Claude Code 预测一个轮次时，它知道何时以及如何使用 Forewit。
-* 任何其他智能体只需读一个简短文件，就能遵循同样的规则。
+然后说 "Play Forewit"。当请求与技能描述匹配时，技能就会加载。它还需要币安 Agentic Wallet 技能：见 [快速上手，路径 2](../getting_started/quickstart.md)。
 
-## Claude Code 的步骤
-
-1. 克隆代码仓库。技能中引用的 `agent/forewit.mjs` 等路径都相对于仓库根目录：
-   ```bash
-   git clone https://github.com/owaisahmad870/forewit
-   cd forewit
-   ```
-2. 在该目录中打开 Claude Code，把技能复制到你的技能目录：
-   ```bash
-   mkdir -p ~/.claude/skills/forewit
-   cp agent/SKILL.md ~/.claude/skills/forewit/SKILL.md
-   ```
-3. 向 Claude 提问，例如“给我看看当前的 Forewit 轮次”。当请求与技能描述匹配时，技能就会加载。
-
-## 其他智能体的步骤
-
-1. 把原始文件交给智能体：`https://raw.githubusercontent.com/owaisahmad870/forewit/main/agent/llms.txt`。
-2. 告诉它按照 SKILL.md 执行完整流程并遵守硬性规则。
+对于其他智能体，把原始文件 `https://raw.githubusercontent.com/owaisahmad870/forewit/main/agent/llms.txt` 交给它，并告诉它按照 SKILL.md 执行完整流程。
 
 ## 技能会让智能体做什么
 
@@ -69,4 +53,4 @@ description: SKILL.md 教 Claude Code 掌握先见 Forewit 的使用流程；llm
 * 提交哈希：`keccak256(abi.encode(COMMIT_TYPEHASH, chainId, ledger, roundId, forecaster, packed, salt))`。
 * `packed`：第 i 个概率以基点表示，放在第 16i 到 16i+15 位，最多 16 个问题。CLI 会限制在 100 到 9900 之间。
 
-另见：[提交与揭示](../how_it_works/commit_and_reveal.md)，[MCP 服务器](mcp_server.md)，[可直接复制的提示词](prompts.md)。
+另见：[MCP 服务器](mcp_server.md)，[可直接复制的提示词](prompts.md)。

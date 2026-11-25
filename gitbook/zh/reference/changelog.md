@@ -4,6 +4,8 @@ description: 先见 Forewit 的更新内容与时间，最新的在前。
 
 # 更新日志
 
+先见 Forewit 的变更及时间，最新的在前。
+
 ## 2026 年 11 月 24 日
 
 * npm `forewit` 0.1.1，包含 `profile` 命令，带来源证明发布。

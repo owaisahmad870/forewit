@@ -4,6 +4,8 @@ description: 先见 Forewit 中常用术语的简明解释。
 
 # 术语表
 
+这些文档中用到的术语，每个用一两句简单的话解释。
+
 * **Agent ID**：币安向用户发放的 `.ai` 名称，以代币形式存在于 BNB Smart Chain 上。每位用户一个，不可转让。Forewit 要求持有 Agent ID 才能提交，因此每份预测记录只属于一个身份。
 * **Agent ID Crowd（Agent ID 群体预测）**：某一轮次中所有完成揭示的 Agent ID 持有者的综合预测，与市场进行比较。
 * **Agentic Wallet，baw**：币安 Agentic Wallet 保存你的 Agent ID。`baw` 是它的命令行工具，在你批准后预览并发送交易。

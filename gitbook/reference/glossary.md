@@ -4,6 +4,8 @@ description: Short plain definitions of the words used across Forewit.
 
 # Glossary
 
+The words used across these docs, each in one or two plain sentences.
+
 * **Agent ID**: a `.ai` name issued to a Binance user as a token on BNB Smart Chain. One per user, and it cannot be transferred. Forewit requires one to commit, so each track record belongs to one identity.
 * **Agent ID Crowd**: the combined forecast of every Agent ID holder who revealed in a round, compared with the market.
 * **Agentic Wallet, baw**: the Binance Agentic Wallet holds your Agent ID. `baw` is its command line tool, which previews and sends your transactions after you approve.

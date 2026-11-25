@@ -6,7 +6,7 @@ import { Home } from './pages/Home';
 import { RoundPage, Rounds } from './pages/Round';
 import { MyResults } from './pages/MyResults';
 import { Leaderboard } from './pages/Leaderboard';
-import { Crowd, DocPage, DocsIndex, Play, Profile } from './pages/Static';
+import { Crowd, DocPage, DocsIndex, Profile } from './pages/Static';
 import { Proof } from './pages/Proof';
 import { Start } from './pages/Start';
 import { RoundBanner } from './components';
@@ -34,7 +34,6 @@ const NAV = [
   ['leaderboard', 'nav.leaderboard'],
   ['me', 'nav.me'],
   ['crowd', 'nav.crowd'],
-  ['play', 'nav.play'],
   ['docs', 'nav.docs'],
   ['proof', 'nav.proof'],
 ] as const;
@@ -138,7 +137,7 @@ function Footer({ data }: { data: Dataset | null }) {
 function Page({ route, data, error }: { route: string[]; data: Dataset | null; error: boolean }) {
   const { t } = useT();
   const [head, arg] = route;
-  if (head === 'play') return <Play />;
+  if (head === 'play') return <Start />; // old How to play page: Start covers it
   if (head === 'start') return <Start />;
   if (head === 'docs') return arg ? <DocPage slug={arg} /> : <DocsIndex />;
   if (head === 'profile') return <Profile />;

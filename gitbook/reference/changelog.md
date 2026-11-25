@@ -4,6 +4,8 @@ description: What changed in Forewit and when, newest first.
 
 # Changelog
 
+What changed in Forewit and when, newest first.
+
 ## 24 Nov 2026
 
 * npm `forewit` 0.1.1 with the `profile` command, published with provenance.

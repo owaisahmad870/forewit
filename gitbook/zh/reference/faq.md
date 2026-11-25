@@ -22,11 +22,11 @@ description: 关于先见 Forewit 最常见问题的简短回答。
 
 ## 可以用手机参与吗？
 
-暂时不行。目前提交需要在电脑上使用币安 Agentic Wallet 的命令行工具 `baw`。用手机的话，请使用云端 AI 智能体：见[用手机或任意浏览器参与](../getting_started/play_from_phone.md)。
+可以，在浏览器中使用云端 AI 智能体：见[用手机或任意浏览器参与](../getting_started/play_from_phone.md)。
 
-## 我的电脑上需要准备什么？
+## 我需要准备什么？
 
-Node、已登录的 `baw`、一个 Agent ID，以及在币安 App 中开启开发者模式（Developer Mode）。详见 [准备工作](../getting_started/what_you_need.md)。
+一个 Agent ID、在币安 App 中开启开发者模式（Developer Mode），以及少量用于 gas 的 BNB。详见 [快速上手](../getting_started/quickstart.md)。
 
 ## 为什么要分提交和揭示两步？
 

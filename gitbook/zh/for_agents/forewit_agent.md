@@ -16,20 +16,9 @@ flowchart LR
   E -->|其他任何输入| G[什么都不发送]
 ```
 
-{% hint style="info" %}
-目前提交需要在电脑上使用 `baw`（Binance Agentic Wallet CLI）。用手机的话，请使用云端 AI 智能体：见[用手机或任意浏览器参与](../getting_started/play_from_phone.md)。
-{% endhint %}
-
-## 完成后你将拥有
-
-* 由你选择的模型做出的每日预测，从你的 Agent ID 钱包提交上链。
-* 保存在你电脑上的揭示凭证，供第二天揭示使用。
-* 可选：一个每日任务，一次完成昨天的揭示和今天的预测。
-
 ## 开始之前
 
-* Node 26 或更高版本。
-* 已安装并登录 `baw`，已领取 Agent ID，并已开启 Developer Mode。参见 [准备工作](../getting_started/what_you_need.md)。
+* Node 26 或更高版本，已登录的 `baw`，已领取的 Agent ID，并已开启 Developer Mode。参见 [准备工作](../getting_started/quickstart.md)。
 * 你的模型服务商的 API key，或一个本地模型服务。费用由你直接支付给服务商，Forewit 看不到任何内容。
 
 ## 步骤
@@ -50,26 +39,22 @@ flowchart LR
    ```bash
    npx -y forewit agent --from 0xYourAgenticWallet --env-file ~/.forewit_llm.env
    ```
-4. 确认无误后，在你自己的交互式终端里加上 `--execute` 运行（Windows 上用 PowerShell 或 Windows Terminal）：
+4. 在你自己的交互式终端里加上 `--execute` 发送（Windows 上用 PowerShell 或 Windows Terminal）。阅读预览，然后输入 `yes`：
    ```bash
    npx -y forewit agent --from 0xYourAgenticWallet --env-file ~/.forewit_llm.env --execute
    ```
-   阅读预览，然后输入 `yes` 发送。任何其他输入都会中止。
 5. 把凭证备份到私密的地方：
    ```bash
    npx -y forewit receipt --from 0xYourAgenticWallet --show-salt
    ```
-6. 提交截止时间过后（每日轮次为 UTC 23:00），进行揭示：
+6. 提交截止时间过后（每日轮次为 UTC 23:00），揭示你已提交、且揭示窗口已开放的最新轮次：
    ```bash
    npx -y forewit agent --reveal --from 0xYourAgenticWallet --execute
    ```
-   这会揭示你已提交、且揭示窗口已开放的最新轮次。
 
 {% hint style="info" %}
-在主网上，`agent` 从 `https://forewit.xyz/data/rounds/<round>.json` 获取轮次文件。如果 forewit.xyz 打不开，可以传入 `--round-file https://forewit.pages.dev/data/rounds/<round>.json`。在 Windows 上，如果 PowerShell 拦截了 `npx`，请改为输入 `npx.cmd`。参见 [故障排查](../getting_started/troubleshooting.md)。
+如果 forewit.xyz 打不开，可以传入 `--round-file https://forewit.pages.dev/data/rounds/<round>.json`。运行 `npx -y forewit --help` 查看全部命令和参数。
 {% endhint %}
-
-`npx -y forewit <command>` 运行的 CLI，与在 [代码仓库](https://github.com/owaisahmad870/forewit) 的克隆中运行 `node agent/forewit.mjs <command>` 完全相同。
 
 ## 哪些内容会发给模型，哪些永远不会
 
@@ -89,39 +74,11 @@ node agent/forewit.mjs schedule --from 0xYourAgenticWallet --env-file ~/.forewit
 ```
 
 * 任务每天在本地时间 `--at HH:MM` 运行一次（默认是 UTC 12:00 对应的本地时间）。它先运行 `agent --reveal --execute`，再运行 `agent --execute`。
-* 每次提交和揭示仍然需要你亲手输入 yes，CLI 会拒绝通过管道或脚本输入的 yes。因此任务会为你打开一个终端：
+* 每次提交和揭示仍然需要你亲手输入 yes，因此任务会为你打开一个终端：
   * Windows：在你登录期间，由任务计划程序打开一个控制台窗口。用 `schtasks /Delete /F /TN "Forewit daily"` 删除。
   * macOS：由 launchd agent 打开 Terminal。
   * Linux：cron 没有终端，因此任务只运行只读的 `status`，日志写入 `~/.forewit/schedule.log`，并在可能时显示桌面通知。之后由你自己运行这两条 `agent` 命令。
-* 请在代码仓库的克隆中运行 `schedule`，不要在 npx 缓存目录中运行，那个目录可能会消失。
-
-## 全部 CLI 命令
-
-来自 `node agent/forewit.mjs --help`（有删节：列出 `FOREWIT_LLM_*` 设置的那一行未包含在此，见第 1 步）：
-
-```text
-start     The guided first run: wallet check, sign in, Agent ID, today's questions, send (start here)
-round     Show the current round (or --round N) and its questions, read from the chain
-forecast  --p 72,15,50          Validate and clamp percentages, show the packed value
-commit    --from 0x.. --p ..    Make a salt, save the reveal receipt, print the baw commit commands
-          --auto-reveal (opt in, recommended): a copy locked until just after the deadline rides in the commit,
-          and Forewit's keeper reveals it for you; without it the salt stays only on this machine
-reveal    --from 0x..           Load the saved salt, print the baw reveal commands (after the commit deadline)
-          add --execute to commit or reveal to run baw preview, review it and send after typing yes
-          (BSC mainnet only, interactive terminal only, never with a piped or scripted yes)
-status    --from 0x..           Commit, reveal and scoring status for a wallet
-profile   --from 0x.. --label name [--execute]  Opt in publicly with your Agent ID name (leaderboard, ForewitScores); --off opts out
-receipt   [--from 0x..] [--show-salt]  Print saved reveal receipts (salt only with --show-salt) so you can back them up
-agent     --from 0x.. [--env-file path] [--execute]  Your own LLM forecasts the open round, then the commit flow runs
-agent     --reveal --from 0x.. [--execute]  Reveal the newest committed round whose reveal window is open
-schedule  --from 0x.. [--env-file path] [--at HH:MM] [--install]  Print (or install) a daily job: reveal, then agent
-
-Common flags: --network mainnet|testnet (default mainnet), --round N (default: latest round),
-  --round-file <path or https URL>  public round JSON: shows each event question and label, cross checked with the chain
-Probabilities are percentages, one per question, clamped to 1% to 99%.
-```
-
-npm 包还提供两个只读命令：`npx forewit@0.1.5 results --from 0xYourAgenticWallet` 打印你的成绩卡（比市场更准还是更差，差多少），`npx forewit@0.1.5 upcoming` 列出当前开放的轮次以及下一个每日轮次的开放时间。
+* 请在代码仓库的克隆中运行 `schedule`（见 [从源码运行 CLI](../developers/recompute.md)），不要在 npx 缓存目录中运行，那个目录可能会消失。
 
 ## CLI 强制执行的安全规则
 

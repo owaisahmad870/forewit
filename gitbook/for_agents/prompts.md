@@ -4,12 +4,7 @@ description: Copy paste prompts that make Claude or ChatGPT help you forecast an
 
 # Copy paste prompts
 
-These prompts turn a chat assistant into a forecasting helper. It helps you think, then gives you the exact commands to run yourself. It never asks for keys or salts, and it reminds you that only you type `yes`.
-
-## What you will have at the end
-
-* A probability for each question in today's round, with your own reasoning.
-* The exact commands to commit now and reveal tomorrow, ready to paste into your terminal.
+These prompts turn a chat assistant into a forecasting helper. It helps you reason about each question, then gives you the exact commands to commit now and reveal tomorrow. It never asks for keys or salts, and only you type `yes`.
 
 ## Steps
 
@@ -78,7 +73,7 @@ Round output:
 ```
 
 {% hint style="info" %}
-`--execute` needs an interactive terminal on BSC mainnet. Without it the CLI prints the `baw` commands for you to run by hand. Committing currently needs `baw` on a computer; a phone only path is being worked on.
+`--execute` needs an interactive terminal on BSC mainnet. Without it the CLI prints the `baw` commands for you to run by hand. From a phone, see [Play from your phone or any browser](../getting_started/play_from_phone.md).
 {% endhint %}
 
 Forecasting scores only. Not financial advice. Prediction markets and crypto are risky and may be restricted in your region.
