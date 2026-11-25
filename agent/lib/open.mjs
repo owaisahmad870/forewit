@@ -66,6 +66,8 @@ export async function marketInfo(chainId, marketId, opts) {
   if (!/^\d{1,18}$/.test(String(marketId))) throw new Error('market id must be a number (as shown by forewit markets)');
   const m = (await predictApi(chainId, `/v1/markets/${marketId}`, opts)).data;
   if (!m || m.outcomes?.length !== 2) throw new Error(`market ${marketId} is not a binary market; Forewit forecasts two outcome markets only`);
+  // outcome i must be Conditional Tokens slot i (index sets 1 and 2), the same check the v1 selection uses
+  if (m.outcomes[0]?.indexSet !== 1 || m.outcomes[1]?.indexSet !== 2) throw new Error(`market ${marketId} has an unexpected outcome layout; refusing`);
   if (!isBytes32(m.conditionId)) throw new Error(`market ${marketId} has no onchain condition yet`);
   let cat = null;
   try { cat = m.categorySlug ? (await predictApi(chainId, `/v1/categories/${m.categorySlug}`, opts)).data : null; } catch { /* end time unknown */ }

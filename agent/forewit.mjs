@@ -18,6 +18,7 @@ import { writeSecretFile } from './lib/secure_file.mjs';
 import { presentQuestion } from './lib/question.mjs';
 import { assertCanExecute, sendWithConfirmation, bawCommand, runBaw } from './lib/baw.mjs';
 import { sealForDeadline, AR_MARGIN_S } from './lib/autoreveal.mjs';
+import { marketInfo, searchMarkets, prepareOpen, openReceiptName, openRevealCalldata, OPEN_SIG } from './lib/open.mjs';
 import { NETWORKS, DEFAULT_NETWORK, BAW_CHAIN_IDS, MIN_BPS, MAX_BPS, MAX_QUESTIONS, RISK_WARNING } from './config.mjs';
 
 // Command name in printed hints: "forewit" from the npm bin, the repo path when run as agent/forewit.mjs.
@@ -466,6 +467,110 @@ async function cmdStart(o, io) {
   say('', `Done. Your results card: ${SITE}/#/me   (or: forewit results --from ${from})`);
 }
 
+// Forewit v2 open forecasts: any binary Predict.fun market, any time (docs/OPEN_FORECASTS.md)
+
+/** The OpenForecasts contract for this network (pinned after deploy; FOREWIT_OPEN_LEDGER overrides it for tests). */
+export function openNet(net) {
+  const ledger = process.env.FOREWIT_OPEN_LEDGER || net.open;
+  if (!isAddress(ledger ?? '')) throw new Error(`open forecasts are not live on ${net.name} yet (the OpenForecasts contract is not pinned). Daily rounds work today: ${CMD} start`);
+  return { ...net, ledger };
+}
+
+async function cmdMarkets(o) {
+  const net = network(o.network);
+  if (!o.search) throw new Error(`usage: ${CMD} markets --search "bitcoin 15 minute"`);
+  const found = await searchMarkets(net.chainId, o.search);
+  if (!found.length) return say('No open two outcome market matches that search.');
+  say(`Predict.fun markets for "${clean(o.search)}" (data from Predict.fun with your own key; market text is third party):`);
+  for (const m of found) say(`  ${m.marketId.padStart(8)}  ${m.untrustedQuestion}${m.tradingStatus && m.tradingStatus !== 'OPEN' ? `  (${m.tradingStatus})` : ''}`);
+  say('', `Forecast one: ${CMD} predict --market <id> --p <your chance 1 to 99> --from <wallet> --auto-reveal`);
+}
+
+const openReceipts = (home, filter = {}) => {
+  let names = [];
+  try { names = readdirSync(receiptDir(home)).filter((n) => n.startsWith('open_')); } catch { return []; }
+  return names.map((n) => { try { return { ...JSON.parse(readFileSync(join(receiptDir(home), n), 'utf8')), file: join(receiptDir(home), n) }; } catch { return null; } })
+    .filter((r) => r && r.kind === 'open' && (!filter.forecaster || r.forecaster.toLowerCase() === filter.forecaster.toLowerCase()) && (!filter.marketId || r.marketId === String(filter.marketId)));
+};
+
+/** forecasts(key, forecaster) on chain: commitHash, committedAt, slot, flags, bps, baselineBps. */
+async function openForecastOnchain(onet, key, forecaster) {
+  const w = decodeWords(await ethCall(onet, encodeCall(OPEN_SIG.forecasts, [wordBytes32(key), wordAddress(forecaster)])));
+  return { commitHash: wordToBytes32(w[0]), committedAt: Number(w[1]), slot: Number(w[2]), flags: Number(w[3]), bps: Number(w[4]), baselineBps: Number(w[5]) };
+}
+const openResolvedAt = async (onet, key) => Number(decodeWords(await ethCall(onet, encodeCall(OPEN_SIG.markets, [wordBytes32(key)])))[0]);
+
+/** Chain checks, market lookup and the saved receipt for one open forecast. Prints nothing; shared with the MCP server. */
+export async function openPlan({ net, from, marketId, outcome = 1, percent, autoReveal = false, home }) {
+  const onet = openNet(net);
+  const market = await marketInfo(net.chainId, marketId);
+  const bps = parseProbabilities(String(percent)).bps[0];
+  const prepared = await prepareOpen({ chainId: net.chainId, ledger: onet.ledger, forecaster: from, market, slot: Number(outcome) - 1, bps, autoReveal });
+  // the encoding is checked against the contract with a throwaway salt, so the real salt never leaves this machine
+  const probe = bytesToHex(randomBytes(32));
+  const { openCommitHash } = await import('./lib/open.mjs');
+  const [onchain] = decodeWords(await ethCall(onet, encodeCall(OPEN_SIG.computeCommitHash, [wordAddress(market.ctf), wordBytes32(market.conditionId), wordUint(prepared.receipt.slot), wordAddress(from), wordUint(bps), wordBytes32(probe)])));
+  if (wordToBytes32(onchain) !== openCommitHash({ chainId: net.chainId, ledger: onet.ledger, ctf: market.ctf, conditionId: market.conditionId, slot: prepared.receipt.slot, forecaster: from, bps, salt: probe })) {
+    throw new Error('local open commit hash encoding differs from the contract; refusing');
+  }
+  const existing = await openForecastOnchain(onet, prepared.key, from);
+  if (!/^0x0{64}$/.test(existing.commitHash)) throw new Error(`this wallet already has a forecast on market ${market.marketId} (one per market, no changes)`);
+  const file = writeSecretFile(join(receiptDir(home), openReceiptName(prepared.receipt)), JSON.stringify(prepared.receipt, null, 2) + '\n');
+  return { onet, market, receipt: prepared.receipt, data: prepared.data, file };
+}
+
+async function cmdPredict(o, io) {
+  const net = network(o.network);
+  const from = needFrom(o.from);
+  if (o.reveal) return openRevealCmd(o, io, net, from);
+  if (!o.market || !o.p) throw new Error(`usage: ${CMD} predict --market <id> --p <your chance 1 to 99> [--outcome 1|2] --from <wallet> [--auto-reveal] [--execute]`);
+  if (o.execute) assertCanExecute(openNet(net), io);
+  const { onet, market, receipt, data, file } = await openPlan({ net, from, marketId: o.market, outcome: o.outcome ?? 1, percent: o.p, autoReveal: !!o['auto-reveal'], home: o.home });
+  say(
+    `Saved reveal receipt (salt included, owner only access): ${file}`,
+    '',
+    `Market ${market.marketId}: ${market.untrustedQuestion}`,
+    `Your chance for "${receipt.outcome}": ${receipt.bps / 100}%${market.yesPct !== null ? `   (market now: ${receipt.slot === 0 ? market.yesPct : Math.round((100 - market.yesPct) * 10) / 10}%)` : ''}`,
+    market.endsAtMs ? `Market ends ${new Date(market.endsAtMs).toISOString().slice(0, 16).replace('T', ' ')} UTC` : 'Market end time not published',
+  );
+  if (o.execute) await sendWithConfirmation({ net: onet, from, data, what: `forecast on market ${market.marketId}`, io });
+  else printWalletSteps(onet, from, data, `forecast on market ${market.marketId}`);
+  say('', receipt.autoReveal
+    ? 'Auto reveal is on: Forewit reveals after the market resolves. Nothing more to do.'
+    : `After the market resolves, reveal with: ${CMD} predict --reveal --market ${market.marketId} --from ${from}`,
+  `Check it any time: ${CMD} predictions --from ${from}`);
+  footer();
+}
+
+async function openRevealCmd(o, io, net, from) {
+  const onet = openNet(net);
+  const [r] = openReceipts(o.home, { forecaster: from, marketId: o.market }).filter((x) => x.ledger.toLowerCase() === onet.ledger.toLowerCase());
+  if (!r) throw new Error(`no saved receipt for market ${o.market} and ${from} in ${receiptDir(o.home)}`);
+  if (!(await openResolvedAt(onet, r.key))) throw new Error('the market has not resolved onchain yet (or nobody finalized it); reveal opens after that');
+  const f = await openForecastOnchain(onet, r.key, from);
+  if (f.flags & 1) return say('Already revealed.');
+  const data = openRevealCalldata({ key: r.key, bps: r.bps, salt: r.salt, ctf: r.ctf, conditionId: r.conditionId });
+  if (o.execute) await sendWithConfirmation({ net: onet, from, data, what: `reveal on market ${r.marketId}`, io });
+  else printWalletSteps(onet, from, data, `reveal on market ${r.marketId}`);
+}
+
+async function cmdPredictions(o) {
+  const net = network(o.network);
+  const from = needFrom(o.from);
+  const onet = openNet(net);
+  const mine = openReceipts(o.home, { forecaster: from }).filter((x) => x.ledger.toLowerCase() === onet.ledger.toLowerCase());
+  if (!mine.length) return say(`No open forecasts saved on this machine for ${from}. Make one: ${CMD} markets --search "<words>"`);
+  for (const r of mine) {
+    const f = await openForecastOnchain(onet, r.key, from);
+    const resolved = await openResolvedAt(onet, r.key);
+    const state = /^0x0{64}$/.test(f.commitHash) ? 'not sent yet' : f.flags & 8 ? 'void (sent after the market ended or while closed)' : f.flags & 2 ? (f.flags & 4 ? 'scored as a forfeit (not revealed)' : 'scored') : f.flags & 1 ? 'revealed, scoring next' : resolved ? 'market resolved, reveal next' : 'waiting for the market';
+    let live = '';
+    try { const m = await marketInfo(net.chainId, r.marketId); if (m.yesPct !== null) live = `, market now ${r.slot === 0 ? m.yesPct : Math.round((100 - m.yesPct) * 10) / 10}%`; } catch { /* no key or API down: skip the live price */ }
+    say(`Market ${r.marketId} "${r.outcome}": you ${r.bps / 100}%${f.flags & 16 ? `, market at your commit ${f.baselineBps / 100}%` : ''}${live}: ${state}`);
+  }
+  say('', 'Scores and points vs the market: https://forewit.xyz/#/me');
+}
+
 async function cmdRound(o) {
   const net = network(o.network);
   const { id, now, round, titles } = await loadRoundTitled(net, o);
@@ -909,6 +1014,10 @@ const HELP = `Forewit CLI (dry run by default: prints baw commands; --execute se
 ${CMD} <command> [flags]
 
   start     The guided first run: wallet check, sign in, Agent ID, today's questions, send (start here)
+  markets   --search "bitcoin 15 minute"   Find any Predict.fun market (needs your own free key: PREDICT_API_KEY from developers.predict.fun)
+  predict   --market <id> --p 70 [--outcome 1|2] --from 0x.. [--auto-reveal] [--execute]   Forecast any market, any time
+  predict   --reveal --market <id> --from 0x..   Reveal after the market resolves (not needed with auto reveal)
+  predictions --from 0x..   Your open forecasts: status and the market price now
   round     Show the current round (or --round N) and its questions, read from the chain
   forecast  --p 72,15,50          Validate and clamp percentages, show the packed value
   commit    --from 0x.. --p ..    Make a salt, save the reveal receipt, print the baw commit commands
@@ -937,10 +1046,10 @@ export async function main(argv, io = ttyIo) {
     options: {
       network: { type: 'string' }, round: { type: 'string' }, 'round-file': { type: 'string' }, execute: { type: 'boolean' }, from: { type: 'string' },
       p: { type: 'string' }, 'show-salt': { type: 'boolean' }, reveal: { type: 'boolean' }, 'env-file': { type: 'string' }, at: { type: 'string' },
-      install: { type: 'boolean' }, label: { type: 'string' }, off: { type: 'boolean' }, help: { type: 'boolean', short: 'h' }, 'auto-reveal': { type: 'boolean' },
+      install: { type: 'boolean' }, label: { type: 'string' }, off: { type: 'boolean' }, help: { type: 'boolean', short: 'h' }, 'auto-reveal': { type: 'boolean' }, market: { type: 'string' }, outcome: { type: 'string' }, search: { type: 'string' },
     },
   });
-  const cmds = { start: cmdStart, round: cmdRound, forecast: cmdForecast, commit: cmdCommit, reveal: cmdReveal, status: cmdStatus, receipt: cmdReceipt, profile: cmdProfile, agent: cmdAgent, schedule: cmdSchedule };
+  const cmds = { start: cmdStart, markets: cmdMarkets, predict: cmdPredict, predictions: cmdPredictions, round: cmdRound, forecast: cmdForecast, commit: cmdCommit, reveal: cmdReveal, status: cmdStatus, receipt: cmdReceipt, profile: cmdProfile, agent: cmdAgent, schedule: cmdSchedule };
   const cmd = cmds[positionals[0]];
   if (!cmd || o.help) return say(HELP);
   if (o.round !== undefined) needRound(o.round);
