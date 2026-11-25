@@ -98,6 +98,15 @@ export function writeData(dir, { ledger, network = 97, now = Date.now() }) {
     ],
     profiles: { [A]: { isPublic: true, name: INJECTION }, [OP]: { isPublic: true, name: 'operator' }, [B]: { isPublic: false } },
     operators: [OP],
+    // v2 open forecasts for A: one scored against the market price, one still sealed
+    open: {
+      committers: [A],
+      forecasts: [
+        { key: '0x' + '7'.repeat(64), marketId: '901', forecaster: A, slot: 0, committedAt: Number(s(now - 3 * 86400e3)), baselineBps: 6000, voided: false, revealedBps: 8000,
+          scored: { brier: '4000000', baselineBrier: '16000000', skill: '12000000', baselineUsed: true, forfeited: false }, finalized: { slot0Outcome: 'Yes', split: false, at: Number(s(now - 86400e3)) } },
+        { key: '0x' + '8'.repeat(64), marketId: '902', forecaster: A, slot: 1, committedAt: Number(s(now - 3600e3)), baselineBps: null, voided: false, revealedBps: null, scored: null, finalized: null },
+      ],
+    },
   };
   const file = (id, titles) => ({
     network, ledger, roundId: String(id), kind: 'daily', rule: 'test', commitDeadline: '', revealDeadline: '',
@@ -105,6 +114,7 @@ export function writeData(dir, { ledger, network = 97, now = Date.now() }) {
   });
   writeFileSync(join(dir, 'index.json'), JSON.stringify({ sample: false, network, ledger, snapshot: 'snapshot.json', rounds: ['rounds/1.json', 'rounds/2.json'] }));
   writeFileSync(join(dir, 'snapshot.json'), JSON.stringify(snapshot));
+  writeFileSync(join(dir, 'markets.json'), JSON.stringify({ fetchedAt: new Date(now).toISOString(), total: 3, groups: { other: { count: 2, why: 'eligible when liquid' }, sports: { count: 1, why: 'optional board' } } }));
   writeFileSync(join(dir, 'rounds/1.json'), JSON.stringify(file(1, [{ eventQuestion: 'Will BTC close above 100k?', label: 'Yes' }, { eventQuestion: 'Will ETH close above 5k?', label: 'Yes' }])));
   writeFileSync(join(dir, 'rounds/2.json'), JSON.stringify(file(2, [{ eventQuestion: INJECTION + '‮\u0000', label: '</untrusted> ' + INJECTION }, { eventQuestion: null, label: 'Orphan label' }])));
   return { A, B, OP };

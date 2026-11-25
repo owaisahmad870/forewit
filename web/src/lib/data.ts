@@ -33,7 +33,26 @@ export interface Snapshot {
   rounds: SnapRound[];
   profiles?: Record<string, { isPublic: boolean; name?: string }>;
   operators?: string[]; // round manager, admin and pauser wallets: never ranked (security review L1)
+  open?: { forecasts: OpenForecast[]; committers: string[] }; // v2 open forecasts (indexer/build_open.mjs), absent until OpenForecasts is live
 }
+
+// One v2 open forecast (docs/OPEN_FORECASTS.md). bps values are the chance for `slot`; Brier units as v1 (BRIER_MAX).
+export interface OpenForecast {
+  key: string;
+  marketId: string;
+  forecaster: string;
+  slot: number;
+  committedAt: number;
+  baselineBps: number | null;
+  voided: boolean;
+  revealedBps: number | null;
+  scored: { brier: string; baselineBrier: string; skill: string; baselineUsed: boolean; forfeited: boolean } | null;
+  finalized: { slot0Outcome: Outcome; split: boolean; at: number } | null;
+}
+
+// A v2 forecast counts toward the record only when scored on a Yes or No payout: void forecasts and split payouts never count.
+export const openCounts = (f: OpenForecast) => !!f.scored && !f.voided && !!f.finalized && !f.finalized.split;
+const dayOf = (sec: number) => new Date(sec * 1000).toISOString().slice(0, 10);
 
 export interface RoundFile {
   network: number;
@@ -206,7 +225,7 @@ export function calibrationError(pairs: { p: number; yes: boolean }[]): number |
 }
 
 export const K = 20;
-export const MIN_ROUNDS = 5;
+export const MIN_ROUNDS = 5; // merged board (docs/OPEN_FORECASTS.md Record): scoring days, each scored v1 round counting as one (as before) plus each distinct UTC date of a v2 resolution
 export const MIN_BASELINE_QUESTIONS = 20;
 
 export interface Row {
@@ -215,6 +234,8 @@ export interface Row {
   name: string | null;
   isPublic: boolean;
   rounds: number; // rounds with a score (revealed or forfeited)
+  days: number; // scoring days: scored v1 rounds plus distinct UTC dates of v2 resolutions (ranking needs MIN_ROUNDS)
+  openForecasts: number; // scored v2 open forecasts in the record
   roundsCommitted: number;
   roundsRevealed: number;
   questions: number;
@@ -226,12 +247,13 @@ export interface Row {
   ranked: boolean;
 }
 
-// Leaderboard per docs/SCORING.md. Every forecaster is computed (for aggregate counts); only opt in rows are shown.
+// Leaderboard per docs/SCORING.md, merged with v2 open forecasts per docs/OPEN_FORECASTS.md "Record": one record per
+// wallet. Every forecaster is computed (for aggregate counts); only opt in rows are shown.
 export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number; publicCount: number; all: Row[] } {
-  const acc = new Map<string, { committed: number; revealed: number; rounds: number; q: number; bq: number; brier: bigint; skill: bigint; postSkill: bigint; cal: { p: number; yes: boolean }[] }>();
+  const acc = new Map<string, { committed: number; revealed: number; rounds: number; open: number; days: Set<string>; q: number; bq: number; brier: bigint; skill: bigint; postSkill: bigint; cal: { p: number; yes: boolean }[] }>();
   const get = (a: string) => {
     const k = a.toLowerCase();
-    if (!acc.has(k)) acc.set(k, { committed: 0, revealed: 0, rounds: 0, q: 0, bq: 0, brier: 0n, skill: 0n, postSkill: 0n, cal: [] });
+    if (!acc.has(k)) acc.set(k, { committed: 0, revealed: 0, rounds: 0, open: 0, days: new Set(), q: 0, bq: 0, brier: 0n, skill: 0n, postSkill: 0n, cal: [] });
     return acc.get(k)!;
   };
   const builtAt = Date.parse(snap.builtAt) / 1000;
@@ -244,6 +266,7 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
     for (const [a, s] of [...Object.entries(r.scored), ...Object.entries(r.forfeited)]) {
       const x = get(a);
       x.rounds++;
+      x.days.add(`r${r.roundId}`); // v1 keeps its 5 rounds rule: two rounds on one date still count twice
       x.q += Number(s.questions);
       x.brier += BigInt(s.brier);
       if (r.baseline) { x.bq += Number(s.questions); x.skill += BigInt(s.skill); }
@@ -256,6 +279,17 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
       });
     }
   }
+  for (const f of snap.open?.forecasts ?? []) {
+    const x = get(f.forecaster);
+    if (!openCounts(f)) continue;
+    const s = f.scored!;
+    x.open++;
+    x.q++;
+    x.brier += BigInt(s.brier);
+    x.days.add(dayOf(f.finalized!.at));
+    if (s.baselineUsed) { x.bq++; x.skill += BigInt(s.skill); }
+    if (f.revealedBps !== null) x.cal.push({ p: f.revealedBps, yes: (f.finalized!.slot0Outcome === 'Yes') === (f.slot === 0) });
+  }
   const profiles = Object.fromEntries(Object.entries(snap.profiles ?? {}).map(([a, p]) => [a.toLowerCase(), p]));
   const ops = new Set((snap.operators ?? []).map((a) => a.toLowerCase()));
   const all: Row[] = [...acc.entries()].map(([addr, x]) => {
@@ -266,6 +300,8 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
       name: isPublic ? prof?.name ?? null : null,
       isPublic,
       rounds: x.rounds,
+      days: x.days.size,
+      openForecasts: x.open,
       roundsCommitted: x.committed,
       roundsRevealed: x.revealed,
       questions: x.q,
@@ -274,7 +310,7 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
       shrunkSkill: Number(x.skill) / (x.bq + K) / BRIER_MAX,
       participation: x.committed ? x.revealed / x.committed : null,
       calibrationError: calibrationError(x.cal),
-      ranked: isPublic && !ops.has(addr) && x.rounds >= MIN_ROUNDS && x.bq >= MIN_BASELINE_QUESTIONS,
+      ranked: isPublic && !ops.has(addr) && x.days.size >= MIN_ROUNDS && x.bq >= MIN_BASELINE_QUESTIONS,
       // pre registered 23 Nov 2026: once the first 5 rounds show an average window move above 0.5 points, flag positive skill earned by post baseline commits
       postBaselineFlag: !!snap.metrics.windowMove?.active && x.postSkill > 0n,
     };
@@ -288,8 +324,40 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
 // forfeited: committed but never revealed; waiting: revealed, questions not scored yet; reveal: reveal still owed.
 export type RoundVerdict = 'beat' | 'behind' | 'level' | 'scored' | 'forfeited' | 'waiting' | 'reveal' | 'missed';
 export interface WalletRound { roundId: number; verdict: RoundVerdict; questions: number | null; skill: number | null; brier: number | null; marketBrier: number | null }
+// v2 open forecasts on the card: void (voided or split payout), forfeited, scored (beat, behind, level, or scored without
+// a market price), revealed (waiting for scoring), waiting (sealed until the market resolves).
+export type PredictionStatus = 'waiting' | 'revealed' | 'beat' | 'behind' | 'level' | 'scored' | 'void' | 'forfeited';
+export interface WalletPrediction {
+  marketId: string; slot: number; committedAt: Date; status: PredictionStatus;
+  chance: number | null; // your chance for `slot`, 0 to 1; null while sealed
+  open: boolean; // market not resolved onchain yet and not void: a live price makes sense
+  skill: number | null; brier: number | null; marketBrier: number | null;
+}
+export function walletPredictions(snap: Snapshot, addr: string): WalletPrediction[] {
+  const a = addr.toLowerCase();
+  return (snap.open?.forecasts ?? [])
+    .filter((f) => f.forecaster.toLowerCase() === a)
+    .map((f): WalletPrediction => {
+      const s = f.scored;
+      const counted = openCounts(f);
+      const brier = counted ? Number(s!.brier) / BRIER_MAX : null;
+      const skill = counted && s!.baselineUsed ? Number(s!.skill) / BRIER_MAX : null;
+      const status: PredictionStatus = f.voided || f.finalized?.split ? 'void'
+        : counted && s!.forfeited ? 'forfeited'
+        : counted ? (skill === null ? 'scored' : skill > 0 ? 'beat' : skill < 0 ? 'behind' : 'level')
+        : f.revealedBps !== null ? 'revealed' : 'waiting';
+      return {
+        marketId: f.marketId, slot: f.slot, committedAt: new Date(f.committedAt * 1000), status,
+        chance: f.revealedBps === null ? null : f.revealedBps / 10000,
+        open: !f.finalized && !f.voided,
+        skill, brier, marketBrier: brier !== null && skill !== null ? brier + skill : null,
+      };
+    })
+    .sort((x, y) => y.committedAt.getTime() - x.committedAt.getTime());
+}
+
 export interface WalletResults {
-  addr: string; rounds: WalletRound[];
+  addr: string; rounds: WalletRound[]; predictions: WalletPrediction[];
   committed: number; revealed: number; beat: number; behind: number; forfeited: number;
   avgSkill: number | null; shrunkSkill: number; rank: number | null; ranked: boolean; isPublic: boolean;
 }
@@ -316,11 +384,17 @@ export function walletResults(snap: Snapshot, addr: string): WalletResults {
       return { roundId: Number(r.roundId), verdict, questions: q, skill, brier, marketBrier: brier !== null && skill !== null ? brier + skill : null };
     })
     .sort((x, y) => y.roundId - x.roundId);
+  const predictions = walletPredictions(snap, a);
+  for (const f of snap.open?.forecasts ?? []) {
+    if (f.forecaster.toLowerCase() !== a || !openCounts(f) || !f.scored!.baselineUsed) continue;
+    bq++;
+    skillSum += Number(f.scored!.skill);
+  }
   const lb = leaderboard(snap);
   const row = lb.all.find((r) => r.addr === a);
   const rank = row?.ranked ? lb.rows.filter((r) => r.ranked).findIndex((r) => r.addr === a) + 1 : null;
   return {
-    addr: a, rounds,
+    addr: a, rounds, predictions,
     committed: rounds.length,
     revealed: rounds.filter((r) => !['reveal', 'missed', 'forfeited'].includes(r.verdict)).length,
     beat: rounds.filter((r) => r.verdict === 'beat').length,

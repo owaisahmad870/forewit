@@ -172,7 +172,7 @@
     "rounds": "Rounds",
     "participation": "Participation",
     "unranked": "Not yet ranked",
-    "unrankedNote": "Needs at least {r} scored rounds and {q} questions with a market baseline.",
+    "unrankedNote": "Needs at least {r} distinct scoring days and {q} questions with a market price.",
     "empty": "No public forecasters yet. Opting in is optional and can be undone at any time.",
     "formula": "Skill = sum of (market Brier minus own Brier) / (questions with a baseline + 20). Positive means better than the market.",
     "postBaselineFlag": "Part of this skill came from commits made after the market baseline was posted (rule pre registered on 23 Nov 2026)."
@@ -290,7 +290,7 @@
           {
             "list": [
               "Score = sum of skill / (questions with a baseline + 20). The 20 pulls small samples toward zero skill.",
-              "To be ranked you need at least 5 scored rounds and 20 questions with a baseline. Sample size and participation rate are shown next to every score.",
+              "To be ranked you need at least 5 distinct scoring days and 20 questions with a market price, with daily rounds and open forecasts counted together. Sample size and participation rate are shown next to every score.",
               "Rank uses skill against the market, never raw Brier. Raw Brier mostly measures how easy the questions were; skill rewards only information beyond the market price.",
               "Raw Brier and calibration are shown as diagnostics and never used for rank."
             ]
@@ -753,7 +753,7 @@
       },
       "ranked": {
         "t": "Ranked",
-        "d": "A public forecaster is ranked after at least 5 scored rounds and 20 questions with a baseline. Before that they are listed under Not yet ranked."
+        "d": "A public forecaster is ranked after at least 5 distinct scoring days and 20 questions with a market price (rounds and open forecasts counted together). Before that they are listed under Not yet ranked."
       },
       "questionsCol": {
         "t": "Questions and rounds",
@@ -854,13 +854,30 @@
     "openRound": "Round {n} is open ({q} questions)",
     "closes": "closes",
     "nextOpens": "The next round opens at about",
-    "miss": "Miss score: how far your forecasts were from what happened, from 0 (perfect) to 100 (fully wrong), averaged per question. Points = the market’s miss score minus yours."
+    "miss": "Miss score: how far your forecasts were from what happened, from 0 (perfect) to 100 (fully wrong), averaged per question. Points = the market’s miss score minus yours.",
+    "predTitle": "Open forecasts",
+    "predIntro": "Forecasts on any market, made at any time. They count in the same record as your rounds.",
+    "pred": "Market {m}, outcome {o}",
+    "chance": "your chance {p}%",
+    "sealed": "your chance stays sealed until the market ends",
+    "live": "Market now: {p}%",
+    "liveSource": "Predict.fun data, updated every 15 seconds while this page is open.",
+    "p": {
+      "waiting": "Waiting for the market to settle",
+      "revealed": "Revealed, waiting for scoring",
+      "beat": "You beat the market by {p} points: your miss score {y}, the market’s {m}",
+      "behind": "The market was closer by {p} points: your miss score {y}, the market’s {m}",
+      "level": "Level with the market",
+      "scored": "Scored (no market price at the time of your forecast)",
+      "void": "Void: not counted",
+      "forfeited": "Missed: not revealed in time, counted as a loss"
+    }
   },
   "markets": {
-    "title": "All Predict.fun markets (extended)",
-    "toggle": "Show every market",
-    "intro": "Turn this on to see every open Predict.fun market, in any category, with the market price and whether Forewit can score it. Forewit scores only questions inside a round; the reason for each group is shown.",
-    "total": "{n} open markets right now. The most traded of each group are listed.",
+    "title": "Predict.fun markets by group",
+    "toggle": "Show market groups",
+    "intro": "How many Predict.fun markets are open in each group, and why each group is or is not in Forewit rounds. Forewit shows counts only: Predict.fun does not allow its market data to be shared further.",
+    "total": "{n} open markets right now.",
     "g": {
       "other": "Events",
       "crypto_daily": "Daily crypto",
@@ -878,9 +895,7 @@
       "esports": "Approved for the optional sports board (25 Nov 2026): liquid markets join topic rounds once they switch on, at most 5 optional rounds a day.",
       "tweets": "Yes when liquid and settling 6 to 72 hours after a round deadline."
     },
-    "search": "Search these markets",
-    "yes": "Yes {p}%",
-    "inRound": "In a round",
-    "note": "Market list from the keeper download at {t} UTC. Prices are the order book middle, not advice."
+    "note": "Counts from the keeper download at {t} UTC.",
+    "browse": "To browse and search markets, use your own agent with your own free Predict.fun API key from https://developers.predict.fun, then run:"
   }
 }

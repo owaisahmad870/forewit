@@ -31,6 +31,8 @@ export function proofFacts(snap: ProofSnapshot) {
       holders.push({ addr: a, tx: first?.tx ?? null, roundId: first?.roundId ?? r.roundId });
     }
   }
+  // v2 open forecasts: holders who only forecast there count too (no round, so the row links the address)
+  for (const a of snap.open?.committers ?? []) if (!seen.has(a)) { seen.add(a); holders.push({ addr: a, tx: null, roundId: '' }); }
   const questions = snap.rounds.reduce((s, r) => s + r.questions.length, 0);
   const outcomes = snap.rounds.flatMap((r) => Object.values(r.outcomes));
   const resolved = outcomes.filter((o) => o !== 'Unresolved').length;

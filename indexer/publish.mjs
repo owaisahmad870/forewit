@@ -3,11 +3,13 @@
 //   node indexer/publish.mjs --network testnet --ledger <address> --from-block <n> [--abi <file>] [--out web/public/data]
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { buildSnapshot } from './build.mjs';
+import { buildOpenSnapshot } from './build_open.mjs';
 import { presentQuestion } from '../agent/lib/question.mjs';
 import { meanMovePts } from './lib/flags.mjs';
 import { marketsView } from './lib/markets.mjs';
 
 export async function publish({ network = 'testnet', ledger, fromBlock, abiPath, rpc, outDir = 'web/public/data' }) {
+  rmSync(`${outDir}/markets.json`, { force: true }); // first: an older file may still list titles and prices, so it never ships even if the build below fails
   const { out } = await buildSnapshot({ network, ledger, fromBlock, abiPath, rpc });
   mkdirSync(`${outDir}/rounds`, { recursive: true });
   const archive = `keeper/archive/${network}`;
@@ -39,14 +41,24 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
   // pre registered rule: average window move over the first 5 rounds; above 0.5 points the leaderboard flags post baseline skill
   const first5 = moves.filter((m) => m.pts !== null).sort((a, b) => Number(a.roundId) - Number(b.roundId)).slice(0, 5);
   out.metrics.windowMove = { rounds: first5.length, avgPts: first5.length ? first5.reduce((s, m) => s + m.pts, 0) / first5.length : null, thresholdPts: 0.5, active: first5.length === 5 && first5.reduce((s, m) => s + m.pts, 0) / 5 > 0.5 };
-  // extended view: every open Predict.fun market from the keeper's newest daily download (no API call, no gas)
+  // open forecasts (v2): only once OPEN_LEDGER and OPEN_FROM_BLOCK are set; a v2 failure never blocks the v1 snapshot
+  const { OPEN_LEDGER, OPEN_FROM_BLOCK } = process.env;
+  if (OPEN_LEDGER && OPEN_FROM_BLOCK) {
+    try {
+      out.open = await buildOpenSnapshot({ ledger: OPEN_LEDGER, fromBlock: OPEN_FROM_BLOCK, rpc, network });
+    } catch (e) {
+      console.error(`open forecasts skipped: ${e.message}`);
+    }
+  }
+  // /proof counts distinct Agent ID holders across both contracts
+  out.metrics.distinctCommitters = new Set([...out.rounds.flatMap((r) => r.committers.map((a) => a.toLowerCase())), ...(out.open?.committers ?? [])]).size;
+  // market groups from the keeper's newest daily download: aggregate counts only (Predict.fun terms forbid redistribution)
   const days = existsSync(archive) ? readdirSync(archive).filter((d) => /_daily$/.test(d) && existsSync(`${archive}/${d}/markets_raw.json`)).sort() : [];
   // best effort: a bad or huge markets file must never block the snapshot below
   if (days.length) {
     try {
       const raw = JSON.parse(readFileSync(`${archive}/${days.at(-1)}/markets_raw.json`, 'utf8'));
-      const asked = new Set(out.rounds.flatMap((r) => r.questions.map((q) => String(q.marketId))));
-      writeFileSync(`${outDir}/markets.json`, JSON.stringify(marketsView(raw.markets ?? [], { fetchedAt: raw.fetchedAt, asked })));
+      writeFileSync(`${outDir}/markets.json`, JSON.stringify(marketsView(raw.markets ?? [], { fetchedAt: raw.fetchedAt })));
     } catch (e) {
       console.error(`markets view skipped: ${e.message}`);
     }

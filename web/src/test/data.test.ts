@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { bins10, calibrationError, crowdVsMarket, bannerRounds, joinRounds, leaderboard, liveRound, phase, unpack, walletResults, type RoundFile, type Snapshot, type SnapRound } from '../lib/data';
+import { bins10, calibrationError, crowdVsMarket, bannerRounds, joinRounds, leaderboard, liveRound, phase, unpack, walletResults, type OpenForecast, type RoundFile, type Snapshot, type SnapRound } from '../lib/data';
 
 const json = <T,>(p: string): T => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const pack = (bps: number[]) => bps.reduce((a, p, i) => a | (BigInt(p) << BigInt(16 * i)), 0n).toString();
@@ -178,5 +178,69 @@ describe('wallet results card', () => {
   });
   it('a wallet that never committed has an empty card', () => {
     expect(walletResults(snap([goldRound(1, { '0xb': gold })]), '0xa')).toMatchObject({ committed: 0, rounds: [], avgSkill: null });
+  });
+});
+
+describe('merged record with v2 open forecasts (docs/OPEN_FORECASTS.md Record)', () => {
+  const DAY = 86400;
+  // one v2 forecast; `day` sets the onchain resolution day, skill in Brier units times 1e8
+  const of = (forecaster: string, n: number, over: Partial<OpenForecast> = {}): OpenForecast => ({
+    key: `0x${n}`, marketId: String(100 + n), forecaster, slot: 0, committedAt: 1795000000 + n * DAY, baselineBps: 6000, voided: false, revealedBps: 8000,
+    scored: { brier: '4000000', baselineBrier: '16000000', skill: '12000000', baselineUsed: true, forfeited: false },
+    finalized: { slot0Outcome: 'Yes', split: false, at: 1795000000 + n * DAY }, ...over,
+  });
+  const s = (q: number) => ({ questions: String(q), brier: '0', skill: String(q * 1e6) });
+  const pub = { '0xa': { isPublic: true, name: 'A' } };
+  it('a snapshot without an open section gives the same rows as before', () => {
+    const rounds = Array.from({ length: 5 }, (_, i) => goldRound(i + 1, { '0xA': s(4) }));
+    const a = leaderboard(snap(rounds, pub));
+    const b = leaderboard({ ...snap(rounds, pub), open: { forecasts: [], committers: [] } });
+    expect(b.rows).toEqual(a.rows);
+    expect(a.rows[0]).toMatchObject({ ranked: true, days: 5, openForecasts: 0 });
+  });
+  it('adds v2 skill and baseline forecasts to v1: (sumSkill v1 + v2) / (questions v1 + v2 + 20)', () => {
+    const base = snap([goldRound(1, { '0xA': s(4) }), goldRound(2, { '0xA': s(4) })], pub);
+    const open = { forecasts: Array.from({ length: 12 }, (_, i) => of('0xa', i + 10)), committers: ['0xa'] };
+    const row = leaderboard({ ...base, open }).rows[0];
+    expect(row.baselineQuestions).toBe(20);
+    expect(row.questions).toBe(20);
+    expect(row.openForecasts).toBe(12);
+    expect(row.days).toBe(14);
+    expect(row.shrunkSkill).toBeCloseTo((8e6 + 12 * 12e6) / 40 / 1e8);
+    expect(row.ranked).toBe(true);
+    expect(walletResults({ ...base, open }, '0xA').shrunkSkill).toBeCloseTo(row.shrunkSkill, 12);
+  });
+  it('v1 keeps its 5 rounds rule: two rounds closing on the same date still count as two', () => {
+    const rounds = Array.from({ length: 5 }, (_, i) => goldRound(i + 1, { '0xA': s(4) }, { commitDeadline: String(1795000000 + (i < 2 ? 0 : i) * DAY) }));
+    expect(leaderboard(snap(rounds, pub)).rows[0]).toMatchObject({ days: 5, ranked: true });
+  });
+  it('needs 5 distinct scoring days: 20 forecasts resolved on one day do not rank', () => {
+    const open = { forecasts: Array.from({ length: 20 }, (_, i) => of('0xa', i, { finalized: { slot0Outcome: 'Yes', split: false, at: 1795000000 } })), committers: ['0xa'] };
+    const row = leaderboard({ ...snap([], pub), open }).rows[0];
+    expect(row.baselineQuestions).toBe(20);
+    expect(row.days).toBe(1);
+    expect(row.ranked).toBe(false);
+  });
+  it('void forecasts and split payouts never count; forfeits count; no market price adds Brier only', () => {
+    const open = { forecasts: [
+      of('0xa', 1, { voided: true, scored: null }),
+      of('0xa', 2, { finalized: { slot0Outcome: 'Void', split: true, at: 1795000000 }, scored: { brier: '0', baselineBrier: '0', skill: '0', baselineUsed: false, forfeited: false } }),
+      of('0xa', 3, { revealedBps: null, scored: { brier: '100000000', baselineBrier: '16000000', skill: '-84000000', baselineUsed: true, forfeited: true } }),
+      of('0xa', 4, { baselineBps: null, scored: { brier: '4000000', baselineBrier: '0', skill: '0', baselineUsed: false, forfeited: false } }),
+      of('0xa', 5, { revealedBps: null, scored: null, finalized: null }),
+      of('0xa', 6, { scored: null, finalized: null }),
+      of('0xa', 7, { slot: 1, scored: { brier: '64000000', baselineBrier: '36000000', skill: '-28000000', baselineUsed: true, forfeited: false } }),
+    ], committers: ['0xa'] };
+    const row = leaderboard({ ...snap([], pub), open }).rows[0];
+    expect([row.questions, row.baselineQuestions, row.openForecasts]).toEqual([3, 2, 3]);
+    expect(row.meanBrier).toBeCloseTo((1e8 + 4e6 + 64e6) / 3 / 1e8);
+    const w = walletResults({ ...snap([], pub), open }, '0xa');
+    expect(w.committed).toBe(0);
+    expect(Object.fromEntries(w.predictions.map((p) => [p.marketId, p.status]))).toEqual({ 101: 'void', 102: 'void', 103: 'forfeited', 104: 'scored', 105: 'waiting', 106: 'revealed', 107: 'behind' });
+    const p7 = w.predictions.find((p) => p.marketId === '107')!;
+    expect([p7.chance, p7.skill, p7.brier, p7.marketBrier]).toEqual([0.8, -0.28, 0.64, 0.36]);
+    expect(w.predictions.find((p) => p.marketId === '105')).toMatchObject({ chance: null, open: true });
+    expect(w.predictions.find((p) => p.marketId === '101')!.open).toBe(false);
+    expect(w.avgSkill).toBeCloseTo((-84e6 - 28e6) / 2 / 1e8);
   });
 });
