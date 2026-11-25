@@ -210,6 +210,10 @@ describe('merged record with v2 open forecasts (docs/OPEN_FORECASTS.md Record)',
     expect(row.ranked).toBe(true);
     expect(walletResults({ ...base, open }, '0xA').shrunkSkill).toBeCloseTo(row.shrunkSkill, 12);
   });
+  it('v1 keeps its 5 rounds rule: two rounds closing on the same date still count as two', () => {
+    const rounds = Array.from({ length: 5 }, (_, i) => goldRound(i + 1, { '0xA': s(4) }, { commitDeadline: String(1795000000 + (i < 2 ? 0 : i) * DAY) }));
+    expect(leaderboard(snap(rounds, pub)).rows[0]).toMatchObject({ days: 5, ranked: true });
+  });
   it('needs 5 distinct scoring days: 20 forecasts resolved on one day do not rank', () => {
     const open = { forecasts: Array.from({ length: 20 }, (_, i) => of('0xa', i, { finalized: { slot0Outcome: 'Yes', split: false, at: 1795000000 } })), committers: ['0xa'] };
     const row = leaderboard({ ...snap([], pub), open }).rows[0];

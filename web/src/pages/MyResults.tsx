@@ -101,7 +101,7 @@ export function MyResults({ data }: { data: Dataset }) {
       {w && (
         <Card>
           <h2 className="text-lg font-semibold">{t('me.overall')}</h2>
-          {!w.committed && !w.predictions.length ? <p className="mt-2 text-muted">{t('me.none')}</p> : !w.committed ? (
+          {!w.committed && !w.predictions.length ? <p className="mt-2 text-muted">{t('me.none')}</p> : !w.committed ? (w.avgSkill !== null || !!w.rank) && (
             <p className="mt-2">{w.avgSkill !== null && <span className={w.avgSkill > 0 ? 'text-pos' : w.avgSkill < 0 ? 'text-neg' : ''}>{t('me.avg', { p: pts(w.avgSkill) })} </span>}{w.rank ? t('me.rank', { n: w.rank }) : ''}</p>
           ) : (
             <>

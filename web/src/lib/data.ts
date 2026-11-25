@@ -225,7 +225,7 @@ export function calibrationError(pairs: { p: number; yes: boolean }[]): number |
 }
 
 export const K = 20;
-export const MIN_ROUNDS = 5; // merged board (docs/OPEN_FORECASTS.md Record): distinct scoring days (UTC dates of v1 round deadlines and v2 resolutions)
+export const MIN_ROUNDS = 5; // merged board (docs/OPEN_FORECASTS.md Record): scoring days, each scored v1 round counting as one (as before) plus each distinct UTC date of a v2 resolution
 export const MIN_BASELINE_QUESTIONS = 20;
 
 export interface Row {
@@ -234,7 +234,7 @@ export interface Row {
   name: string | null;
   isPublic: boolean;
   rounds: number; // rounds with a score (revealed or forfeited)
-  days: number; // distinct UTC scoring days across v1 rounds and v2 resolutions (ranking needs MIN_ROUNDS)
+  days: number; // scoring days: scored v1 rounds plus distinct UTC dates of v2 resolutions (ranking needs MIN_ROUNDS)
   openForecasts: number; // scored v2 open forecasts in the record
   roundsCommitted: number;
   roundsRevealed: number;
@@ -266,7 +266,7 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
     for (const [a, s] of [...Object.entries(r.scored), ...Object.entries(r.forfeited)]) {
       const x = get(a);
       x.rounds++;
-      x.days.add(dayOf(Number(r.commitDeadline)));
+      x.days.add(`r${r.roundId}`); // v1 keeps its 5 rounds rule: two rounds on one date still count twice
       x.q += Number(s.questions);
       x.brier += BigInt(s.brier);
       if (r.baseline) { x.bq += Number(s.questions); x.skill += BigInt(s.skill); }

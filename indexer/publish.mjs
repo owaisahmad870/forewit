@@ -9,6 +9,7 @@ import { meanMovePts } from './lib/flags.mjs';
 import { marketsView } from './lib/markets.mjs';
 
 export async function publish({ network = 'testnet', ledger, fromBlock, abiPath, rpc, outDir = 'web/public/data' }) {
+  rmSync(`${outDir}/markets.json`, { force: true }); // first: an older file may still list titles and prices, so it never ships even if the build below fails
   const { out } = await buildSnapshot({ network, ledger, fromBlock, abiPath, rpc });
   mkdirSync(`${outDir}/rounds`, { recursive: true });
   const archive = `keeper/archive/${network}`;
@@ -52,7 +53,6 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
   // /proof counts distinct Agent ID holders across both contracts
   out.metrics.distinctCommitters = new Set([...out.rounds.flatMap((r) => r.committers.map((a) => a.toLowerCase())), ...(out.open?.committers ?? [])]).size;
   // market groups from the keeper's newest daily download: aggregate counts only (Predict.fun terms forbid redistribution)
-  rmSync(`${outDir}/markets.json`, { force: true }); // an older file may still list titles and prices
   const days = existsSync(archive) ? readdirSync(archive).filter((d) => /_daily$/.test(d) && existsSync(`${archive}/${d}/markets_raw.json`)).sort() : [];
   // best effort: a bad or huge markets file must never block the snapshot below
   if (days.length) {
