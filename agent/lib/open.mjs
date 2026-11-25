@@ -51,7 +51,7 @@ export const openRevealForCalldata = ({ key, forecaster, bps, salt, ctf, conditi
 /** Predict.fun REST with the user's own key (mainnet requires one; testnet does not). */
 export async function predictApi(chainId, path, { key = process.env.PREDICT_API_KEY, fetchImpl = fetch } = {}) {
   if (chainId === 56 && !key) throw new Error(`browsing Predict.fun markets ${KEY_HELP}`);
-  const res = await fetchImpl(API[chainId] + path, { headers: chainId === 56 ? { 'x-api-key': key } : {}, signal: AbortSignal.timeout(15000) });
+  const res = await fetchImpl((process.env.FOREWIT_PREDICT_API || API[chainId]) + path, { headers: chainId === 56 ? { 'x-api-key': key } : {}, signal: AbortSignal.timeout(15000) });
   if (res.status === 401 || res.status === 403) throw new Error(`Predict.fun refused the API key (HTTP ${res.status}); ${KEY_HELP}`);
   if (res.status === 429) throw new Error('Predict.fun rate limit reached for your key; wait a minute and try again');
   if (!res.ok) throw new Error(`Predict.fun API ${path.split('?')[0]}: HTTP ${res.status}`);
