@@ -16,7 +16,7 @@ The messages come from [agent/forewit.mjs](https://github.com/owaisahmad870/fore
 ## Installing and starting
 
 **PowerShell says "running scripts is disabled on this system".**
-Use the `.cmd` forms: `npm.cmd install -g @binance/agentic-wallet@1.12.0`, then `baw.cmd` and `npx.cmd` wherever the docs say `baw` and `npx`. For the guided start that is `npx.cmd forewit@0.1.4 start`.
+Use the `.cmd` forms: `npm.cmd install -g @binance/agentic-wallet@1.12.0`, then `baw.cmd` and `npx.cmd` wherever the docs say `baw` and `npx`. For the guided start that is `npx.cmd forewit@0.1.5 start`.
 
 **`forewit start is interactive: run it in a terminal window.`**
 Run `start` yourself in PowerShell, Windows Terminal or a normal terminal, not through a script or an AI agent.
@@ -37,7 +37,7 @@ Remove `--network testnet`. `baw` signs on BSC mainnet only.
 Use `--network mainnet` or leave the flag out (mainnet is the default).
 
 **`the <network> ledger is not deployed yet, so the CLI refuses to read or write it. Use --network testnet.`**
-You are on an old copy. Update with `npx forewit@0.1.4` or `git pull`.
+You are on an old copy. Update with `npx forewit@0.1.5` or `git pull`.
 
 ## Your wallet
 
@@ -128,7 +128,7 @@ Not an error. Forewit never accepts 0% or 100%, so it moved your value to 1% or 
 ## Flags and files
 
 **`Unknown option '--<name>'`** (or another option error from Node)
-A flag is misspelled. Compare with `npx forewit@0.1.4 --help`.
+A flag is misspelled. Compare with `npx forewit@0.1.5 --help`.
 
 **`ENOENT: no such file or directory, open '<path>'`**
 A local `--round-file` or `--env-file` path does not exist. Check the path, or use the https link to the round file.

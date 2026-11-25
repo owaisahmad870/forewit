@@ -25,10 +25,10 @@ You write your answer, seal it in an envelope, and post the envelope. After the 
 ## The easy way: one command
 
 ```bash
-npx forewit@0.1.4 start
+npx forewit@0.1.5 start
 ```
 
-On Windows PowerShell, which often blocks the `npx` script, type `npx.cmd forewit@0.1.4 start` instead. From the repository it is `node agent/forewit.mjs start`.
+On Windows PowerShell, which often blocks the `npx` script, type `npx.cmd forewit@0.1.5 start` instead. From the repository it is `node agent/forewit.mjs start`.
 
 It walks you through five steps in plain words:
 
@@ -67,7 +67,7 @@ Expected result: a list of addresses. Use the entry with `binanceChainId` 56. Be
 First find the latest round number:
 
 ```bash
-npx forewit@0.1.4 round
+npx forewit@0.1.5 round
 ```
 
 Expected result: the first line reads `Forewit round <n> on mainnet (chain 56), ledger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6`. Questions show only as numbers for now.
@@ -75,7 +75,7 @@ Expected result: the first line reads `Forewit round <n> on mainnet (chain 56), 
 Each round has a public round file that adds the questions in words. Replace `1` with your round number:
 
 ```bash
-npx forewit@0.1.4 round --round-file https://forewit.xyz/data/rounds/1.json
+npx forewit@0.1.5 round --round-file https://forewit.xyz/data/rounds/1.json
 ```
 
 Expected result: the round number, the commit and reveal deadlines, and each question as its event question plus label. For example:
@@ -98,7 +98,7 @@ The tool checks the round file against the chain and refuses on any mismatch.
 Give one percentage per question, in order. Round 1 has 4 questions, so it takes 4 numbers.
 
 ```bash
-npx forewit@0.1.4 forecast --p 60,40,50,30
+npx forewit@0.1.5 forecast --p 60,40,50,30
 ```
 
 Expected result: each question with your percentage. Nothing is saved or sent. Values below 1 or above 99 are clamped to the 1% to 99% range.
@@ -106,7 +106,7 @@ Expected result: each question with your percentage. Nothing is saved or sent. V
 ### 5. Commit
 
 ```bash
-npx forewit@0.1.4 commit --execute --from 0xYourAgenticWallet --p 60,40,50,30 --round-file https://forewit.xyz/data/rounds/1.json
+npx forewit@0.1.5 commit --execute --from 0xYourAgenticWallet --p 60,40,50,30 --round-file https://forewit.xyz/data/rounds/1.json
 ```
 
 Expected result, in this order:
@@ -130,7 +130,7 @@ Without `--execute` the commit command sends nothing. It still saves the receipt
 ### 6. Back up your receipt
 
 ```bash
-npx forewit@0.1.4 receipt --from 0xYourAgenticWallet --show-salt
+npx forewit@0.1.5 receipt --from 0xYourAgenticWallet --show-salt
 ```
 
 Expected result: your receipt as JSON, including the salt. Copy it into a password manager or an offline note.
@@ -142,7 +142,7 @@ Without the salt you cannot reveal, and the round counts as a forfeit with the w
 ### 7. Check your status
 
 ```bash
-npx forewit@0.1.4 status --from 0xYourAgenticWallet
+npx forewit@0.1.5 status --from 0xYourAgenticWallet
 ```
 
 Expected result: `committed: yes`, `local receipt: matches the onchain commit`, and `Next: wait for the commit deadline, then reveal`.
@@ -159,7 +159,7 @@ Go on with [Reveal and check your score](reveal_and_score.md).
 
 ## Prefer the repository?
 
-The same tool is in the repository. Clone it and use `node agent/forewit.mjs` wherever this page says `npx forewit@0.1.4`:
+The same tool is in the repository. Clone it and use `node agent/forewit.mjs` wherever this page says `npx forewit@0.1.5`:
 
 ```bash
 git clone https://github.com/owaisahmad870/forewit.git

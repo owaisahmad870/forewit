@@ -16,7 +16,7 @@ description: 先见 Forewit 命令行工具可能打印的每一条消息，以�
 ## 安装与启动
 
 **PowerShell 提示 "running scripts is disabled on this system"（系统禁止运行脚本）。**
-改用 `.cmd` 形式：`npm.cmd install -g @binance/agentic-wallet@1.12.0`，然后在文档写着 `baw` 和 `npx` 的地方输入 `baw.cmd` 和 `npx.cmd`。引导式开始对应的命令是 `npx.cmd forewit@0.1.4 start`。
+改用 `.cmd` 形式：`npm.cmd install -g @binance/agentic-wallet@1.12.0`，然后在文档写着 `baw` 和 `npx` 的地方输入 `baw.cmd` 和 `npx.cmd`。引导式开始对应的命令是 `npx.cmd forewit@0.1.5 start`。
 
 **`forewit start is interactive: run it in a terminal window.`**
 请在 PowerShell、Windows Terminal 或普通终端中亲自运行 `start`，不要通过脚本或 AI 智能体运行。
@@ -37,7 +37,7 @@ description: 先见 Forewit 命令行工具可能打印的每一条消息，以�
 使用 `--network mainnet`，或者不加这个参数（默认就是主网）。
 
 **`the <network> ledger is not deployed yet, so the CLI refuses to read or write it. Use --network testnet.`**
-你使用的是旧版本。用 `npx forewit@0.1.4` 或 `git pull` 更新。
+你使用的是旧版本。用 `npx forewit@0.1.5` 或 `git pull` 更新。
 
 ## 你的钱包
 
@@ -128,7 +128,7 @@ description: 先见 Forewit 命令行工具可能打印的每一条消息，以�
 ## 参数与文件
 
 **`Unknown option '--<name>'`**（或 Node 给出的其他参数错误）
-某个参数拼写有误。请对照 `npx forewit@0.1.4 --help`。
+某个参数拼写有误。请对照 `npx forewit@0.1.5 --help`。
 
 **`ENOENT: no such file or directory, open '<path>'`**
 本地的 `--round-file` 或 `--env-file` 路径不存在。检查路径，或改用轮次文件的 https 链接。

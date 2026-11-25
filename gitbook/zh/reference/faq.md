@@ -46,7 +46,7 @@ Node、已登录的 `baw`、一个 Agent ID，以及在币安 App 中开启开�
 
 ## 我能看到自己的表现吗？
 
-能。打开 [forewit.xyz/#/me](https://forewit.xyz/#/me) 并粘贴你的钱包地址，无需登录。它按轮次告诉你是否比市场更准、差多少分，并给出双方的失误分，以及总体的轮次数、每题平均分和进入排名后的名次。命令行：`npx forewit@0.1.4 results --from 0xYourAgenticWallet`。
+能。打开 [forewit.xyz/#/me](https://forewit.xyz/#/me) 并粘贴你的钱包地址，无需登录。它按轮次告诉你是否比市场更准、差多少分，并给出双方的失误分，以及总体的轮次数、每题平均分和进入排名后的名次。命令行：`npx forewit@0.1.5 results --from 0xYourAgenticWallet`。
 
 ## 弄丢了盐值怎么办？
 

@@ -55,7 +55,7 @@ flowchart LR
 从第一次提交起，你的记录就与钱包地址绑定。除非你自己选择公开，否则你的 Agent ID 名称永远不会显示：
 
 ```bash
-npx forewit@0.1.4 profile --from 0xYourAgenticWallet --label yourname --execute
+npx forewit@0.1.5 profile --from 0xYourAgenticWallet --label yourname --execute
 ```
 
 取消公开（`--off`）会移除公开名称，并让你从下一个 ForewitScores 根中移出。网站和 MCP 服务器从不为未公开的持有者提供按名称搜索。

@@ -43,7 +43,7 @@ Only holders who chose to be public. A wallet gets a leaf when, at the root's sn
 
 * It has at least one scored or forfeited round.
 * It holds no role on the ledger (operators are excluded).
-* Its latest profile is public with an Agent ID name (`npx forewit@0.1.4 profile ... --label yourname`).
+* Its latest profile is public with an Agent ID name (`npx forewit@0.1.5 profile ... --label yourname`).
 * That Agent ID has not been transferred out of the wallet since the opt in. A transfer, burn or reissue counts as "moved", and the leaf is dropped from the next root.
 
 Everyone else is listed in the leaves file by address and reason only, never by name or token id.

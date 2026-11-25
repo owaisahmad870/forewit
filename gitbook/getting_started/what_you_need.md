@@ -12,7 +12,7 @@ description: The five things you need before your first Forewit commit, and the 
 You need five things. Most people already have the first one.
 
 {% hint style="info" %}
-Shortcut: `npx forewit@0.1.4 start` (on Windows PowerShell `npx.cmd forewit@0.1.4 start`) checks items 3 and 4 for you, offers to install `baw`, and signs you in with a link and a pairing code that you approve in the Binance App. See [Quickstart](quickstart.md).
+Shortcut: `npx forewit@0.1.5 start` (on Windows PowerShell `npx.cmd forewit@0.1.5 start`) checks items 3 and 4 for you, offers to install `baw`, and signs you in with a link and a pairing code that you approve in the Binance App. See [Quickstart](quickstart.md).
 {% endhint %}
 
 ## 1. An Agent ID
