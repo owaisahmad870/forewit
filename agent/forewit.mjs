@@ -544,10 +544,12 @@ async function cmdPredict(o, io) {
 
 async function openRevealCmd(o, io, net, from) {
   const onet = openNet(net);
-  const [r] = openReceipts(o.home, { forecaster: from, marketId: o.market }).filter((x) => x.ledger.toLowerCase() === onet.ledger.toLowerCase());
-  if (!r) throw new Error(`no saved receipt for market ${o.market} and ${from} in ${receiptDir(o.home)}`);
+  const mine = openReceipts(o.home, { forecaster: from, marketId: o.market }).filter((x) => x.ledger.toLowerCase() === onet.ledger.toLowerCase());
+  if (!mine.length) throw new Error(`no saved receipt for market ${o.market} and ${from} in ${receiptDir(o.home)}`);
+  const f = await openForecastOnchain(onet, mine[0].key, from);
+  const r = mine.find((x) => x.commitHash.toLowerCase() === f.commitHash.toLowerCase());
+  if (!r) throw new Error(`none of the ${mine.length} saved receipt(s) for market ${o.market} matches the commit onchain; restore the right receipt into ${receiptDir(o.home)}`);
   if (!(await openResolvedAt(onet, r.key))) throw new Error('the market has not resolved onchain yet (or nobody finalized it); reveal opens after that');
-  const f = await openForecastOnchain(onet, r.key, from);
   if (f.flags & 1) return say('Already revealed.');
   const data = openRevealCalldata({ key: r.key, bps: r.bps, salt: r.salt, ctf: r.ctf, conditionId: r.conditionId });
   if (o.execute) await sendWithConfirmation({ net: onet, from, data, what: `reveal on market ${r.marketId}`, io });
@@ -558,7 +560,8 @@ async function cmdPredictions(o) {
   const net = network(o.network);
   const from = needFrom(o.from);
   const onet = openNet(net);
-  const mine = openReceipts(o.home, { forecaster: from }).filter((x) => x.ledger.toLowerCase() === onet.ledger.toLowerCase());
+  const all = openReceipts(o.home, { forecaster: from }).filter((x) => x.ledger.toLowerCase() === onet.ledger.toLowerCase());
+  const mine = [...new Map(all.map((x) => [x.key, x])).values()]; // one line per market
   if (!mine.length) return say(`No open forecasts saved on this machine for ${from}. Make one: ${CMD} markets --search "<words>"`);
   for (const r of mine) {
     const f = await openForecastOnchain(onet, r.key, from);

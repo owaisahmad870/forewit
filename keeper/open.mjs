@@ -43,6 +43,15 @@ const MIN_DEPTH_USD = Number(process.env.OPEN_MIN_DEPTH_USD || 50);
 const PROMPT_READ_S = 15; // a closed book counts as void evidence only when read this soon after the commit
 const WALLET_DAILY_CAP = Number(process.env.OPEN_WALLET_DAILY_CAP || 50);
 const MAX_JUMP_BPS = 300; // rule v2.1: the live book must agree with the history point within 3 points
+const BC_BUDGET_MS = 20_000;
+const MIN_LEAD_S = 60, MIN_LEAD_SHARE = 0.2; // rule v2.1: no price for a commit in the last 20% of a market's life
+
+/** Off chain review M5: a commit too close to the market end gets no price (the outcome may be nearly known). */
+export function tooLate({ committedAt, startsAtS, endsAtS }) {
+  if (!Number.isFinite(endsAtS)) return false;
+  const life = Number.isFinite(startsAtS) && endsAtS > startsAtS ? endsAtS - startsAtS : 0;
+  return endsAtS - committedAt < Math.max(MIN_LEAD_S, MIN_LEAD_SHARE * life);
+}
 
 /** Live Yes middle of a two sided book in basis points, or null. Used only to refuse a price, never to set one. */
 export function liveMidBps(book) {
@@ -169,7 +178,9 @@ async function priceOrVoid(f, now) {
   const endsAtS = Date.parse(cat?.tradingSession?.closesAt ?? cat?.endsAt ?? '') / 1000;
   // re-review L2: the read time is taken after the API calls, not at the start of the pass
   const reason = voidReason({ f, market: m, endsAtS, readAtS: Math.floor(Date.now() / 1000), chainId: CHAIN_ID });
-  const p = reason ? null : priceFromHistory(book?.series, f.committedAt, f.slot, Number(m?.stats?.volume24hUsd), liveMidBps(live));
+  const startsAtS = Date.parse(cat?.tradingSession?.opensAt ?? cat?.startsAt ?? '') / 1000;
+  const p = reason ? null : tooLate({ committedAt: f.committedAt, startsAtS, endsAtS }) ? { ok: false, why: 'committed in the last 20 percent of the market\'s life' }
+    : priceFromHistory(book?.series, f.committedAt, f.slot, Number(m?.stats?.volume24hUsd), liveMidBps(live));
   if (!reason && m && !m.stats) await alert(`market ${f.marketId}: Predict.fun returned no stats, so no price can count; check the API`);
   const evidence = { forecast: { ...f, sealed: undefined }, checkedAt: now, tries: f.tries, reason, price: p,
     market: m && { id: m.id, conditionId: m.conditionId, tradingStatus: m.tradingStatus, status: m.status, outcomes: m.outcomes?.map((o) => ({ indexSet: o.indexSet })) },
@@ -202,11 +213,14 @@ async function pass() {
   for (const f of unpaid.slice(UNPAID_PER_PASS)) if (now > f.committedAt + VOID_WINDOW) f.stage = 'priced'; // no price, so no weight
   save(st);
   now = Math.floor(Date.now() / 1000);
-  // B: once per market
-  const open = all.filter((x) => x.stage === 'priced');
+  // B: once per market. Off chain review M4: the keeper pays finalize, reveal and score only for forecasts within the
+  // daily cap (anyone may call them for the rest), and B plus C stop after BC_BUDGET_MS so phase A runs every pass
+  const passStart = Date.now();
+  const open = all.filter((x) => x.stage === 'priced' && x.paid);
   const resolved = new Map();
   st.payoutCheckedAt ??= {};
   for (const key of new Set(open.map((x) => x.key))) {
+    if (Date.now() - passStart > BC_BUDGET_MS) break;
     const f = open.find((x) => x.key === key);
     try {
       if (now - (st.payoutCheckedAt[key] ?? 0) < PAYOUT_CHECK_S && !st.resolved?.[key]) continue;
@@ -224,6 +238,7 @@ async function pass() {
   }
   // C: reveal and score
   for (const f of open.filter((x) => resolved.has(x.key))) {
+    if (Date.now() - passStart > BC_BUDGET_MS) break;
     try {
       const resolvedAt = resolved.get(f.key);
       const [hash, , , flags, , , revealNotBefore] = await read('forecasts', [f.key, f.forecaster]);
@@ -240,7 +255,11 @@ async function pass() {
               f.sealedBad = true; // review M6: alert once, never retry a copy that does not match
               await alert(`market ${f.marketId} ${f.forecaster}: sealed copy does not match the commit; the owner must reveal from the receipt`);
             } else await send('revealFor', [f.key, f.forecaster, Number(packed), salt, f.ctf, f.conditionId]);
-          } catch (e) { if (!/too early/i.test(e.message)) { f.sealedBad = true; await alert(`market ${f.marketId} ${f.forecaster}: reveal failed: ${e.message}`); } }
+          } catch (e) {
+            // off chain review M3: a drand, RPC or gas error is retried on the next pass (alerted once); only an
+            // unreadable or mismatching copy is given up
+            if (!/too early/i.test(e.message) && !f.revealErrAlerted) { f.revealErrAlerted = true; await alert(`market ${f.marketId} ${f.forecaster}: reveal failed, retrying: ${(e.shortMessage || e.message).split('\n')[0]}`); }
+          }
         }
       }
       const flags2 = Number((await read('forecasts', [f.key, f.forecaster]))[3]);

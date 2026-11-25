@@ -129,4 +129,5 @@ export async function prepareOpen({ chainId, ledger, forecaster, market, slot, b
   return { receipt, data, key };
 }
 
-export const openReceiptName = (r) => `open_${r.chainId}_${r.ledger.toLowerCase()}_${r.key.slice(2, 14)}_${r.forecaster.toLowerCase()}.json`;
+// the commit hash is in the name (as in v1), so a retry never overwrites the salt of a commit that may still land
+export const openReceiptName = (r) => `open_${r.chainId}_${r.ledger.toLowerCase()}_${r.key.slice(2, 14)}_${r.forecaster.toLowerCase()}_${r.commitHash.slice(2, 14)}.json`;

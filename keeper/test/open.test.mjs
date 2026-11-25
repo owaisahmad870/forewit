@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { priceFromHistory, voidReason, liveMidBps } from '../open.mjs';
+import { priceFromHistory, voidReason, liveMidBps, tooLate } from '../open.mjs';
 
 const CTF = '0x22DA1810B194ca018378464a58f6Ac2B10C9d244';
 const CID = '0x' + 'ab'.repeat(32);
@@ -20,6 +20,13 @@ test('final review M2 (rule v2.1): no price when the live book has moved from th
   assert.match(priceFromHistory(series, 1100, 0, 500, null).why, /no live price/);
   assert.equal(liveMidBps({ bids: [[0.4, 10]], asks: [[0.42, 10]] }), 4100);
   assert.equal(liveMidBps({ bids: [], asks: [[0.5, 1]] }), null);
+});
+
+test('off chain review M5: no price in the last 20 percent of a market (at least 60 s)', () => {
+  assert.equal(tooLate({ committedAt: 1000, startsAtS: 700, endsAtS: 1000 + 100 }), false); // 400 s market, 100 s left (limit 80 s)
+  assert.equal(tooLate({ committedAt: 1000, startsAtS: 100, endsAtS: 1000 + 100 }), true); // 100 s left of a 1000 s market
+  assert.equal(tooLate({ committedAt: 1000, startsAtS: NaN, endsAtS: 1030 }), true);
+  assert.equal(tooLate({ committedAt: 1000, startsAtS: NaN, endsAtS: NaN }), false);
 });
 
 test('void only on positive evidence', () => {
