@@ -103,6 +103,10 @@ jobs:
       - name: Save state
         if: always()
         run: |
+          # raw Predict.fun market lists stay off the public branch (their terms forbid redistribution): only a sha256
+          # fingerprint of each is kept, so the selection can still be checked against a fresh download
+          for f in $(find keeper/archive -name markets_raw.json 2>/dev/null); do sha256sum "$f" | cut -d' ' -f1 > "${f%.json}.sha256"; rm "$f"; done
+          find ../state/keeper/archive -name markets_raw.json -delete 2>/dev/null || true
           for d in keeper/state keeper/archive indexer/out web/public/data; do [ -d "$d" ] && mkdir -p "../state/$d" && cp -r "$d/." "../state/$d/"; done
           cd ../state
           git config user.name "forewit keeper" && git config user.email "keeper@users.noreply.github.com"

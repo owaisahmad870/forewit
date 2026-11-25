@@ -9,7 +9,11 @@ import { meanMovePts } from './lib/flags.mjs';
 import { marketsView } from './lib/markets.mjs';
 
 export async function publish({ network = 'testnet', ledger, fromBlock, abiPath, rpc, outDir = 'web/public/data' }) {
-  rmSync(`${outDir}/markets.json`, { force: true }); // first: an older file may still list titles and prices, so it never ships even if the build below fails
+  // an older markets.json may still list titles and prices (Predict.fun terms): drop it unless it is counts only
+  try {
+    const old = JSON.parse(readFileSync(`${outDir}/markets.json`, 'utf8'));
+    if (Object.values(old.groups ?? {}).some((g) => 'top' in g) || 'markets' in old) rmSync(`${outDir}/markets.json`, { force: true });
+  } catch { rmSync(`${outDir}/markets.json`, { force: true }); }
   const { out } = await buildSnapshot({ network, ledger, fromBlock, abiPath, rpc });
   mkdirSync(`${outDir}/rounds`, { recursive: true });
   const archive = `keeper/archive/${network}`;
