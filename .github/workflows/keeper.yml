@@ -112,7 +112,15 @@ jobs:
           cd ../state
           git config user.name "forewit keeper" && git config user.email "keeper@users.noreply.github.com"
           git add -A && { git diff --cached --quiet || git commit -qm "keeper $DUTY $NETWORK $(date -u +%FT%TZ)"; }
-          git push origin HEAD:refs/heads/keeper-state
+          # one time (owner decision 25 Nov 2026): older commits still hold raw Predict.fun market lists, so the branch
+          # restarts as a single commit of this clean state. Runs inside the keeper concurrency lock, so no run races it.
+          if [ ! -f HISTORY_CLEANED ]; then
+            echo "raw Predict.fun market lists removed from this branch's history on $(date -u +%F); only sha256 fingerprints are kept" > HISTORY_CLEANED
+            git add HISTORY_CLEANED && git checkout -q --orphan cleaned && git commit -qm "keeper-state restarted without raw market lists (history cleaned)"
+            git push --force origin HEAD:refs/heads/keeper-state
+          else
+            git push origin HEAD:refs/heads/keeper-state
+          fi
       - name: Relay the loop to a fresh run
         if: always() && env.DUTY == 'loop'
         env:
