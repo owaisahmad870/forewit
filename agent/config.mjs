@@ -10,6 +10,7 @@ export const NETWORKS = Object.freeze({
     // official BNB Chain endpoints, used only when the first answers with an HTTP or network error (rate limits on shared IPs)
     rpcFallbacks: ['https://bsc-dataseed.bnbchain.org', 'https://bsc-dataseed1.defibit.io'],
     explorer: 'https://bscscan.com',
+    open: null, // OpenForecasts (v2), pinned after the mainnet deploy; FOREWIT_OPEN_LEDGER overrides it for tests
     roundFiles: 'https://forewit.xyz/data/rounds/', // public round JSON per round id, written by keeper open; agent uses it when --round-file is not given
   }),
   testnet: Object.freeze({
@@ -19,6 +20,7 @@ export const NETWORKS = Object.freeze({
     rpc: 'https://bsc-testnet-rpc.publicnode.com',
     rpcFallbacks: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545'],
     explorer: 'https://testnet.bscscan.com',
+    open: null,
   }),
 });
 
