@@ -30,6 +30,7 @@ const START = {
     ],
     why_this_connector_cannot_send: 'The Binance Agentic Wallet signs only through an agent on your own machine or sandbox, and the hackathon rules forbid any server holding your wallet session. This connector reads rounds, markets and your results; sending happens in your own agent.',
     after: 'With auto reveal there is no second step. When the questions settle, ask here "how did I do?" or open https://forewit.xyz/#/me. On a computer without an agent, the command npx forewit@latest start does all of it in a terminal.',
+    any_market: 'Any market, any time: besides the daily rounds you can forecast any binary Predict.fun market (Forewit v2, open forecasts, live on BSC mainnet), scored against its market price at your commit. In your agent: get a free key at https://developers.predict.fun (set PREDICT_API_KEY), then forewit markets --search \"<words>\" and forewit predict --market <id> --p <chance> --auto-reveal, or just ask your agent to forecast a market.',
   },
   zh: {
     summary: '你在与币安 Agentic Wallet 配合使用的 AI 代理中参与（Claude Code、Claude 桌面应用的 Code 标签、Codex、OpenClaw 或 Hermes）。共三步；唯一的确认都在你自己的钱包里。',
@@ -40,6 +41,7 @@ const START = {
     ],
     why_this_connector_cannot_send: '币安 Agentic Wallet 只能通过你自己设备或沙盒中的代理签名，黑客松规则也禁止任何服务器持有你的钱包会话。此连接器读取轮次、市场和你的成绩；发送在你自己的代理中完成。',
     after: '开启自动揭示后无需第二步。问题结算后，在这里问“我表现如何？”或打开 https://forewit.xyz/#/me。在没有代理的电脑上，命令 npx forewit@latest start 可在终端中完成全部步骤。',
+    any_market: '任意市场，任意时间：除每日轮次外，你可以预测任何二元 Predict.fun 市场（Forewit v2 开放预测，已在 BSC 主网上线），以你提交时的市场价格为基准计分。在你的代理中：在 https://developers.predict.fun 免费获取密钥（设置 PREDICT_API_KEY），然后运行 forewit markets --search \"<关键词>\" 和 forewit predict --market <id> --p <概率> --auto-reveal，或直接让代理预测某个市场。',
   },
 };
 
@@ -459,11 +461,11 @@ export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_
 
   tool('get_markets', {
     title: 'Predict.fun market groups (counts only)',
-    description: 'How many Predict.fun markets are open per group (events, daily crypto, crypto in minutes or hours, sports, esports, tweet counts) and why each group is or is not in Forewit rounds. Counts only: Predict.fun terms forbid redistributing their data, so no titles, prices or ids. To browse or search markets, the user runs their own agent with their own free key from https://developers.predict.fun.',
+    description: 'How many Predict.fun markets are open per group (events, daily crypto, crypto in minutes or hours, sports, esports, tweet counts) and why each group is or is not in the daily Forewit rounds. Any binary market can still be forecast at any time as an open forecast (see any_market). Counts only: Predict.fun terms forbid redistributing their data, so no titles, prices or ids. To browse or search markets, the user runs their own agent with their own free key from https://developers.predict.fun.',
     outputSchema: {
       fetched_at: z.string().nullable(), total: z.number().int(),
       groups: z.array(z.object({ group: z.string(), count: z.number().int(), in_forewit_rounds: z.string() })),
-      browse: z.string(),
+      browse: z.string(), any_market: z.string(),
       search_command: z.string(),
     },
   }, async () => {
@@ -473,18 +475,20 @@ export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_
       groups: Object.entries(v.groups ?? {}).map(([g, x]) => ({ group: g, count: x.count, in_forewit_rounds: cleanText(x.why) })),
       browse: 'Browse and search markets in your own agent with your own free Predict.fun API key from https://developers.predict.fun (set PREDICT_API_KEY).',
       search_command: 'forewit markets --search "<words>"',
+      any_market: START.en.any_market,
     });
   });
 
   tool('get_started', {
     title: 'How to start playing',
-    description: 'The shortest way for a person to start playing Forewit, in plain words: the agent they use with their Binance Agentic Wallet, one line that adds Forewit, then "Play Forewit". Use it when someone asks how to play, how to commit, or why this connector cannot send. Show the steps and commands exactly.',
+    description: 'The shortest way for a person to start playing Forewit, in plain words: the agent they use with their Binance Agentic Wallet, one line that adds Forewit, then "Play Forewit". Use it when someone asks how to play, how to commit, whether they can forecast any market (yes: open forecasts, any_market), or why this connector cannot send. Show the steps and commands exactly.',
     inputSchema: { lang: z.enum(['en', 'zh']).optional() },
     outputSchema: {
       summary: z.string(),
       steps: z.array(z.object({ step: z.number().int(), do: z.string(), command: z.string().nullable() })),
       why_this_connector_cannot_send: z.string(),
       after: z.string(),
+      any_market: z.string(),
     },
   }, async ({ lang = 'en' }) => ok(START[lang]));
 

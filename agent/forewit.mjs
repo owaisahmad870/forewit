@@ -381,7 +381,10 @@ export function network(name) {
 }
 
 function needFrom(from) {
-  if (!isAddress(from)) throw new Error('--from <your agentic wallet address> is required (get it from: baw wallet address --json, the binanceChainId 56 entry)');
+  if (from === undefined) { // no --from: use the signed in Agentic Wallet, so a user never has to paste an address
+    try { from = (runBaw(['wallet', 'address', '--json'])?.data?.addresses ?? []).find((a) => String(a.binanceChainId) === '56')?.address; } catch { /* baw missing or signed out */ }
+  }
+  if (!isAddress(from)) throw new Error('no wallet: sign in first (npx forewit@latest start), or pass --from <your agentic wallet address>');
   return from;
 }
 

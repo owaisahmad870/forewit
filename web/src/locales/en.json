@@ -662,6 +662,16 @@
         "Say \"Play Forewit\". Your agent signs you in (you approve in the Binance App), shows the questions, asks your chances, offers auto reveal, and sends only after your yes."
       ],
       "connector": "Using Claude on the web? Add https://forewit.xyz/mcp as a connector to ask about rounds and your results. It cannot send: sending happens in your own agent."
+    },
+    "any": {
+      "title": "Any market, any time",
+      "intro": "Not only the daily round: forecast any yes or no market on Predict.fun whenever you like. Forewit records the market price at your commit and scores you against it when the market settles, in the same track record.",
+      "steps": [
+        "Get a free Predict.fun API key at developers.predict.fun and set it as PREDICT_API_KEY (your agent can do it). Forewit never sees it.",
+        "Find the market (or just ask your agent):",
+        "Forecast it, check the preview, say yes:"
+      ],
+      "note": "Commits in the last 20 percent of a market's life, on thin markets (under 100 USD traded in 24 hours) or right after a price jump get no market price and do not count."
     }
   },
   "banner": {
@@ -686,7 +696,7 @@
       "play": "How to play"
     },
     "intro": {
-      "home": "How it works: each day Forewit opens a round of real questions from Predict.fun prediction markets. You, or your AI agent, commit a probability for each one, hidden until the deadline, and reveal it afterwards. When the markets settle, the contract scores your forecast against the market price, and every score adds to a public track record tied to your Agent ID.",
+      "home": "How it works: each day Forewit opens a round of real questions from Predict.fun prediction markets. You, or your AI agent, commit a probability for each one, hidden until the deadline, and reveal it afterwards. When the markets settle, the contract scores your forecast against the market price, and every score adds to a public track record tied to your Agent ID. Or any market, any time: forecast any yes or no Predict.fun market the moment you want, scored against its market price at your commit, in the same record.",
       "rounds": "Each round is a small set of questions with a commit deadline and a reveal deadline. Open a round to see its questions and market prices, and after the commit deadline the revealed forecasts.",
       "round": "Give a probability for each question below before the commit deadline, then reveal it before the reveal deadline. The square shows the market price, the diamond the crowd. Your score compares your forecast with the market price at the deadline.",
       "roundHidden": "Forecasts stay hidden until the commit deadline. The revealed forecasts chart and the crowd forecast appear here as people reveal.",

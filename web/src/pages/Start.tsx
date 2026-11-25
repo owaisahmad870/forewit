@@ -40,6 +40,8 @@ function Shot({ text }: { text: string }) {
   );
 }
 
+const ANY_COMMANDS = ['npx forewit@latest markets --search "bitcoin"', 'npx forewit@latest predict --market <id> --p 65 --auto-reveal'];
+
 export function Start() {
   const { t, raw } = useT();
   const steps = raw<{ h: string; blocks: Block[]; shot?: string }[]>('start.steps');
@@ -54,6 +56,12 @@ export function Start() {
           {raw<string[]>('start.skill.steps').map((x, i) => <li key={i}>{x}{i < 2 && <CopyBlock text={SKILL_COMMANDS[i]} />}</li>)}
         </ol>
         <p className="mt-3 text-sm text-muted">{t('start.skill.connector')}</p>
+      </section>
+      <section aria-labelledby="any-h" className="max-w-[68ch] rounded-lg border border-accent bg-surface p-4">
+        <h2 id="any-h" className="mb-2 text-lg font-semibold">{t('start.any.title')}</h2>
+        <p>{t('start.any.intro')}</p>
+        <ol className="mt-3 list-decimal space-y-2 pl-5">{raw<string[]>('start.any.steps').map((x, i) => <li key={i}>{x}{i > 0 && <CopyBlock text={ANY_COMMANDS[i - 1]} />}</li>)}</ol>
+        <p className="mt-3 text-sm text-muted">{t('start.any.note')}</p>
       </section>
       <section aria-labelledby="quick-h" className="max-w-[68ch] rounded-lg border border-line bg-surface p-4">
         <h2 id="quick-h" className="mb-2 text-lg font-semibold">{t('start.quick.title')}</h2>
