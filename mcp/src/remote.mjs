@@ -384,7 +384,7 @@ export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_
 
   tool('get_my_status', {
     title: 'Status of a wallet',
-    description: 'For one wallet address: commit and reveal status in the latest round read from the ledger, per round history from the published data (newest first, paginated), and the leaderboard row when the profile is public.',
+    description: 'For one wallet address: commit and reveal status in the latest round read from the ledger, per round history from the published data (newest first, paginated), every open forecast on any market (v2: status, chance, points against the market), a results card in plain words, and the leaderboard row when the profile is public. Use it for "how did I do?" on daily rounds and on any market.',
     inputSchema: { address, ...cursorInput },
     outputSchema: {
       address: z.string(),
