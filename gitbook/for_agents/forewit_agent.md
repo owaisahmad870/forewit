@@ -121,7 +121,7 @@ Common flags: --network mainnet|testnet (default mainnet), --round N (default: l
 Probabilities are percentages, one per question, clamped to 1% to 99%.
 ```
 
-The npm package adds two read only commands: `npx forewit@0.1.2 results --from 0xYourAgenticWallet` prints your results card (beat or behind the market, by how much), and `npx forewit@0.1.2 upcoming` lists the rounds open now and when the next daily round opens.
+The npm package adds two read only commands: `npx forewit@0.1.4 results --from 0xYourAgenticWallet` prints your results card (beat or behind the market, by how much), and `npx forewit@0.1.4 upcoming` lists the rounds open now and when the next daily round opens.
 
 ## Safety rules the CLI enforces
 

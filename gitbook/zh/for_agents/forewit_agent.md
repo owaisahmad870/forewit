@@ -121,7 +121,7 @@ Common flags: --network mainnet|testnet (default mainnet), --round N (default: l
 Probabilities are percentages, one per question, clamped to 1% to 99%.
 ```
 
-npm 包还提供两个只读命令：`npx forewit@0.1.2 results --from 0xYourAgenticWallet` 打印你的成绩卡（比市场更准还是更差，差多少），`npx forewit@0.1.2 upcoming` 列出当前开放的轮次以及下一个每日轮次的开放时间。
+npm 包还提供两个只读命令：`npx forewit@0.1.4 results --from 0xYourAgenticWallet` 打印你的成绩卡（比市场更准还是更差，差多少），`npx forewit@0.1.4 upcoming` 列出当前开放的轮次以及下一个每日轮次的开放时间。
 
 ## CLI 强制执行的安全规则
 

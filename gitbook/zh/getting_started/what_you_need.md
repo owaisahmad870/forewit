@@ -12,7 +12,7 @@ description: 首次在先见 Forewit 提交预测前需要准备的五样东西�
 你需要准备五样东西。大多数人已经有了第一样。
 
 {% hint style="info" %}
-捷径：`npx forewit@0.1.2 start`（在 Windows PowerShell 中为 `npx.cmd forewit@0.1.2 start`）会替你检查第 3 和第 4 项，提议为你安装 `baw`，并通过一个链接和一个配对码帮你登录，你在币安 App 中批准即可。见 [快速上手](quickstart.md)。
+捷径：`npx forewit@0.1.4 start`（在 Windows PowerShell 中为 `npx.cmd forewit@0.1.4 start`）会替你检查第 3 和第 4 项，提议为你安装 `baw`，并通过一个链接和一个配对码帮你登录，你在币安 App 中批准即可。见 [快速上手](quickstart.md)。
 {% endhint %}
 
 ## 1. 一个 Agent ID

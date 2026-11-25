@@ -70,7 +70,7 @@ keccak256(abi.encode(COMMIT_TYPEHASH, block.chainid, address(this), roundId, for
 
 保护自己的方法：
 
-1. 每次提交后立即备份回执：`npx forewit@0.1.2 receipt --from 0xYourAgenticWallet --show-salt`，存入密码管理器或离线笔记。
+1. 每次提交后立即备份回执：`npx forewit@0.1.4 receipt --from 0xYourAgenticWallet --show-salt`，存入密码管理器或离线笔记。
 2. 如果更换电脑，把备份保存为 `.json` 文件，放进主目录下的 `.forewit` 文件夹。工具会根据哈希找到它。
 3. 在揭示窗口内回来揭示。每日轮次的揭示窗口是提交截止时间之后的 24 小时。
 

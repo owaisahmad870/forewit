@@ -55,7 +55,7 @@ These facts are recorded with their evidence in [notes/knowledge.md](https://git
 Your record is tied to your wallet address from your first commit. Your Agent ID name is never shown unless you opt in yourself:
 
 ```bash
-npx forewit@0.1.2 profile --from 0xYourAgenticWallet --label yourname --execute
+npx forewit@0.1.4 profile --from 0xYourAgenticWallet --label yourname --execute
 ```
 
 Opting out (`--off`) removes the public name and drops you from the next ForewitScores root. The site and the MCP server never offer a search by name for holders who have not opted in.

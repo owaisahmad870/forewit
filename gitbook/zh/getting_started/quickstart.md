@@ -25,10 +25,10 @@ description: 从拥有 Agent ID 到在 BSC 主网完成第一次密封预测，�
 ## 最简单的方式：一条命令
 
 ```bash
-npx forewit@0.1.2 start
+npx forewit@0.1.4 start
 ```
 
-在 Windows PowerShell 中（它常常拦截 `npx` 脚本），请改为输入 `npx.cmd forewit@0.1.2 start`。在代码仓库中则是 `node agent/forewit.mjs start`。
+在 Windows PowerShell 中（它常常拦截 `npx` 脚本），请改为输入 `npx.cmd forewit@0.1.4 start`。在代码仓库中则是 `node agent/forewit.mjs start`。
 
 它用简单的话带你走完五步：
 
@@ -67,7 +67,7 @@ baw wallet address --json
 先找到最新的轮次编号：
 
 ```bash
-npx forewit@0.1.2 round
+npx forewit@0.1.4 round
 ```
 
 预期结果：第一行为 `Forewit round <n> on mainnet (chain 56), ledger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6`。此时问题只以编号显示。
@@ -75,7 +75,7 @@ npx forewit@0.1.2 round
 每个轮次都有一个公开的轮次文件，以文字形式给出问题。把 `1` 换成你的轮次编号：
 
 ```bash
-npx forewit@0.1.2 round --round-file https://forewit.xyz/data/rounds/1.json
+npx forewit@0.1.4 round --round-file https://forewit.xyz/data/rounds/1.json
 ```
 
 预期结果：轮次编号、提交和揭示的截止时间，以及每个问题的事件问题和标签。例如：
@@ -98,7 +98,7 @@ Questions: 4
 按顺序为每个问题给出一个百分比。第 1 轮有 4 个问题，所以需要 4 个数字。
 
 ```bash
-npx forewit@0.1.2 forecast --p 60,40,50,30
+npx forewit@0.1.4 forecast --p 60,40,50,30
 ```
 
 预期结果：列出每个问题及你给出的百分比。此步骤不保存也不发送任何内容。低于 1 或高于 99 的值会被限制在 1% 到 99% 的范围内。
@@ -106,7 +106,7 @@ npx forewit@0.1.2 forecast --p 60,40,50,30
 ### 5. 提交
 
 ```bash
-npx forewit@0.1.2 commit --execute --from 0xYourAgenticWallet --p 60,40,50,30 --round-file https://forewit.xyz/data/rounds/1.json
+npx forewit@0.1.4 commit --execute --from 0xYourAgenticWallet --p 60,40,50,30 --round-file https://forewit.xyz/data/rounds/1.json
 ```
 
 预期结果，依次为：
@@ -130,7 +130,7 @@ npx forewit@0.1.2 commit --execute --from 0xYourAgenticWallet --p 60,40,50,30 --
 ### 6. 备份你的凭证
 
 ```bash
-npx forewit@0.1.2 receipt --from 0xYourAgenticWallet --show-salt
+npx forewit@0.1.4 receipt --from 0xYourAgenticWallet --show-salt
 ```
 
 预期结果：以 JSON 形式显示你的凭证，其中包含盐值。把它复制到密码管理器或离线笔记中。
@@ -142,7 +142,7 @@ npx forewit@0.1.2 receipt --from 0xYourAgenticWallet --show-salt
 ### 7. 查看状态
 
 ```bash
-npx forewit@0.1.2 status --from 0xYourAgenticWallet
+npx forewit@0.1.4 status --from 0xYourAgenticWallet
 ```
 
 预期结果：`committed: yes`、`local receipt: matches the onchain commit`，以及 `Next: wait for the commit deadline, then reveal`。
@@ -159,7 +159,7 @@ npx forewit@0.1.2 status --from 0xYourAgenticWallet
 
 ## 更喜欢用代码仓库？
 
-代码仓库中有同一个工具。克隆后，在本页写着 `npx forewit@0.1.2` 的地方改用 `node agent/forewit.mjs`：
+代码仓库中有同一个工具。克隆后，在本页写着 `npx forewit@0.1.4` 的地方改用 `node agent/forewit.mjs`：
 
 ```bash
 git clone https://github.com/owaisahmad870/forewit.git
