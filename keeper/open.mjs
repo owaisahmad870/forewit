@@ -45,12 +45,15 @@ const WALLET_DAILY_CAP = Number(process.env.OPEN_WALLET_DAILY_CAP || 50);
 const MAX_JUMP_BPS = 300; // rule v2.1: the live book must agree with the history point within 3 points
 const BC_BUDGET_MS = 20_000;
 const MIN_LEAD_S = 60, MIN_LEAD_SHARE = 0.2; // rule v2.1: no price for a commit in the last 20% of a market's life
+// rule v2.2 (owner, 25 Nov 2026): for commits from 20:00 UTC that day only the last 60 seconds get no price
+const V22_FROM_S = 1795636800; // 2026-11-25T20:00:00Z
 
 /** Off chain review M5: a commit too close to the market end gets no price (the outcome may be nearly known). */
 export function tooLate({ committedAt, startsAtS, endsAtS }) {
   if (!Number.isFinite(endsAtS)) return false;
   const life = Number.isFinite(startsAtS) && endsAtS > startsAtS ? endsAtS - startsAtS : 0;
-  return endsAtS - committedAt < Math.max(MIN_LEAD_S, MIN_LEAD_SHARE * life);
+  const share = committedAt >= V22_FROM_S ? 0 : MIN_LEAD_SHARE;
+  return endsAtS - committedAt < Math.max(MIN_LEAD_S, share * life);
 }
 
 /** Live Yes middle of a two sided book in basis points, or null. Used only to refuse a price, never to set one. */
@@ -179,7 +182,7 @@ async function priceOrVoid(f, now) {
   // re-review L2: the read time is taken after the API calls, not at the start of the pass
   const reason = voidReason({ f, market: m, endsAtS, readAtS: Math.floor(Date.now() / 1000), chainId: CHAIN_ID });
   const startsAtS = Date.parse(cat?.tradingSession?.opensAt ?? cat?.startsAt ?? '') / 1000;
-  const p = reason ? null : tooLate({ committedAt: f.committedAt, startsAtS, endsAtS }) ? { ok: false, why: 'committed in the last 20 percent of the market\'s life' }
+  const p = reason ? null : tooLate({ committedAt: f.committedAt, startsAtS, endsAtS }) ? { ok: false, why: 'committed too close to the end of the market\'s life' }
     : priceFromHistory(book?.series, f.committedAt, f.slot, Number(m?.stats?.volume24hUsd), liveMidBps(live));
   if (!reason && m && !m.stats) await alert(`market ${f.marketId}: Predict.fun returned no stats, so no price can count; check the API`);
   const evidence = { forecast: { ...f, sealed: undefined }, checkedAt: now, tries: f.tries, reason, price: p,

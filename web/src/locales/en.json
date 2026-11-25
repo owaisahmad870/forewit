@@ -671,7 +671,7 @@
         "Find the market (or just ask your agent):",
         "Forecast it, check the preview, say yes:"
       ],
-      "note": "Commits in the last 20 percent of a market's life, on thin markets (under 100 USD traded in 24 hours) or right after a price jump get no market price and do not count."
+      "note": "Commits in the last 60 seconds of a market, on thin markets (under 100 USD traded in 24 hours) or right after a price jump get no market price and do not count."
     }
   },
   "banner": {

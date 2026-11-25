@@ -29,6 +29,13 @@ test('off chain review M5: no price in the last 20 percent of a market (at least
   assert.equal(tooLate({ committedAt: 1000, startsAtS: NaN, endsAtS: NaN }), false);
 });
 
+test('rule v2.2: commits from 25 Nov 2026 20:00 UTC lose only the last 60 s', () => {
+  const t = 1795636800;
+  assert.equal(tooLate({ committedAt: t, startsAtS: t - 600, endsAtS: t + 100 }), false); // 100 s left of a 700 s market
+  assert.equal(tooLate({ committedAt: t, startsAtS: t - 600, endsAtS: t + 59 }), true);
+  assert.equal(tooLate({ committedAt: t - 1, startsAtS: t - 600, endsAtS: t + 100 }), true); // v2.1 still applies before
+});
+
 test('void only on positive evidence', () => {
   const f = { conditionId: CID, ctf: CTF, committedAt: 1000 };
   const ok = { conditionId: CID, isYieldBearing: false, isNegRisk: false, tradingStatus: 'OPEN', outcomes: [{ indexSet: 1 }, { indexSet: 2 }] };
