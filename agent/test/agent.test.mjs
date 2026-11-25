@@ -118,6 +118,25 @@ test('forewit agent', async (t) => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  await t.test('start: a first time player is guided from wallet check to a sent commit with auto reveal', async () => {
+    reset();
+    const answers = ['55', '0', '42', 'y', 'yes']; // 0 is refused and asked again; y turns on auto reveal; yes sends
+    const asked = [];
+    await main(['start'], { isTTY: () => true, ask: async (p) => { asked.push(p); return answers.shift(); } });
+    const printed = out.join(String.fromCharCode(10));
+    for (const step of ['Step 1 of 5', 'Step 2 of 5', 'Step 3 of 5', 'Step 4 of 5', 'Step 5 of 5']) assert.ok(printed.includes(step), step);
+    assert.match(printed, /please type a number from 1 to 99/);
+    assert.match(printed, /Agent ID tester\.ai on wallet 0xcBa4/);
+    assert.match(printed, /BROADCASTED/);
+    assert.match(printed, /Auto reveal is on/);
+    assert.match(printed, /forewit\.xyz\/#\/me/);
+    const [r] = receipts();
+    assert.deepEqual(r.probabilitiesBps, [5500, 4200]);
+    assert.ok(r.autoReveal.drandRound > 0);
+    const preview = bawCalls().find((c) => c[0] === 'contract-call' && c[1] === 'preview');
+    assert.match(preview[preview.indexOf('--inputData') + 1], /46574152/);
+  });
+
   await t.test('happy path: LLM forecast, salt saved, preview, typed yes, execute, reveal command', async () => {
     reset();
     env(openai);

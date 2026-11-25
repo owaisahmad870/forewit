@@ -41,9 +41,9 @@ export function bawCommand(env = process.env) {
 }
 
 /** Runs baw with --json output and returns its parsed reply. Errors arrive as JSON on stdout with exit code 1. */
-export function runBaw(args) {
+export function runBaw(args, { timeout = 90000, inherit = false } = {}) {
   const { file, pre } = bawCommand();
-  const r = spawnSync(file, [...pre, ...args], { encoding: 'utf8', timeout: 90000, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 4 << 20 });
+  const r = spawnSync(file, [...pre, ...args], { encoding: 'utf8', timeout, windowsHide: true, stdio: ['ignore', 'pipe', inherit ? 'inherit' : 'pipe'], maxBuffer: 4 << 20 });
   if (r.error?.code === 'ENOENT') throw new Error('baw not found. Install the Binance Agentic Wallet CLI (npm package @binance/agentic-wallet).');
   try {
     const j = JSON.parse(r.stdout);

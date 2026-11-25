@@ -18,6 +18,7 @@ const fail = (code) => out({ success: false, error: { code, name: 'FAKE_' + code
 const key = args.slice(0, 2).join(' ');
 
 if (key === 'wallet status') out({ success: true, data: { status: 'CONNECTED' } });
+if (key === 'wallet address') out({ success: true, data: { addresses: [{ binanceChainId: '1', chainName: 'Ethereum', address: '0x' + '77'.repeat(20) }, { binanceChainId: '56', chainName: 'BSC', address: '0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5' }] } });
 if (key === 'wallet agent-id') out({ success: true, data: { claimed: true, handle: 'tester', agentId: 'tester.ai' } });
 if (key === 'wallet settings') {
   out({ success: true, data: { devMode: { enabled: s !== 'devoff', expiresAt: new Date(Date.now() + 86400e3).toISOString(), dailyLimit: 1000, balanceExceeded: false } } });

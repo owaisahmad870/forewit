@@ -16,7 +16,7 @@ import {
 } from './lib/keccak.mjs';
 import { writeSecretFile } from './lib/secure_file.mjs';
 import { presentQuestion } from './lib/question.mjs';
-import { assertCanExecute, sendWithConfirmation } from './lib/baw.mjs';
+import { assertCanExecute, sendWithConfirmation, bawCommand, runBaw } from './lib/baw.mjs';
 import { sealForDeadline, AR_MARGIN_S } from './lib/autoreveal.mjs';
 import { NETWORKS, DEFAULT_NETWORK, BAW_CHAIN_IDS, MIN_BPS, MAX_BPS, MAX_QUESTIONS, RISK_WARNING } from './config.mjs';
 
@@ -388,6 +388,72 @@ const ttyIo = Object.freeze({
     rl.question(prompt, (answer) => { resolve(answer); rl.close(); });
   }),
 });
+
+// forewit start: the guided path for a first time player, in plain words. Every check is one the CLI already runs;
+// every transaction still goes through the Binance Agentic Wallet preview and a typed yes (sendWithConfirmation).
+const SITE = 'https://forewit.xyz';
+async function cmdStart(o, io) {
+  const net = network(o.network ?? 'mainnet');
+  if (!io.isTTY()) throw new Error('forewit start is interactive: run it in a terminal window.');
+  const yes = async (q) => /^(y|yes|)$/i.test(String(await io.ask(`${q} [Y/n] `)).trim());
+  say('Welcome to Forewit. Five short steps; nothing is sent without your typed yes.', 'Forewit moves no money: you only pay a tiny network fee (about 0.0001 BNB).', '');
+
+  say('Step 1 of 5: the Binance Agentic Wallet on this computer');
+  let ok = true;
+  try { bawCommand(); } catch { ok = false; }
+  if (!ok) {
+    const npmBin = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    if (!(await yes('It is not installed. Install it now (npm install -g @binance/agentic-wallet@1.12.0)?'))) throw new Error('stopped: Forewit needs the Agentic Wallet to send your forecast. Run forewit start again any time.');
+    const r = spawnSync(npmBin, ['install', '-g', '@binance/agentic-wallet@1.12.0'], { stdio: 'inherit', shell: process.platform === 'win32' });
+    if (r.status !== 0) throw new Error('the install did not finish. Check your internet connection and run forewit start again.');
+  }
+  say('  ok', '');
+
+  say('Step 2 of 5: sign in (you approve on your phone in the Binance App)');
+  if (runBaw(['wallet', 'status', '--json'])?.data?.status !== 'CONNECTED') {
+    const s = runBaw(['auth', 'signin', '--json'])?.data ?? {};
+    if (s.status !== 'ALREADY_CONNECTED') {
+      if (!s.qrCodeId || !s.urlForWeb) throw new Error('sign in could not start. Run forewit start again in a minute.');
+      say(`  1. Open this link: ${s.urlForWeb}`, `  2. Scan the QR code with the Binance App and check that it shows the code ${s.pairingCode}`, '  3. Approve. Waiting up to 5 minutes...');
+      runBaw(['auth', 'verify', '--qrCodeId', s.qrCodeId, '--json'], { timeout: 330000 });
+      if (runBaw(['wallet', 'status', '--json'])?.data?.status !== 'CONNECTED') throw new Error('sign in did not complete (the code expires after 5 minutes). Run forewit start again for a fresh code.');
+    }
+  }
+  say('  signed in', '');
+
+  say('Step 3 of 5: your Agent ID and Developer Mode');
+  const idr = runBaw(['wallet', 'agent-id', '--json'])?.data;
+  if (idr?.claimed !== true) throw new Error('this wallet has no Agent ID yet. In the Binance App open Web3 wallet, then Agent ID, claim one, and run forewit start again.');
+  const dev = runBaw(['wallet', 'settings', '--json'])?.data?.devMode;
+  const exp = typeof dev?.expiresAt === 'number' ? dev.expiresAt * 1000 : Date.parse(dev?.expiresAt ?? '');
+  if (dev?.enabled !== true || !(exp > Date.now())) throw new Error('Developer Mode is off. In the Binance App open Agentic Wallet, Settings (top right), turn on Developer Mode and approve. It lasts 7 days. Then run forewit start again.');
+  const from = (runBaw(['wallet', 'address', '--json'])?.data?.addresses ?? []).find((a) => String(a.binanceChainId) === '56')?.address;
+  if (!isAddress(from ?? '')) throw new Error('could not read your BSC wallet address (baw wallet address). Run forewit start again.');
+  say(`  Agent ID ${clean(idr.agentId ?? idr.name ?? '')} on wallet ${from}`, '');
+
+  say('Step 4 of 5: today\'s questions');
+  const { id, now, round } = await loadRound(net, needRound(o.round));
+  if (now >= round.commitDeadline) throw new Error(`round ${id} is closed for forecasts. The next round opens at about 03:10 UTC; run forewit start then.`);
+  let titles = null;
+  try { titles = roundTitles(await readRoundFile(`${SITE}/data/rounds/${id}.json`), net, id, round); } catch { /* titles stay hidden; numbers still work */ }
+  say(`  Round ${id} closes ${fmtTime(round.commitDeadline)} (${fmtIn(round.commitDeadline - now)}).`, '  For each question type your chance it happens, from 1 to 99 (for example 70 means 70%).');
+  const ps = [];
+  for (let i = 0; i < round.questionCount; i++) {
+    say('', `  ${i + 1}. ${titles ? titles[i] : `question ${i + 1} (title at ${SITE}/#/round/${id})`}`);
+    for (;;) {
+      const a = String(await io.ask('     your chance (%): ')).trim().replace('%', '');
+      if (/^\d{1,2}(\.\d+)?$/.test(a) && Number(a) >= 1 && Number(a) <= 99) { ps.push(a); break; }
+      say('     please type a number from 1 to 99');
+    }
+  }
+  const { bps, clamped } = parseProbabilities(ps.join(','));
+  say('');
+
+  say('Step 5 of 5: send your forecast');
+  const auto = await yes('Let Forewit reveal it for you after the deadline, so there is no second step? It stays locked until the deadline, so nobody can read it early. (recommended)');
+  await commitAndPrint({ net, from, bps, clamped, id, now, round, titles, o: { ...o, execute: true, 'auto-reveal': auto }, io });
+  say('', `Done. Your results card: ${SITE}/#/me   (or: forewit results --from ${from})`);
+}
 
 async function cmdRound(o) {
   const net = network(o.network);
@@ -831,6 +897,7 @@ const HELP = `Forewit CLI (dry run by default: prints baw commands; --execute se
 
 ${CMD} <command> [flags]
 
+  start     The guided first run: wallet check, sign in, Agent ID, today's questions, send (start here)
   round     Show the current round (or --round N) and its questions, read from the chain
   forecast  --p 72,15,50          Validate and clamp percentages, show the packed value
   commit    --from 0x.. --p ..    Make a salt, save the reveal receipt, print the baw commit commands
@@ -862,7 +929,7 @@ export async function main(argv, io = ttyIo) {
       install: { type: 'boolean' }, label: { type: 'string' }, off: { type: 'boolean' }, help: { type: 'boolean', short: 'h' }, 'auto-reveal': { type: 'boolean' },
     },
   });
-  const cmds = { round: cmdRound, forecast: cmdForecast, commit: cmdCommit, reveal: cmdReveal, status: cmdStatus, receipt: cmdReceipt, profile: cmdProfile, agent: cmdAgent, schedule: cmdSchedule };
+  const cmds = { start: cmdStart, round: cmdRound, forecast: cmdForecast, commit: cmdCommit, reveal: cmdReveal, status: cmdStatus, receipt: cmdReceipt, profile: cmdProfile, agent: cmdAgent, schedule: cmdSchedule };
   const cmd = cmds[positionals[0]];
   if (!cmd || o.help) return say(HELP);
   if (o.round !== undefined) needRound(o.round);
