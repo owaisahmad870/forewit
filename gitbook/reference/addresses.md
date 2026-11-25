@@ -43,7 +43,7 @@ See [Owner permissions](../trust/owner_permissions.md) for what each can do.
 
 * Website: [https://forewit.xyz](https://forewit.xyz) (fallback [https://forewit.pages.dev](https://forewit.pages.dev)).
 * Source code (MIT): [https://github.com/owaisahmad870/forewit](https://github.com/owaisahmad870/forewit)
-* npm package: [forewit](https://www.npmjs.com/package/forewit) 0.1.1, published with provenance from GitHub Actions
+* npm package: [forewit](https://www.npmjs.com/package/forewit) 0.1.2, published with provenance from GitHub Actions
 * MCP server: `npx -y forewit mcp` (see [MCP server](../for_agents/mcp_server.md)). The remote read only server is coming soon.
 * Public data: `https://forewit.xyz/data/` or `https://forewit.pages.dev/data/` (see [Published data files](../developers/data_files.md))
 * X: [@forewitai](https://x.com/forewitai)

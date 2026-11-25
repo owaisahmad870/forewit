@@ -1,5 +1,5 @@
 ---
-description: Why your forecast is sealed before the deadline, why the salt never leaves your device, and what happens if it is lost.
+description: Why your forecast is sealed before the deadline, why the salt stays on your device unless you choose auto reveal, and what happens if it is lost.
 ---
 
 # Commit and reveal
@@ -54,7 +54,7 @@ That only works while the salt is secret. So:
 * The tool makes the salt on your computer (`crypto.randomBytes(32)`).
 * It saves the salt in a reveal receipt in the `.forewit` folder in your home folder before it prints anything else. If saving fails, nothing is printed and nothing can be sent.
 * The receipt file is readable by your user account only. On Windows the tool removes every other permission and fails closed if any remains.
-* The tool never uploads your salt or your forecast before you commit. When `forewit agent` asks your AI model for probabilities, the salt does not exist yet.
+* The tool never uploads your salt or your forecast before you commit. The one exception is auto reveal, which you turn on yourself: see [Auto reveal](#auto-reveal-opt-in) below. When `forewit agent` asks your AI model for probabilities, the salt does not exist yet.
 * `receipt` hides the salt unless you add `--show-salt`, so an AI agent running the tool does not see it.
 * The tool refuses to reveal before the commit deadline, so the salt is never exposed while commits are open.
 
@@ -70,7 +70,7 @@ A forfeit is always the worst result for that round. Revealing is never worse th
 
 To protect yourself:
 
-1. Back up every receipt right after you commit: `npx forewit@0.1.1 receipt --from 0xYourAgenticWallet --show-salt`, into a password manager or an offline note.
+1. Back up every receipt right after you commit: `npx forewit@0.1.2 receipt --from 0xYourAgenticWallet --show-salt`, into a password manager or an offline note.
 2. If you change computers, save the backup as a `.json` file in the `.forewit` folder in your home folder. The tool then finds it by its hash.
 3. Come back during the reveal window. For daily rounds that is the 24 hours after the commit deadline.
 
@@ -82,7 +82,24 @@ The contract also has `revealFor(roundId, forecaster, packed, salt)`. Anyone may
 
 It is safe because the hash binds the forecaster's address. A third party can only submit the exact forecast you committed, for your wallet. It cannot change your answer or claim it as its own.
 
-`revealFor` is a contract function. The Forewit tool reveals with your own wallet through `reveal`, and these docs do not promise a hosted reveal service.
+By default the Forewit tool reveals with your own wallet through `reveal`. If you opt in to auto reveal, the Forewit keeper uses `revealFor` for you, as described next.
+
+## Auto reveal (opt in)
+
+Think of it as a second copy of your card, sealed in an envelope with a time lock that cannot open before the deadline. You attach it to your posted envelope. When the deadline passes, the lock opens, and a helper reads the card and opens your envelope in public for you. Nobody, Forewit included, can open the time lock early.
+
+How it works:
+
+* You turn it on with `--auto-reveal` on `commit`, with `auto_reveal: true` on the MCP tool `prepare_commit`, or by answering yes in `forewit start`. Without it nothing changes: the salt never leaves your computer.
+* The tool encrypts a copy of your forecast and salt with drand timelock (tlock, the drand quicknet network run by the League of Entropy) to a drand round about 60 seconds after the commit deadline.
+* That ciphertext is appended to the commit transaction's calldata, after the normal arguments. The ledger ignores trailing calldata, so the commit hash is exactly the same as without it.
+* After the deadline the Forewit keeper decrypts it, checks that it hashes to the commit stored onchain with `computeCommitHash`, and calls `revealFor`. Because the hash binds your wallet, nothing else can be revealed for you.
+* You pay no gas for the reveal and need no second step.
+* Your local receipt with the salt is still saved as a backup. If `status` still shows not revealed about an hour after the deadline, reveal yourself as usual.
+
+{% hint style="info" %}
+Trust assumption: drand's threshold network (the League of Entropy) does not release a round early. If a threshold of drand operators colluded, they could read forecasts before the deadline. They could not change them, because the commit hash is already onchain.
+{% endhint %}
 
 ## Rules the contract enforces
 

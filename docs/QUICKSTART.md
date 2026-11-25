@@ -4,7 +4,31 @@ This is the short path from holding an Agent ID to your first Forewit forecast c
 
 > Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.
 
-**Status.** The ForecastLedger is live on BSC mainnet at `0xd11e67ff70ACD42E01d79130f280162b00Bb09B6`. Use the CLI from the repository (`node agent/forewit.mjs`), which targets mainnet by default. The npm package (`npx forewit`, version 0.0.1) is still a testnet preview until the next release, so do not use it for mainnet commits yet.
+**Status.** The ForecastLedger is live on BSC mainnet at `0xd11e67ff70ACD42E01d79130f280162b00Bb09B6`. The npm package `forewit` (version 0.1.2) and the CLI in the repository (`node agent/forewit.mjs`) both target mainnet by default.
+
+## The easy way: one command
+
+You need an Agent ID claimed in the Binance App, Node.js and a little BNB for gas. Then run:
+
+```bash
+npx forewit@latest start
+```
+
+On Windows PowerShell, which often blocks the `npx` script, type this instead:
+
+```powershell
+npx.cmd forewit@latest start
+```
+
+From a copy of the repository it is `node agent/forewit.mjs start`. It walks you through five steps in plain words:
+
+1. It checks for the Binance Agentic Wallet CLI and offers to install it (`@binance/agentic-wallet@1.12.0`).
+2. It signs you in: it prints a link and a pairing code, and you approve in the Binance App.
+3. It checks your Agent ID and Developer Mode, and explains the fix if one is missing.
+4. It shows today's questions one by one and asks your chance from 1 to 99 for each.
+5. It asks whether Forewit should reveal for you after the deadline (auto reveal, recommended), then shows the wallet preview and sends only after you type `yes`.
+
+At the end it prints your results card link, [forewit.xyz/#/me](https://forewit.xyz/#/me). The steps below do the same by hand.
 
 ## 1. What you need
 
@@ -89,6 +113,8 @@ node agent/forewit.mjs receipt --from 0xYourAgenticWallet
 2. If the result is `PENDING_CONFIRMATION`, approve it in the Binance App and do not send it again.
 3. Back up the reveal receipt (the output of `receipt`) somewhere private. Without the salt you cannot reveal, and the round counts as a forfeit. Do not share it before the commit deadline.
 
+Add `--auto-reveal` to the commit command to let Forewit reveal for you after the deadline, so there is no second step. A copy of your forecast and salt rides in the commit, locked with drand timelock until about a minute after the commit deadline, so nobody, Forewit included, can read it before then. The receipt is still saved on your computer as a backup. Without the flag the salt never leaves your computer.
+
 Without `--execute` the commit command sends nothing and prints the `baw contract-call` preview and execute commands for you to run yourself.
 
 [Screenshot placeholder: the preview and the approval in the Binance App]
@@ -102,11 +128,13 @@ node agent/forewit.mjs reveal --execute --from 0xYourAgenticWallet
 node agent/forewit.mjs status --from 0xYourAgenticWallet
 ```
 
-Your commit shows up on forewit.xyz/#/proof once the indexer runs.
+If you committed with auto reveal, you can skip this step: the Forewit keeper reveals for you and pays the gas. Check `status` about an hour after the deadline. If it still shows not revealed, reveal yourself with the command above.
+
+Your commit shows up on forewit.xyz/#/proof once the indexer runs. To see how you did, open [forewit.xyz/#/me](https://forewit.xyz/#/me) and paste your wallet address (no sign in), or run `forewit results --from 0xYourAgenticWallet`. It says per round whether you beat the market and by how many points. `forewit upcoming` lists the rounds open now and when the next daily round opens (about 03:10 UTC; commits close at 23:00 UTC).
 
 ## Using an AI agent instead
 
-The same package runs a local MCP server that prepares commit and reveal transactions and never signs or sends. Add it to your MCP client (testnet only until the next npm release):
+The same package runs a local MCP server that prepares commit and reveal transactions and never signs or sends. Add it to your MCP client:
 
 ```json
 { "mcpServers": { "forewit": { "command": "npx", "args": ["forewit", "mcp"] } } }

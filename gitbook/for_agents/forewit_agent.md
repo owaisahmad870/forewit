@@ -100,9 +100,12 @@ node agent/forewit.mjs schedule --from 0xYourAgenticWallet --env-file ~/.forewit
 From `node agent/forewit.mjs --help` (abridged: the line listing the `FOREWIT_LLM_*` settings is left out here; see step 1):
 
 ```text
+start     The guided first run: wallet check, sign in, Agent ID, today's questions, send (start here)
 round     Show the current round (or --round N) and its questions, read from the chain
 forecast  --p 72,15,50          Validate and clamp percentages, show the packed value
 commit    --from 0x.. --p ..    Make a salt, save the reveal receipt, print the baw commit commands
+          --auto-reveal (opt in, recommended): a copy locked until just after the deadline rides in the commit,
+          and Forewit's keeper reveals it for you; without it the salt stays only on this machine
 reveal    --from 0x..           Load the saved salt, print the baw reveal commands (after the commit deadline)
           add --execute to commit or reveal to run baw preview, review it and send after typing yes
           (BSC mainnet only, interactive terminal only, never with a piped or scripted yes)
@@ -117,6 +120,8 @@ Common flags: --network mainnet|testnet (default mainnet), --round N (default: l
   --round-file <path or https URL>  public round JSON: shows each event question and label, cross checked with the chain
 Probabilities are percentages, one per question, clamped to 1% to 99%.
 ```
+
+The npm package adds two read only commands: `npx forewit@0.1.2 results --from 0xYourAgenticWallet` prints your results card (beat or behind the market, by how much), and `npx forewit@0.1.2 upcoming` lists the rounds open now and when the next daily round opens.
 
 ## Safety rules the CLI enforces
 

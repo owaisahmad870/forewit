@@ -6,7 +6,31 @@
 >
 > 仅为预测评分，不构成财务建议。Forewit 不接受投注、不持有资金、不支付任何回报。预测市场和加密资产风险较高，在你所在的地区可能受到限制。
 
-**状态。** ForecastLedger 已在 BSC 主网上线，地址为 `0xd11e67ff70ACD42E01d79130f280162b00Bb09B6`。请使用代码仓库中的 CLI（`node agent/forewit.mjs`），它默认指向主网。npm 包（`npx forewit`，版本 0.0.1）在下一个版本发布前仍是测试网预览，暂时不要用它在主网提交。
+**状态。** ForecastLedger 已在 BSC 主网上线，地址为 `0xd11e67ff70ACD42E01d79130f280162b00Bb09B6`。npm 包 `forewit`（版本 0.1.2）和代码仓库中的 CLI（`node agent/forewit.mjs`）都默认指向主网。
+
+## 最简单的方式：一条命令
+
+你需要在币安 App 中已领取的 Agent ID、Node.js 和少量 BNB 用作手续费。然后运行：
+
+```bash
+npx forewit@latest start
+```
+
+在 Windows PowerShell 中（它常常拦截 `npx` 脚本），请改为输入：
+
+```powershell
+npx.cmd forewit@latest start
+```
+
+在代码仓库的副本中则是 `node agent/forewit.mjs start`。它用简单的话带你走完五步：
+
+1. 检查是否已安装币安 Agentic Wallet 命令行工具，没有的话提议为你安装（`@binance/agentic-wallet@1.12.0`）。
+2. 帮你登录：打印一个链接和一个配对码，你在币安 App 中批准。
+3. 检查你的 Agent ID 和开发者模式，缺少时说明如何解决。
+4. 逐一显示今天的问题，每题询问你认为发生的概率，取值 1 到 99。
+5. 询问截止后是否由 Forewit 替你揭示（自动揭示，推荐），然后显示钱包预览，只有在你输入 `yes` 后才发送。
+
+最后它会打印你的成绩卡链接 [forewit.xyz/#/me](https://forewit.xyz/#/me)。下面的步骤是手动完成同样的事。
 
 ## 1. 准备
 
@@ -91,6 +115,8 @@ node agent/forewit.mjs receipt --from 0xYourAgenticWallet
 2. 如果结果是 `PENDING_CONFIRMATION`，请在币安 App 中批准，不要重复发送。
 3. 把揭示凭据（`receipt` 的输出）私密备份。没有盐值就无法揭示，该轮将记为弃权。提交截止前不要分享它。
 
+在 commit 命令中加上 `--auto-reveal`，Forewit 会在截止后替你揭示，你无需第二步。你的预测和盐值的一份副本会随提交一起上链，并用 drand 时间锁加密，直到提交截止后约一分钟才能打开，在此之前任何人（包括 Forewit）都无法读取。凭据仍会保存在你的电脑上作为备份。不加这个参数时，盐值从不离开你的电脑。
+
 不加 `--execute` 时，commit 命令不会发送任何内容，只打印 `baw contract-call` 预览和执行命令，由你自己运行。
 
 [截图占位：预览以及币安 App 中的批准]
@@ -104,11 +130,13 @@ node agent/forewit.mjs reveal --execute --from 0xYourAgenticWallet
 node agent/forewit.mjs status --from 0xYourAgenticWallet
 ```
 
-索引器运行后，你的提交会显示在 forewit.xyz/#/proof。
+如果你提交时开启了自动揭示，可以跳过这一步：Forewit 的 keeper 会替你揭示并支付手续费。截止后约一小时用 `status` 检查。如果仍显示未揭示，请用上面的命令自己揭示。
+
+索引器运行后，你的提交会显示在 forewit.xyz/#/proof。想知道自己表现如何，打开 [forewit.xyz/#/me](https://forewit.xyz/#/me) 并粘贴你的钱包地址（无需登录），或运行 `forewit results --from 0xYourAgenticWallet`。它会按轮次告诉你是否比市场更准，以及差多少分。`forewit upcoming` 列出当前开放的轮次以及下一个每日轮次的开放时间（约 UTC 03:10 开放，UTC 23:00 截止提交）。
 
 ## 使用 AI 智能体
 
-同一个包还提供本地 MCP 服务器，它只准备提交和揭示交易，从不签名或发送。把它加入你的 MCP 客户端（在下一个 npm 版本发布前仅支持测试网）：
+同一个包还提供本地 MCP 服务器，它只准备提交和揭示交易，从不签名或发送。把它加入你的 MCP 客户端：
 
 ```json
 { "mcpServers": { "forewit": { "command": "npx", "args": ["forewit", "mcp"] } } }

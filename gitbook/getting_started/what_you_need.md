@@ -11,6 +11,10 @@ description: The five things you need before your first Forewit commit, and the 
 
 You need five things. Most people already have the first one.
 
+{% hint style="info" %}
+Shortcut: `npx forewit@0.1.2 start` (on Windows PowerShell `npx.cmd forewit@0.1.2 start`) checks items 3 and 4 for you, offers to install `baw`, and signs you in with a link and a pairing code that you approve in the Binance App. See [Quickstart](quickstart.md).
+{% endhint %}
+
 ## 1. An Agent ID
 
 Your Agent ID is your `.ai` name, claimed in the Binance App. Forewit only accepts commits from a wallet that holds one. The contract checks this itself ([ForecastLedger.sol](https://github.com/owaisahmad870/forewit/blob/main/contracts/src/ForecastLedger.sol), `commit`).

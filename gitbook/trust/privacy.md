@@ -24,7 +24,7 @@ Forewit never offers a way to look up a wallet by name for people who have not o
 ## On your computer only
 
 * Your salts and reveal receipts, in `~/.forewit/`, readable only by your account (mode 0600 on Linux and macOS, an owner only access list on Windows, checked after writing).
-* The CLI never uploads a salt or your forecast before you send the commit.
+* The CLI never uploads a salt or your forecast before you send the commit. If you turn on auto reveal (opt in), the commit carries a copy locked with the drand time lock until just after the deadline: nobody, Forewit included, can read it earlier.
 * The MCP server never shows a salt to your assistant before the commit deadline.
 
 ## What goes where

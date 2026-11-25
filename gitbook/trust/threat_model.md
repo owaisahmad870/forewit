@@ -35,6 +35,8 @@ flowchart LR
 * **Early resolution.** A question that resolves before the round is sealed becomes Void for everyone.
 * **Prompt injection.** Market titles and all web text are treated as untrusted data by the CLI, the skill and the MCP server.
 * **Leaked salts.** Salts stay on your computer with owner only access. The MCP server never shows a salt to an assistant before the commit deadline.
+* **Auto reveal (opt in).** The time locked copy in the commit opens only after the drand round just past the deadline; the keeper reveals only values that hash to your onchain commit. Trust assumption: drand's League of Entropy does not release a round early. If a threshold of its operators colluded, they could read forecasts early, never change them.
+* **Silent data providers.** Event logs are read from several RPCs and merged, so one provider answering with nothing cannot hide a commit.
 * **Wrong or fake score root.** Anyone can recompute every root from logs. A wrong root is replaced by a corrected one, then revoked.
 
 ## Accepted risks (not solved, disclosed)

@@ -16,7 +16,13 @@ The messages come from [agent/forewit.mjs](https://github.com/owaisahmad870/fore
 ## Installing and starting
 
 **PowerShell says "running scripts is disabled on this system".**
-Use the `.cmd` forms: `npm.cmd install -g @binance/agentic-wallet@1.12.0`, then `baw.cmd` and `npx.cmd` wherever the docs say `baw` and `npx`.
+Use the `.cmd` forms: `npm.cmd install -g @binance/agentic-wallet@1.12.0`, then `baw.cmd` and `npx.cmd` wherever the docs say `baw` and `npx`. For the guided start that is `npx.cmd forewit@0.1.2 start`.
+
+**`forewit start is interactive: run it in a terminal window.`**
+Run `start` yourself in PowerShell, Windows Terminal or a normal terminal, not through a script or an AI agent.
+
+**`sign in did not complete (the code expires after 5 minutes). Run forewit start again for a fresh code.`**
+Run `start` again, open the new link, check that the Binance App shows the same pairing code, and approve within 5 minutes.
 
 **`baw not found. Install the Binance Agentic Wallet CLI (npm package @binance/agentic-wallet).`**
 Run `npm install -g @binance/agentic-wallet@1.12.0` (on Windows `npm.cmd ...`), then open a new terminal so the path is picked up.
@@ -31,7 +37,7 @@ Remove `--network testnet`. `baw` signs on BSC mainnet only.
 Use `--network mainnet` or leave the flag out (mainnet is the default).
 
 **`the <network> ledger is not deployed yet, so the CLI refuses to read or write it. Use --network testnet.`**
-You are on an old copy. Update with `npx forewit@0.1.1` or `git pull`.
+You are on an old copy. Update with `npx forewit@0.1.2` or `git pull`.
 
 ## Your wallet
 
@@ -122,13 +128,18 @@ Not an error. Forewit never accepts 0% or 100%, so it moved your value to 1% or 
 ## Flags and files
 
 **`Unknown option '--<name>'`** (or another option error from Node)
-A flag is misspelled. Compare with `npx forewit@0.1.1 --help`.
+A flag is misspelled. Compare with `npx forewit@0.1.2 --help`.
 
 **`ENOENT: no such file or directory, open '<path>'`**
 A local `--round-file` or `--env-file` path does not exist. Check the path, or use the https link to the round file.
 
 **`not even length 0x hex: ...`**, **`uint256 out of range: ...`**, **`bad address: ...`**, **`bad bytes32: ...`**
 A value given to the tool, or read from a receipt or round file, is malformed. Check that `--from` is a full `0x` address with 40 hex characters. If the value came from a receipt, restore it from your backup.
+
+## Auto reveal
+
+**`status` still shows not revealed about an hour after the deadline, although you chose auto reveal.**
+Reveal yourself as usual with `reveal --execute --round <n>`. Your receipt is still on your computer as a backup. Do it before the reveal deadline.
 
 ## Committing
 

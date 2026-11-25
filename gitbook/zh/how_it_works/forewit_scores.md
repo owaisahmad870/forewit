@@ -43,7 +43,7 @@ flowchart LR
 
 * 至少有一个已评分或已弃权的轮次。
 * 在账本上不持有任何角色（运营方除外）。
-* 最新资料为公开状态，并带有 Agent ID 名称（`npx forewit@0.1.1 profile ... --label yourname`）。
+* 最新资料为公开状态，并带有 Agent ID 名称（`npx forewit@0.1.2 profile ... --label yourname`）。
 * 自公开以来，该 Agent ID 没有被转出钱包。转移、销毁或重新发放都算作“已移动”，该叶子会在下一个根中被删除。
 
 其他人在叶子文件中只按地址和原因列出，从不显示名称或 token id。

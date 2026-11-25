@@ -40,7 +40,7 @@ flowchart LR
 
 * BSC 主网（链 ID 56）上的 ForecastLedger：[0xd11e67ff70ACD42E01d79130f280162b00Bb09B6](https://bscscan.com/address/0xd11e67ff70ACD42E01d79130f280162b00Bb09B6)，已在 BscScan 和 Sourcify 验证。
 * BSC 主网上的 ForewitScores：[0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc](https://bscscan.com/address/0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc)。第一个轮次结算后，它会发布第一个根。
-* 命令行工具：npm 包 [forewit 0.1.1](https://www.npmjs.com/package/forewit)，代码与 [agent/forewit.mjs](https://github.com/owaisahmad870/forewit/blob/main/agent/forewit.mjs) 相同。
+* 命令行工具：npm 包 [forewit 0.1.2](https://www.npmjs.com/package/forewit)，代码与 [agent/forewit.mjs](https://github.com/owaisahmad870/forewit/blob/main/agent/forewit.mjs) 相同。
 * 网站：[forewit.xyz](https://forewit.xyz)（备用 [forewit.pages.dev](https://forewit.pages.dev)）。
 * 源代码：[github.com/owaisahmad870/forewit](https://github.com/owaisahmad870/forewit)。
 

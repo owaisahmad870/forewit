@@ -1,5 +1,5 @@
 ---
-description: 为什么你的预测要在截止时间前密封，为什么盐值从不离开你的设备，以及盐值丢失会怎样。
+description: 为什么你的预测要在截止时间前密封，为什么除非你选择自动揭示，盐值都只留在你的设备上，以及盐值丢失会怎样。
 ---
 
 # 提交与揭示
@@ -54,7 +54,7 @@ keccak256(abi.encode(COMMIT_TYPEHASH, block.chainid, address(this), roundId, for
 * 工具在你的电脑上生成盐值（`crypto.randomBytes(32)`）。
 * 在输出任何其他内容之前，工具会先把盐值存进你主目录下 `.forewit` 文件夹里的揭示回执。如果保存失败，就什么都不输出，也什么都发不出去。
 * 回执文件只有你的用户账户可以读取。在 Windows 上，工具会移除其他所有权限，只要还有残留权限就会安全失败（fail closed）。
-* 在你提交之前，工具从不上传你的盐值或预测。当 `forewit agent` 向你的 AI 模型询问概率时，盐值还根本不存在。
+* 在你提交之前，工具从不上传你的盐值或预测。唯一的例外是你自己开启的自动揭示，见下文"自动揭示"一节。当 `forewit agent` 向你的 AI 模型询问概率时，盐值还根本不存在。
 * `receipt` 默认隐藏盐值，除非你加上 `--show-salt`，因此运行该工具的 AI 智能体看不到它。
 * 工具拒绝在提交截止时间之前揭示，所以在提交开放期间盐值绝不会暴露。
 
@@ -70,7 +70,7 @@ keccak256(abi.encode(COMMIT_TYPEHASH, block.chainid, address(this), roundId, for
 
 保护自己的方法：
 
-1. 每次提交后立即备份回执：`npx forewit@0.1.1 receipt --from 0xYourAgenticWallet --show-salt`，存入密码管理器或离线笔记。
+1. 每次提交后立即备份回执：`npx forewit@0.1.2 receipt --from 0xYourAgenticWallet --show-salt`，存入密码管理器或离线笔记。
 2. 如果更换电脑，把备份保存为 `.json` 文件，放进主目录下的 `.forewit` 文件夹。工具会根据哈希找到它。
 3. 在揭示窗口内回来揭示。每日轮次的揭示窗口是提交截止时间之后的 24 小时。
 
@@ -82,7 +82,24 @@ keccak256(abi.encode(COMMIT_TYPEHASH, block.chainid, address(this), roundId, for
 
 这是安全的，因为哈希绑定了预测者的地址。第三方只能为你的钱包提交你当初提交的那份预测，既不能修改你的答案，也不能把它据为己有。
 
-`revealFor` 是一个合约函数。Forewit 工具通过 `reveal` 用你自己的钱包揭示，本文档不承诺提供托管揭示服务。
+默认情况下，Forewit 工具通过 `reveal` 用你自己的钱包揭示。如果你选择加入自动揭示，Forewit 的 keeper 会替你调用 `revealFor`，具体如下。
+
+## 自动揭示（选择加入）
+
+可以把它想成你卡片的第二份副本，封在一个带时间锁的信封里，截止时间前打不开。你把它附在寄出的信封上。截止时间一过，时间锁打开，一个帮手读出卡片，替你当众拆开你的信封。任何人（包括 Forewit）都无法提前打开时间锁。
+
+工作方式：
+
+* 在 `commit` 上加 `--auto-reveal`，或在 MCP 工具 `prepare_commit` 上设置 `auto_reveal: true`，或在 `forewit start` 中回答 yes，即可开启。不开启时一切照旧：盐值从不离开你的电脑。
+* 工具用 drand 时间锁（tlock，由 League of Entropy 运行的 drand quicknet 网络）加密你的预测和盐值的一份副本，锁定到提交截止后约 60 秒的 drand 轮次。
+* 这段密文附加在提交交易 calldata 的正常参数之后。账本会忽略尾部的 calldata，所以提交哈希与不附加时完全相同。
+* 截止之后，Forewit 的 keeper 解密它，用 `computeCommitHash` 核对它与链上保存的提交是否一致，然后调用 `revealFor`。由于哈希绑定了你的钱包，别人无法替你揭示其他内容。
+* 揭示不需要你支付 gas，也不需要第二步。
+* 含盐值的本地回执仍会保存作为备份。如果截止后约一小时 `status` 仍显示未揭示，请照常自己揭示。
+
+{% hint style="info" %}
+信任假设：drand 的门限网络（League of Entropy）不会提前公布某个轮次。如果达到门限数量的 drand 运营方串通，他们可以在截止前读到预测，但无法修改，因为提交哈希已经在链上。
+{% endhint %}
 
 ## 合约强制执行的规则
 

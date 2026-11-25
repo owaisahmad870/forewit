@@ -85,11 +85,12 @@ claude mcp add forewit -- npx -y forewit mcp
 
 所有工具默认使用 BSC 主网。`network` 可取 `mainnet` 或 `testnet`。
 
-* `prepare_commit {from, probabilities_percent, round_id?, network?}`
+* `prepare_commit {from, probabilities_percent, round_id?, network?, auto_reveal?}`
   * `probabilities_percent`：每个问题一个百分比，共 1 到 16 个数字，限制在 1 到 99 之间。
   * 从 ledger 读取轮次。超过提交截止时间或问题数量不对时会拒绝。
   * 生成一个 32 字节的随机盐值，把凭证保存到 `~/.forewit/`（仅所有者可访问），并返回提交哈希、calldata、`{to, value: "0", data}` 以及准确的 `baw contract-call preview` 命令。
   * 不返回盐值（`salt_returned: false`）。
+  * `auto_reveal`：默认 false（选择加入；请先询问用户，推荐开启）。设为 `true` 时，预测和盐值的一份副本会被时间锁定到提交截止后不久（drand quicknet），随 calldata 一起上链，截止后由 Forewit 的 keeper 揭示，用户无需第二步。此时输出为 `auto_reveal: true`。见 [提交与揭示](../how_it_works/commit_and_reveal.md)。
 * `prepare_reveal {from, round_id?, network?}`
   * 提交截止时间（以链上时间为准）之前会被拒绝。
   * 截止之后，它会找到与你链上提交匹配的凭证，并返回揭示 calldata。和任何揭示一样，这段 calldata 包含盐值，而此时盐值本来就即将在链上公开。
@@ -105,7 +106,7 @@ claude mcp add forewit -- npx -y forewit mcp
 
 任何人只要同时看到盐值和你的预测，就能揭示或复制你的预测。因此在提交截止时间之前，盐值永远不会进入助手的上下文：
 
-* `prepare_commit` 从不返回盐值。
+* `prepare_commit` 从不返回盐值。开启 `auto_reveal` 时，calldata 中只有时间锁定的副本，截止前任何人都无法读取。
 * 在链上时间越过截止时间之前，`prepare_reveal` 以及带 `include_salt` 的 `my_receipts` 都会被拒绝。
 * 截止之后，助手只会在揭示 calldata 中，或在你要求 `my_receipts` 做备份时看到盐值。
 
@@ -122,11 +123,11 @@ claude mcp add forewit -- npx -y forewit mcp
 
 ## 远程只读服务器（即将推出）
 
-第二个服务器 `forewit mcp remote` 已经构建并测试完成，但**尚未部署上线**。上线后，它将通过 Streamable HTTP 提供只读工具：`get_current_round`、`get_round`、`get_question`、`get_baseline`、`get_crowd`、`get_leaderboard`、`get_my_status` 和 `explain_scoring`。市场文本只会放在 `untrusted_market_text` 中返回，公开资料名称只会放在 `untrusted_profile_name` 中返回。
+第二个服务器 `forewit mcp remote` 已经构建并测试完成，但**尚未部署上线**。上线后，它将通过 Streamable HTTP 提供只读工具：`get_current_round`、`get_round`、`get_question`、`get_baseline`、`get_crowd`、`get_leaderboard`、`get_my_status`、`get_upcoming` 和 `explain_scoring`。`get_my_status` 包含一张用简单语言写的 `results` 成绩卡：按轮次给出 "You beat the market by X points"（你比市场准 X 分）或 "The market was closer by X points"（市场比你准 X 分），并给出双方的失误分（Brier 乘以 100，0 为完全正确，100 为完全错误）；总体部分给出参与的轮次、比市场更准的次数、每题平均分，以及进入排名后的名次。Forewit 不转移任何资金。`get_upcoming` 列出当前可提交的轮次，以及下一个每日轮次的开放时间（约 UTC 03:10 开放，UTC 23:00 截止提交）。同样的成绩卡也在网站 [forewit.xyz/#/me](https://forewit.xyz/#/me) 上，命令行中可用 `npx forewit@0.1.2 results --from 0xYourAgenticWallet` 和 `npx forewit@0.1.2 upcoming`。市场文本只会放在 `untrusted_market_text` 中返回，公开资料名称只会放在 `untrusted_profile_name` 中返回。
 
 ## 版本
 
-* npm 包 `forewit` 0.1.1，由 GitHub Actions 发布并带有 npm provenance。默认使用主网。
+* npm 包 `forewit` 0.1.2，由 GitHub Actions 发布并带有 npm provenance。默认使用主网。
 * MCP 协议 `2025-11-25`。等官方 MCP SDK 支持 `2026-07-28` 后再跟进。
 * 只提供工具：没有 resources、prompts、sampling、roots 或 elicitation。
 * MCP Registry 条目（`io.github.owaisahmad870/forewit`）已在 [`mcp/server.json`](https://github.com/owaisahmad870/forewit/blob/main/mcp/server.json) 中准备好，尚未确认已上架。

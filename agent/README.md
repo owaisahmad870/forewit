@@ -17,7 +17,9 @@ This folder holds:
 
 You need Node 26, the Binance Agentic Wallet CLI (`baw`, npm package `@binance/agentic-wallet`), an Agent ID, and Developer Mode turned on in the Binance App (Agentic Wallet, Settings, Developer Mode; it has its own daily limit and lasts 7 days).
 
-From the repository root:
+The easy way is the guided first run: `node agent/forewit.mjs start` (or `npx forewit@latest start`). It checks the wallet, signs you in, shows today's questions, and sends your forecast after the preview and your typed yes.
+
+Step by step, from the repository root:
 
 ```bash
 # 1. See the current round and its questions (the round file adds each event question and label)
@@ -30,6 +32,7 @@ node agent/forewit.mjs forecast --p 72,15,50
 baw wallet address --json
 
 # 4. Commit: saves your salt, then prints the baw preview and execute commands
+#    add --auto-reveal (opt in) and Forewit reveals for you after the deadline: no step 6
 node agent/forewit.mjs commit --from 0xYourAgenticWallet --p 72,15,50
 
 # 5. Back up the reveal receipt somewhere private

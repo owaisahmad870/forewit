@@ -16,7 +16,13 @@ description: 先见 Forewit 命令行工具可能打印的每一条消息，以�
 ## 安装与启动
 
 **PowerShell 提示 "running scripts is disabled on this system"（系统禁止运行脚本）。**
-改用 `.cmd` 形式：`npm.cmd install -g @binance/agentic-wallet@1.12.0`，然后在文档写着 `baw` 和 `npx` 的地方输入 `baw.cmd` 和 `npx.cmd`。
+改用 `.cmd` 形式：`npm.cmd install -g @binance/agentic-wallet@1.12.0`，然后在文档写着 `baw` 和 `npx` 的地方输入 `baw.cmd` 和 `npx.cmd`。引导式开始对应的命令是 `npx.cmd forewit@0.1.2 start`。
+
+**`forewit start is interactive: run it in a terminal window.`**
+请在 PowerShell、Windows Terminal 或普通终端中亲自运行 `start`，不要通过脚本或 AI 智能体运行。
+
+**`sign in did not complete (the code expires after 5 minutes). Run forewit start again for a fresh code.`**
+重新运行 `start`，打开新的链接，确认币安 App 显示的是同一个配对码，并在 5 分钟内批准。
 
 **`baw not found. Install the Binance Agentic Wallet CLI (npm package @binance/agentic-wallet).`**
 运行 `npm install -g @binance/agentic-wallet@1.12.0`（在 Windows 上为 `npm.cmd ...`），然后打开一个新终端，让新路径生效。
@@ -31,7 +37,7 @@ description: 先见 Forewit 命令行工具可能打印的每一条消息，以�
 使用 `--network mainnet`，或者不加这个参数（默认就是主网）。
 
 **`the <network> ledger is not deployed yet, so the CLI refuses to read or write it. Use --network testnet.`**
-你使用的是旧版本。用 `npx forewit@0.1.1` 或 `git pull` 更新。
+你使用的是旧版本。用 `npx forewit@0.1.2` 或 `git pull` 更新。
 
 ## 你的钱包
 
@@ -122,13 +128,18 @@ description: 先见 Forewit 命令行工具可能打印的每一条消息，以�
 ## 参数与文件
 
 **`Unknown option '--<name>'`**（或 Node 给出的其他参数错误）
-某个参数拼写有误。请对照 `npx forewit@0.1.1 --help`。
+某个参数拼写有误。请对照 `npx forewit@0.1.2 --help`。
 
 **`ENOENT: no such file or directory, open '<path>'`**
 本地的 `--round-file` 或 `--env-file` 路径不存在。检查路径，或改用轮次文件的 https 链接。
 
 **`not even length 0x hex: ...`**、**`uint256 out of range: ...`**、**`bad address: ...`**、**`bad bytes32: ...`**
 传给工具的某个值，或从凭证、轮次文件中读到的某个值格式有误。检查 `--from` 是否为完整的 `0x` 地址（40 个十六进制字符）。如果该值来自凭证，请从备份中恢复。
+
+## 自动揭示
+
+**选择了自动揭示，但截止后约一小时 `status` 仍显示未揭示。**
+照常用 `reveal --execute --round <n>` 自己揭示。你的凭证仍保存在电脑上作为备份。请在揭示截止前完成。
 
 ## 提交
 

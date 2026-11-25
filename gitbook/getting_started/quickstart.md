@@ -8,7 +8,7 @@ description: From an Agent ID to your first sealed forecast on BSC mainnet in ab
 
 * Your first forecast committed onchain, sealed so nobody can read it before the deadline.
 * A reveal receipt saved on your computer, plus a private backup of it.
-* A reminder of when to come back and reveal.
+* A reminder of when to come back and reveal, or auto reveal turned on so Forewit reveals for you.
 
 Forecasting scores only. Not financial advice.
 
@@ -21,6 +21,24 @@ Honest limit: committing currently needs the `baw` command line wallet on a comp
 ## The picture
 
 You write your answer, seal it in an envelope, and post the envelope. After the deadline you open it. Read [Commit and reveal](../how_it_works/commit_and_reveal.md) for the full story.
+
+## The easy way: one command
+
+```bash
+npx forewit@0.1.2 start
+```
+
+On Windows PowerShell, which often blocks the `npx` script, type `npx.cmd forewit@0.1.2 start` instead. From the repository it is `node agent/forewit.mjs start`.
+
+It walks you through five steps in plain words:
+
+1. It checks for the Binance Agentic Wallet CLI and offers to install it (`@binance/agentic-wallet@1.12.0`).
+2. It signs you in: it prints a link and a pairing code, and you approve in the Binance App.
+3. It checks your Agent ID and Developer Mode, and explains the fix if one is missing.
+4. It shows today's questions one by one and asks your chance from 1 to 99 for each.
+5. It asks whether to turn on auto reveal (recommended, see [Commit and reveal](../how_it_works/commit_and_reveal.md#auto-reveal-opt-in)), then shows the wallet preview and sends only after you type `yes`.
+
+At the end it prints your results card link, [forewit.xyz/#/me](https://forewit.xyz/#/me). The steps below do the same by hand.
 
 ## Steps
 
@@ -49,7 +67,7 @@ Expected result: a list of addresses. Use the entry with `binanceChainId` 56. Be
 First find the latest round number:
 
 ```bash
-npx forewit@0.1.1 round
+npx forewit@0.1.2 round
 ```
 
 Expected result: the first line reads `Forewit round <n> on mainnet (chain 56), ledger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6`. Questions show only as numbers for now.
@@ -57,7 +75,7 @@ Expected result: the first line reads `Forewit round <n> on mainnet (chain 56), 
 Each round has a public round file that adds the questions in words. Replace `1` with your round number:
 
 ```bash
-npx forewit@0.1.1 round --round-file https://forewit.xyz/data/rounds/1.json
+npx forewit@0.1.2 round --round-file https://forewit.xyz/data/rounds/1.json
 ```
 
 Expected result: the round number, the commit and reveal deadlines, and each question as its event question plus label. For example:
@@ -80,7 +98,7 @@ The tool checks the round file against the chain and refuses on any mismatch.
 Give one percentage per question, in order. Round 1 has 4 questions, so it takes 4 numbers.
 
 ```bash
-npx forewit@0.1.1 forecast --p 60,40,50,30
+npx forewit@0.1.2 forecast --p 60,40,50,30
 ```
 
 Expected result: each question with your percentage. Nothing is saved or sent. Values below 1 or above 99 are clamped to the 1% to 99% range.
@@ -88,7 +106,7 @@ Expected result: each question with your percentage. Nothing is saved or sent. V
 ### 5. Commit
 
 ```bash
-npx forewit@0.1.1 commit --execute --from 0xYourAgenticWallet --p 60,40,50,30 --round-file https://forewit.xyz/data/rounds/1.json
+npx forewit@0.1.2 commit --execute --from 0xYourAgenticWallet --p 60,40,50,30 --round-file https://forewit.xyz/data/rounds/1.json
 ```
 
 Expected result, in this order:
@@ -105,12 +123,14 @@ If you see `PENDING_CONFIRMATION`, approve it in the Binance App. Do not run the
 
 > Screenshot placeholder: the approval screen in the Binance App for a PENDING_CONFIRMATION commit
 
+Add `--auto-reveal` to let Forewit reveal for you after the deadline. A copy of your forecast and salt rides in the commit, locked until about a minute after the commit deadline, so nobody can read it before then. Your receipt is still saved as a backup. See [Commit and reveal](../how_it_works/commit_and_reveal.md#auto-reveal-opt-in).
+
 Without `--execute` the commit command sends nothing. It still saves the receipt, and prints the `baw contract-call preview` and `execute` commands for you to run yourself.
 
 ### 6. Back up your receipt
 
 ```bash
-npx forewit@0.1.1 receipt --from 0xYourAgenticWallet --show-salt
+npx forewit@0.1.2 receipt --from 0xYourAgenticWallet --show-salt
 ```
 
 Expected result: your receipt as JSON, including the salt. Copy it into a password manager or an offline note.
@@ -122,7 +142,7 @@ Without the salt you cannot reveal, and the round counts as a forfeit with the w
 ### 7. Check your status
 
 ```bash
-npx forewit@0.1.1 status --from 0xYourAgenticWallet
+npx forewit@0.1.2 status --from 0xYourAgenticWallet
 ```
 
 Expected result: `committed: yes`, `local receipt: matches the onchain commit`, and `Next: wait for the commit deadline, then reveal`.
@@ -133,11 +153,13 @@ Expected result: `committed: yes`, `local receipt: matches the onchain commit`, 
 Daily rounds take commits until 23:00 UTC. The reveal window then stays open for 24 hours. Reveal from the same computer, because the salt is in your receipt there.
 {% endhint %}
 
+With auto reveal on, you do not need to come back: the Forewit keeper reveals for you and pays the gas. Check `status` about an hour after the deadline, and reveal yourself only if it still shows not revealed.
+
 Go on with [Reveal and check your score](reveal_and_score.md).
 
 ## Prefer the repository?
 
-The same tool is in the repository. Clone it and use `node agent/forewit.mjs` wherever this page says `npx forewit@0.1.1`:
+The same tool is in the repository. Clone it and use `node agent/forewit.mjs` wherever this page says `npx forewit@0.1.2`:
 
 ```bash
 git clone https://github.com/owaisahmad870/forewit.git

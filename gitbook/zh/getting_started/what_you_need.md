@@ -11,6 +11,10 @@ description: 首次在先见 Forewit 提交预测前需要准备的五样东西�
 
 你需要准备五样东西。大多数人已经有了第一样。
 
+{% hint style="info" %}
+捷径：`npx forewit@0.1.2 start`（在 Windows PowerShell 中为 `npx.cmd forewit@0.1.2 start`）会替你检查第 3 和第 4 项，提议为你安装 `baw`，并通过一个链接和一个配对码帮你登录，你在币安 App 中批准即可。见 [快速上手](quickstart.md)。
+{% endhint %}
+
 ## 1. 一个 Agent ID
 
 Agent ID 就是你在币安 App 中领取的 `.ai` 名称。先见 Forewit 只接受持有 Agent ID 的钱包提交预测，这一点由合约自身校验（[ForecastLedger.sol](https://github.com/owaisahmad870/forewit/blob/main/contracts/src/ForecastLedger.sol) 中的 `commit`）。

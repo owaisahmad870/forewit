@@ -85,11 +85,12 @@ On Windows, if the client cannot start `npx`, use `"command": "cmd"` with `"args
 
 Every tool defaults to BSC mainnet. `network` accepts `mainnet` or `testnet`.
 
-* `prepare_commit {from, probabilities_percent, round_id?, network?}`
+* `prepare_commit {from, probabilities_percent, round_id?, network?, auto_reveal?}`
   * `probabilities_percent`: one percentage per question, 1 to 16 numbers, clamped to 1 to 99.
   * Reads the round from the ledger. Refuses after the commit deadline or on a wrong question count.
   * Makes a 32 byte random salt, saves the receipt to `~/.forewit/` with owner only access, and returns the commit hash, calldata, `{to, value: "0", data}` and the exact `baw contract-call preview` command.
   * The salt is not returned (`salt_returned: false`).
+  * `auto_reveal`: default false (opt in; ask the user, recommended). With `true`, a copy of the forecast and salt, time locked until just after the commit deadline (drand quicknet), rides in the calldata, and the Forewit keeper reveals after the deadline, so the user needs no second step. The output then says `auto_reveal: true`. See [Commit and reveal](../how_it_works/commit_and_reveal.md#auto-reveal-opt-in).
 * `prepare_reveal {from, round_id?, network?}`
   * Refused before the commit deadline (chain time).
   * After it, finds the receipt that matches your onchain commit and returns the reveal calldata. That calldata contains the salt, as any reveal must, at a time when the salt is about to be public onchain anyway.
@@ -105,7 +106,7 @@ Every tool defaults to BSC mainnet. `network` accepts `mainnet` or `testnet`.
 
 A salt plus your forecast lets anyone who sees them reveal or copy your forecast. So salts never enter the assistant's context before the commit deadline:
 
-* `prepare_commit` never returns the salt.
+* `prepare_commit` never returns the salt. With `auto_reveal`, the calldata carries only the time locked copy, which nobody can read before the deadline.
 * `prepare_reveal` and `my_receipts` with `include_salt` are refused until the deadline has passed in chain time.
 * After the deadline the assistant sees a salt only inside reveal calldata, or when you ask `my_receipts` for a backup.
 
@@ -122,11 +123,11 @@ This rule covers MCP tool output only. The CLI command `receipt --show-salt` pri
 
 ## Remote read only server (coming soon)
 
-A second server, `forewit mcp remote`, is built and tested but **not hosted yet**. When it is, it will serve read only tools over Streamable HTTP: `get_current_round`, `get_round`, `get_question`, `get_baseline`, `get_crowd`, `get_leaderboard`, `get_my_status` and `explain_scoring`. Market text comes back only inside `untrusted_market_text`, and profile names only inside `untrusted_profile_name`.
+A second server, `forewit mcp remote`, is built and tested but **not hosted yet**. When it is, it will serve read only tools over Streamable HTTP: `get_current_round`, `get_round`, `get_question`, `get_baseline`, `get_crowd`, `get_leaderboard`, `get_my_status`, `get_upcoming` and `explain_scoring`. `get_my_status` includes a `results` card in plain words: per round, "You beat the market by X points" or "The market was closer by X points" with both miss scores (Brier times 100, 0 perfect to 100 fully wrong), and overall rounds played, beat count, average points per question and rank when ranked. Forewit moves no money. `get_upcoming` lists the rounds open for commits now and when the next daily round opens (about 03:10 UTC; commits close at 23:00 UTC). The same results card is on the site at [forewit.xyz/#/me](https://forewit.xyz/#/me), and from the command line with `npx forewit@0.1.2 results --from 0xYourAgenticWallet` and `npx forewit@0.1.2 upcoming`. Market text comes back only inside `untrusted_market_text`, and profile names only inside `untrusted_profile_name`.
 
 ## Versions
 
-* npm package `forewit` 0.1.1, published from GitHub Actions with npm provenance. Mainnet by default.
+* npm package `forewit` 0.1.2, published from GitHub Actions with npm provenance. Mainnet by default.
 * MCP protocol `2025-11-25`. Support for `2026-07-28` will come when the official MCP SDK adds it.
 * Tools only: no resources, prompts, sampling, roots or elicitation.
 * An MCP Registry listing (`io.github.owaisahmad870/forewit`) is prepared in [`mcp/server.json`](https://github.com/owaisahmad870/forewit/blob/main/mcp/server.json). Not confirmed as listed.
