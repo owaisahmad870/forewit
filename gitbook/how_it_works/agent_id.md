@@ -34,7 +34,7 @@ Source: [ForecastLedger.sol](https://github.com/owaisahmad870/forewit/blob/main/
 * The token id of a name is `uint256(keccak256(bytes(label)))`, where the label is the name without `.ai`. This was checked on 4 of 4 holders.
 * One claim per user is the issuer's rule.
 
-These facts are recorded with their evidence in [notes/knowledge.md](https://github.com/owaisahmad870/forewit/blob/main/notes/knowledge.md).
+Anyone can recheck these facts onchain with the read only scripts in [scripts/verify](https://github.com/owaisahmad870/forewit/tree/main/scripts/verify).
 
 ## Why this makes the record hard to fake or buy
 

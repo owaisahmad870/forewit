@@ -34,7 +34,7 @@ flowchart LR
 * 名称对应的 token id 为 `uint256(keccak256(bytes(label)))`，其中 label 是去掉 `.ai` 的名称。已在 4 个持有者中全部验证通过（4 of 4）。
 * 每个用户只能领取一次，这是发行方的规则。
 
-这些事实及其证据记录在 [notes/knowledge.md](https://github.com/owaisahmad870/forewit/blob/main/notes/knowledge.md)。
+任何人都可以用 [scripts/verify](https://github.com/owaisahmad870/forewit/tree/main/scripts/verify) 中的只读脚本在链上复核这些事实。
 
 ## 为什么这让记录难以伪造或买卖
 
