@@ -9,8 +9,6 @@ import { isAddress } from './keccak.mjs';
 import { BAW_CHAIN_IDS, RISK_WARNING } from '../config.mjs';
 
 const CHAIN = String(BAW_CHAIN_IDS[0]);
-// PowerShell often blocks baw.ps1 (script execution disabled); the baw.cmd shim runs without a policy change
-const BAW_CLI = process.platform === 'win32' ? 'baw.cmd' : 'baw';
 export const RETRY_CHECKS = [
   `baw wallet tx-history --type pending --binanceChainId ${CHAIN} --json`,
   `baw wallet tx-lock --binanceChainId ${CHAIN} --json`,
@@ -68,7 +66,7 @@ export function assertCanExecute(net, io) {
 /** Read only checks before any preview. Pending transactions or a locked wallet stop the run: never send twice. */
 export function preflight(now = Date.now()) {
   const status = runBaw(['wallet', 'status', '--json']);
-  if (status?.data?.status !== 'CONNECTED') throw new Error(`the Agentic Wallet is not signed in (baw wallet status is not CONNECTED). Sign in with: ${BAW_CLI} auth signin`);
+  if (status?.data?.status !== 'CONNECTED') throw new Error('the Agentic Wallet is not signed in (baw wallet status is not CONNECTED). Sign in with: baw auth signin (in Windows PowerShell type baw.cmd auth signin, since PowerShell often blocks baw.ps1)');
   const id = runBaw(['wallet', 'agent-id', '--json']);
   if (codeOf(id) === 20003008) throw new Error('the Agent ID service is temporarily unavailable (20003008). This does not mean you have no Agent ID; try again later.');
   if (id?.data?.claimed !== true) throw new Error('this wallet has no claimed Agent ID (baw wallet agent-id). Claim one in the Binance App, Web3 wallet, Agent ID.');
