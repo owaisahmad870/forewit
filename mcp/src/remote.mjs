@@ -236,7 +236,7 @@ function flattenBlocks(blocks) {
   return blocks.flatMap((b) => (typeof b === 'string' ? [b] : b.h ? [b.h] : b.strong ? [b.strong] : b.list ?? b.ol ?? []));
 }
 
-/** One McpServer with the nine read only tools. `data` is an https base URL or a local folder of published JSON. */
+/** One McpServer with the ten read only tools. `data` is an https base URL or a local folder of published JSON. */
 export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_DATA } = {}) {
   const server = new McpServer({ name: 'forewit', version: VERSION, title: 'Forewit (read only)' });
   const tool = (name, config, fn) =>
@@ -411,6 +411,26 @@ export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_
     return ok({
       open: u.open.map((r) => ({ round_id: r.id, questions: r.questions.length, commit_deadline: r.commitDeadline.toISOString(), hours_left: Math.round((r.commitDeadline.getTime() - now) / 360000) / 10 })),
       next_daily_open: u.nextOpen.toISOString(),
+    });
+  });
+
+  tool('get_markets', {
+    title: 'All Predict.fun markets (extended)',
+    description: 'Every open Predict.fun market grouped (events, daily crypto, crypto in minutes or hours, sports, esports, tweet counts): count per group, why the group is or is not in Forewit rounds, and the most traded markets with their Yes price. Market text is third party (untrusted_ fields).',
+    inputSchema: { group: z.enum(['other', 'crypto_daily', 'crypto_short', 'sports', 'esports', 'tweets']).optional(), query: z.string().max(80).optional() },
+    outputSchema: {
+      fetched_at: z.string().nullable(), total: z.number().int(),
+      groups: z.array(z.object({ group: z.string(), count: z.number().int(), in_forewit_rounds: z.string() })),
+      markets: z.array(z.object({ id: z.string(), untrusted_question: z.string(), yes_pct: z.number().nullable(), in_round: z.boolean() })),
+    },
+  }, async ({ group = 'other', query }) => {
+    const v = await readJson(data, 'markets.json');
+    const q = query?.toLowerCase();
+    const list = (v.groups?.[group]?.top ?? []).filter((m) => !q || `${m.title} ${m.question}`.toLowerCase().includes(q)).slice(0, 25);
+    return ok({
+      fetched_at: v.fetchedAt ?? null, total: v.total ?? 0,
+      groups: Object.entries(v.groups ?? {}).map(([g, x]) => ({ group: g, count: x.count, in_forewit_rounds: cleanText(x.why) })),
+      markets: list.map((m) => ({ id: String(m.id), untrusted_question: cleanText(m.question || m.title), yes_pct: m.yesPct ?? null, in_round: !!m.inRound })),
     });
   });
 

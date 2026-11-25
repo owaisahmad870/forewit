@@ -845,5 +845,32 @@
     "closes": "closes",
     "nextOpens": "The next round opens at about",
     "miss": "Miss score: how far your forecasts were from what happened, from 0 (perfect) to 100 (fully wrong), averaged per question. Points = the market’s miss score minus yours."
+  },
+  "markets": {
+    "title": "All Predict.fun markets (extended)",
+    "toggle": "Show every market",
+    "intro": "Turn this on to see every open Predict.fun market, in any category, with the market price and whether Forewit can score it. Forewit scores only questions inside a round; the reason for each group is shown.",
+    "total": "{n} open markets right now. The most traded of each group are listed.",
+    "g": {
+      "other": "Events",
+      "crypto_daily": "Daily crypto",
+      "crypto_short": "Crypto in minutes or hours",
+      "sports": "Sports",
+      "esports": "Esports",
+      "tweets": "Tweet counts"
+    },
+    "status": "In Forewit rounds?",
+    "why": {
+      "other": "Yes when liquid, not politics, and settling 6 to 72 hours after a round deadline.",
+      "crypto_daily": "Yes: daily crypto questions are in the daily round.",
+      "crypto_short": "No: commits stay open at least 2 hours, so a 5 or 15 minute question would settle before the deadline and count as void.",
+      "sports": "Not yet: excluded by the owner on 23 Nov 2026; a planned optional board.",
+      "esports": "Not yet: excluded by the owner on 23 Nov 2026; a planned optional board.",
+      "tweets": "Yes when liquid and settling 6 to 72 hours after a round deadline."
+    },
+    "search": "Search these markets",
+    "yes": "Yes {p}%",
+    "inRound": "In a round",
+    "note": "Market list from the keeper download at {t} UTC. Prices are the order book middle, not advice."
   }
 }

@@ -30,9 +30,9 @@ test('remote server', async (t) => {
   const client = await connect(createRemoteServer({ data: dir }));
   t.after(() => { restore(); rmSync(dir, { recursive: true, force: true }); });
 
-  await t.test('lists the nine read only tools with strict inputs and output schemas', async () => {
+  await t.test('lists the ten read only tools with strict inputs and output schemas', async () => {
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((x) => x.name).sort(), ['explain_scoring', 'get_baseline', 'get_crowd', 'get_current_round', 'get_leaderboard', 'get_my_status', 'get_question', 'get_round', 'get_upcoming']);
+    assert.deepEqual(tools.map((x) => x.name).sort(), ['explain_scoring', 'get_baseline', 'get_crowd', 'get_current_round', 'get_leaderboard', 'get_markets', 'get_my_status', 'get_question', 'get_round', 'get_upcoming']);
     for (const x of tools) {
       assert.equal(x.annotations.readOnlyHint, true, x.name);
       assert.equal(x.inputSchema.additionalProperties, false, x.name);

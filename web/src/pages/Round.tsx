@@ -1,3 +1,4 @@
+import { AllMarkets } from './AllMarkets';
 import { Badge, Card, DateLine, Explain, Histogram, NextLinks, OutcomeBadge, ProbRule, QuestionTitle, useNow } from '../components';
 import { useT } from '../i18n';
 import { phase, type Dataset, type Round } from '../lib/data';
@@ -23,6 +24,7 @@ export function Rounds({ data }: { data: Dataset }) {
         </ul>
       </section>
       {!data.rounds.length && <p className="text-muted">{t('round.noRounds')} {t('home.noRound')}</p>}
+      <AllMarkets />
       <ul className="space-y-2">
         {data.rounds.map((r) => (
           <li key={r.id}>
