@@ -40,8 +40,11 @@ say(`OpenForecasts ${ledger} (local)`);
 // fake Predict.fun API: one market ending in 2 minutes, a two sided Yes book at 0.55 / 0.59 (middle 57%)
 const endsAt = new Date(Date.now() + 120_000).toISOString();
 const market = { id: 777, title: 'Bitcoin Up or Down, next 2 minutes', question: 'Bitcoin Up or Down, next 2 minutes', conditionId: cid, isYieldBearing: false, isNegRisk: false, categorySlug: 'btc-2m', tradingStatus: 'OPEN', status: 'REGISTERED', stats: { volume24hUsd: 5000 }, outcomes: [{ name: 'Up', indexSet: 1 }, { name: 'Down', indexSet: 2 }] };
+let spike = false;
 const server = createServer((req, res) => {
-  const body = req.url.startsWith('/v1/markets/777/orderbook') ? { bids: [[0.55, 200]], asks: [[0.59, 200]], updateTimestampMs: Date.now() }
+  // price history: 57% for the last 10 minutes, then a spike to 90% that only appears after the commit (must be ignored)
+  const t = Math.floor(Date.now() / 60000) * 60;
+  const body = req.url.startsWith('/v1/markets/777/timeseries') ? { resolution: '1m', series: [...Array(10)].map((_, i) => ({ x: t - 540 + i * 60, y: 57 })).concat(spike ? [{ x: Math.floor(Date.now() / 1000) + 1, y: 90 }] : []) }
     : req.url.startsWith('/v1/markets/777') ? market : req.url.startsWith('/v1/categories/btc-2m') ? { slug: 'btc-2m', title: 'Bitcoin 2 minute', endsAt, tradingSession: { closesAt: endsAt } } : null;
   res.writeHead(body ? 200 : 404, { 'content-type': 'application/json' });
   res.end(JSON.stringify({ success: !!body, data: body }));
@@ -59,6 +62,7 @@ process.env.FOREWIT_TEST_CTF = ctf; // the mock Conditional Tokens stand in for 
 const plan = await openPlan({ net, from: user.address, marketId: 777, outcome: 1, percent: 70, autoReveal: true, home });
 await pub.waitForTransactionReceipt({ hash: await wallet(user).sendTransaction({ to: ledger, data: plan.data }) });
 say(`player forecast 70% Up on market 777 with auto reveal; one transaction`);
+spike = true; // someone pushes the price to 90% right after the commit: the keeper must still record 57%
 
 const env = { ...process.env, FOREWIT_TEST_CTF: ctf, OPEN_LEDGER: ledger, OPEN_FROM_BLOCK: '0', OPEN_NETWORK: 'testnet', OPEN_CHAIN_ID: '97', BSC_TESTNET_RPC_URL: RPC, LOGS_RPC_URL: RPC, KEEPER_PRIVATE_KEY: KEYS[1], OPEN_API_URL: API, OPEN_ONCE: '1' };
 const W = mkdtempSync(join(tmpdir(), 'forewit_openk_'));

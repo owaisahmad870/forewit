@@ -46,6 +46,21 @@ const WALLET_DAILY_CAP = Number(process.env.OPEN_WALLET_DAILY_CAP || 50);
  * Market price for `slot` from the Yes book, or why it cannot count. Review H1: a price counts only with real depth
  * at the best bid and the best ask, so a forecaster cannot plant a price with dust orders.
  */
+/**
+ * The market price from BEFORE the commit (final review, H1 residual): Predict.fun's own 1 minute chance history, the
+ * last point strictly before the commit's block time and at most 5 minutes old. Nothing posted after the commit can
+ * change it. Also needs the v1 liquidity floor (100 USD traded in 24 hours).
+ */
+export function priceFromHistory(series, committedAt, slot, volume24hUsd = Infinity) {
+  if (!(volume24hUsd >= MIN_VOLUME_USD)) return { ok: false, why: `less than ${MIN_VOLUME_USD} USD traded in 24 hours` };
+  const before = (series ?? []).filter((p) => Number(p.x) < committedAt && committedAt - Number(p.x) <= 300 && Number.isFinite(Number(p.y)));
+  if (!before.length) return { ok: false, why: 'no price in the 5 minutes before the commit' };
+  const last = before.reduce((a, b) => (Number(b.x) > Number(a.x) ? b : a));
+  const yes = Math.round(Number(last.y) * 100); // chance in percent to basis points
+  if (yes <= 0 || yes >= 10000) return { ok: false, why: 'price at 0 or 100 percent' };
+  return { ok: true, bps: slot === 0 ? yes : 10000 - yes, at: Number(last.x) };
+}
+
 export function priceFromBook(book, slot, minDepthUsd = MIN_DEPTH_USD, volume24hUsd = Infinity) {
   if (!(volume24hUsd >= MIN_VOLUME_USD)) return { ok: false, why: `less than ${MIN_VOLUME_USD} USD traded in 24 hours` };
   const [bp, bs] = book?.bids?.[0] ?? [], [ap, as] = book?.asks?.[0] ?? [];
@@ -147,7 +162,7 @@ async function priceOrVoid(f, now) {
   try {
     m = await api(`/v1/markets/${f.marketId}?includeStats=true`);
     if (m?.categorySlug) cat = await api(`/v1/categories/${m.categorySlug}`);
-    if (m) book = await api(`/v1/markets/${f.marketId}/orderbook`);
+    if (m) book = await api(`/v1/markets/${f.marketId}/timeseries?metric=chance&resolution=1m&from=${f.committedAt - 600}&limit=20`);
   } catch (e) {
     if (e instanceof Outage) return log(`market ${f.marketId}: Predict.fun not reachable (${e.message}); retrying, never voided for this`);
     throw e;
@@ -155,10 +170,11 @@ async function priceOrVoid(f, now) {
   const endsAtS = Date.parse(cat?.tradingSession?.closesAt ?? cat?.endsAt ?? '') / 1000;
   // re-review L2: the read time is taken after the API calls, not at the start of the pass
   const reason = voidReason({ f, market: m, endsAtS, readAtS: Math.floor(Date.now() / 1000), chainId: CHAIN_ID });
-  const p = reason ? null : priceFromBook(book, f.slot, MIN_DEPTH_USD, Number(m?.stats?.volume24hUsd));
+  const p = reason ? null : priceFromHistory(book?.series, f.committedAt, f.slot, Number(m?.stats?.volume24hUsd));
+  if (!reason && m && !m.stats) await alert(`market ${f.marketId}: Predict.fun returned no stats, so no price can count; check the API`);
   const evidence = { forecast: { ...f, sealed: undefined }, checkedAt: now, tries: f.tries, reason, price: p,
     market: m && { id: m.id, conditionId: m.conditionId, tradingStatus: m.tradingStatus, status: m.status, outcomes: m.outcomes?.map((o) => ({ indexSet: o.indexSet })) },
-    category: cat && { slug: cat.slug, endsAt: cat.endsAt, tradingSession: cat.tradingSession }, book: book && { bids: book.bids?.slice(0, 3), asks: book.asks?.slice(0, 3), updateTimestampMs: book.updateTimestampMs } };
+    category: cat && { slug: cat.slug, endsAt: cat.endsAt, tradingSession: cat.tradingSession }, history: book?.series?.slice(-10) ?? null, volume24hUsd: m?.stats?.volume24hUsd ?? null };
   if (reason) {
     await send('voidForecast', [f.key, f.forecaster, reason]);
     f.stage = 'void';

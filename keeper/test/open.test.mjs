@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { priceFromBook, voidReason } from '../open.mjs';
+import { priceFromBook, priceFromHistory, voidReason } from '../open.mjs';
 
 const CTF = '0x22DA1810B194ca018378464a58f6Ac2B10C9d244';
 const CID = '0x' + 'ab'.repeat(32);
@@ -17,6 +17,15 @@ test('review H1: dust orders cannot set the price; thin or wide books score on a
   assert.equal(priceFromBook({ bids: [], asks: [[0.5, 1000]] }, 0).ok, false);
   assert.match(priceFromBook({ bids: [[0.3, 1000]], asks: [[0.45, 1000]] }, 0).why, /spread 15 points/);
   assert.match(priceFromBook({ bids: [[0.62, 200]], asks: [[0.66, 100]] }, 0, 50, 20).why, /traded in 24 hours/); // same floor as v1
+});
+
+test('final review: the price comes from before the commit and cannot be planted after it', () => {
+  const series = [{ x: 1000, y: 40 }, { x: 1060, y: 41 }, { x: 1120, y: 90 }]; // 90 appears after the commit at 1100
+  assert.deepEqual(priceFromHistory(series, 1100, 0, 500), { ok: true, bps: 4100, at: 1060 });
+  assert.deepEqual(priceFromHistory(series, 1100, 1, 500), { ok: true, bps: 5900, at: 1060 });
+  assert.match(priceFromHistory([{ x: 500, y: 40 }], 1100, 0, 500).why, /5 minutes before/);
+  assert.match(priceFromHistory(series, 1100, 0, 20).why, /traded in 24 hours/);
+  assert.equal(priceFromHistory([{ x: 1000, y: 100 }], 1100, 0, 500).ok, false);
 });
 
 test('void only on positive evidence', () => {
