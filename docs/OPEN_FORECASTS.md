@@ -8,8 +8,9 @@ Owais, 25 Nov 2026: "any market, any question, any time ... using its agentic wa
 * The commit carries a copy of the forecast sealed with the drand time lock to the market's end time plus a margin (an argument of the call, emitted in the event). Nobody, Forewit included, can read it before then. After the market resolves onchain, anyone may reveal with the salt; the keeper reveals from the sealed copy.
 
 ## Market price (the baseline)
-* The market price is Predict.fun's own chance history (GET /v1/markets/{id}/timeseries, 1 minute points): the last point strictly before the commit's block time and at most 5 minutes old, for the forecast's outcome. Nothing posted after the commit can change it (final review of H1, 25 Nov 2026: a price read from the book after the commit could be planted with the forecaster's own orders). The keeper posts it within 120 seconds of the commit; the contract refuses it later, after the market is finalized, or after the forecast is revealed.
+* Rule v2.1 (25 Nov 2026, before the first v2 forecast). The market price is Predict.fun's own chance history (GET /v1/markets/{id}/timeseries, 1 minute points): the last 1 minute bucket that ended at or before the commit's block time and is at most 3 minutes old, for the forecast's outcome. It counts only if the live book middle, read when the keeper posts, is within 3 points of it, so a commit timed right after a price jump gets no price. Nothing posted after the commit can raise or lower it (final review of H1, 25 Nov 2026: a price read from the book after the commit could be planted with the forecaster's own orders). The keeper posts it within 120 seconds of the commit; the contract refuses it later, after the market is finalized, or after the forecast is revealed.
 * A price counts only when the market traded at least 100 USD in the last 24 hours (the v1 liquidity floor) and the price is strictly between 0 and 100 percent.
+* No price for a commit in the last 20 percent of the market's life (at least the last 60 seconds), when the outcome may be nearly known (final review M5).
 * Residual risk, stated plainly: someone who trades a thin market before committing can move its price history, paying real trades and fees; the same holds for any market price.
 * A forecast without such a price counts for nothing in the record (no accuracy, no count, no scoring day). It is still scored onchain and shown on the owner's card as "not counted". Re-review M1: so a forecast slipped in during a keeper gap can never help a record.
 * Per wallet, the keeper pays for at most 50 new forecasts a day (price and reveal), and those come first in every pass; beyond that a forecast gets no price (so it counts for nothing) and the owner reveals it.
@@ -30,10 +31,10 @@ Owais, 25 Nov 2026: "any market, any question, any time ... using its agentic wa
 
 ## Record (Owais decision 25 Nov 2026: one merged record)
 * v1 round forecasts and v2 open forecasts form one track record per wallet and one leaderboard.
-* Per question, skill = market Brier minus the forecaster's Brier, counted only where a market price exists (v1 baseline, v2 price within 120 s on a two sided book). Merged score = (v1 sumSkill + v2 sumSkill) / (v1 baseline questions + v2 baseline forecasts + K), K = 20.
+* Per question, skill = market Brier minus the forecaster's Brier, counted only where a market price exists (v1 baseline, v2 price posted within 120 s by rule v2.1). Merged score = (v1 sumSkill + v2 sumSkill) / (v1 baseline questions + v2 baseline forecasts + K), K = 20.
 * Ranking eligibility: at least 20 scored questions with a market price across both, and at least 5 distinct scoring days (v1 rounds or v2 resolution days), replacing v1's 5 rounds rule for the merged board.
 * Forfeits count in both (worst Brier). Void forecasts and split payouts never count.
-* The ForewitScores root carries the merged numbers from the first root built after OpenForecasts goes live; roots before that stay v1 only.
+* Planned, not built yet: a ForewitScores root that carries the merged numbers. Until it ships, roots are v1 only and the merged record lives in the published snapshot.
 * /proof counts distinct Agent ID holders across both contracts.
 
 ## Commit fields
@@ -49,3 +50,4 @@ Owais, 25 Nov 2026: "any market, any question, any time ... using its agentic wa
 
 ## Trust, stated plainly
 * The keeper role can post one price per forecast within 120 seconds and void within 120 seconds, nothing else. The admin can grant itself the keeper role (an AccessControl admin), so the admin is trusted for those two actions too; the admin can never edit a commit, a reveal, an outcome or a score.
+* Auto reveal: a drand, RPC or gas error is retried on the next keeper pass (one alert); only an unreadable or mismatching sealed copy is given up, and the owner can still reveal by hand.

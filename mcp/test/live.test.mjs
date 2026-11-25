@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { live, resetAllowed } from '../../functions/api/live.js';
 
-const snap = { open: { forecasts: [{ marketId: '11' }, { marketId: '22' }] } };
+const snap = { open: { forecasts: [{ marketId: '11', baselineBps: 4000 }, { marketId: '22', baselineBps: 5000 }, { marketId: '33', baselineBps: null }, { marketId: '44', baselineBps: 5000, voided: true }] } }; // 33 unpriced and 44 voided never get live prices (review L1)
 const market = (bid, ask) => ({ data: { outcomes: [{ bestBid: { price: bid }, bestAsk: { price: ask } }, {}], tradingStatus: 'OPEN', status: 'REGISTERED', title: 'not passed on' } });
 function fake() {
   const calls = [];
@@ -24,12 +24,12 @@ test('returns prices only for markets in the snapshot open forecasts, cached per
   resetAllowed();
   const f = fake();
   const env = { PREDICT_LIVE_API_KEY: 'k' };
-  const r = await live(req('11,99,22'), env, { ...f, now: 1000 });
+  const r = await live(req('11,99,22,33,44'), env, { ...f, now: 1000 });
   const body = await r.json();
   assert.equal(r.headers.get('cache-control'), 'public, max-age=15');
   assert.equal(body.source, 'Predict.fun');
   assert.deepEqual(body.prices, { 11: { yesPct: 62, tradingStatus: 'OPEN', status: 'REGISTERED' }, 22: { yesPct: 35, tradingStatus: 'OPEN', status: 'REGISTERED' } });
-  assert.ok(!f.calls.some((c) => c.url.endsWith('/99')), 'a market without a Forewit forecast is never fetched');
+  for (const id of [99, 33, 44]) assert.ok(!f.calls.some((c) => c.url.endsWith('/' + id)), `market ${id}: no counted Forewit forecast, never fetched`);
   assert.ok(f.calls.filter((c) => c.url.includes('api.predict.fun')).every((c) => c.key === 'k'));
   const n = f.calls.length;
   await live(req('22,11'), env, { ...f, now: 2000 }); // other order, same markets: served from the caches

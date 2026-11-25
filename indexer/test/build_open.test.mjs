@@ -42,3 +42,9 @@ test('rebuilds open forecasts: baseline, void, finalize, reveal, score, forfeit 
   assert.deepEqual(b3.finalized, { slot0Outcome: 'Void', split: true, at: 90003 });
   assert.ok(!JSON.stringify(o).includes('dead'), 'the sealed copy is never published');
 });
+
+test('review L4: v2 role holders are operators (never ranked)', () => {
+  const K = '0xD1460596715c9f39a6EFBfd2760F62A4bF586C38';
+  const o = openFromLogs([{ eventName: 'RoleGranted', args: { role: '0x01', account: K } }], {});
+  assert.deepEqual(o.operators, [K.toLowerCase()]);
+});

@@ -52,7 +52,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Restore state
         run: |
-          git fetch --depth 1 origin keeper-state && git worktree add ../state FETCH_HEAD || { git worktree add --detach ../state && git -C ../state switch --orphan keeper-state; }
+          # start empty only when the branch does not exist yet; a failed fetch of an existing branch fails the job (review L7)
+          if git ls-remote --exit-code --heads origin keeper-state >/dev/null; then git fetch --depth 1 origin keeper-state && git worktree add ../state FETCH_HEAD; else git worktree add --detach ../state && git -C ../state switch --orphan keeper-state; fi
           for d in keeper/state keeper/archive indexer/out web/public/data; do [ -d "../state/$d" ] && mkdir -p "$d" && cp -r "../state/$d/." "$d/" || true; done
       - name: Relay night when started early
         id: relay

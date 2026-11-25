@@ -47,6 +47,13 @@ These wallets are "operators". They are never ranked and never get a ForewitScor
 * ForecastLedger: the Agent ID contract, the allowlist of 3 Predict.fun Conditional Tokens contracts, and minimum windows of 2 hours to commit and 12 hours to reveal (enforced on BSC mainnet). Maximum windows (7 days), the resolution wait bounds, at most 16 questions, batches of at most 100, and the commit hash scheme are compile time constants.
 * ForewitScores: `LEDGER`, `AGENT_ID` (checked equal to the ledger's at deploy), `SHRINK_K` 20, `SCORE_VERSION` 1.
 
+## OpenForecasts (v2, any market, 0xa034D7B62d04c8c4ac57a8C62047015C00DD6404)
+* KEEPER (0xD1460596715c9f39a6EFBfd2760F62A4bF586C38) can post the market price for a forecast once, only within 120 seconds of its commit and before any reveal, or void a forecast within the same 120 seconds (reason codes in docs/OPEN_FORECASTS.md). It cannot touch a forecast after that, and cannot set outcomes or scores.
+* PAUSER (the admin wallet) can pause new commits only. Reveal, finalize and score keep working while paused. Only the admin can unpause.
+* DEFAULT_ADMIN can grant and revoke roles, including granting itself KEEPER. The admin seat moves by a two step transfer with a 1 day delay. Unlike ForecastLedger, PAUSER does not move with it: the handover grants PAUSER to the new admin and revokes it from the old one.
+* Nobody, the admin included, can edit commits, reveals, outcomes (they come only from the Conditional Tokens payouts) or scores, and the contract holds no assets. Constants (the 120 second windows, the 3 day reveal window, the 1 to 99 percent reveal range, the Conditional Tokens allowlist and the Agent ID contract) have no setter.
+* A price at 0 or 100 percent never counts on the site, so a stolen keeper key cannot mint skill that way.
+
 ## Planned
 
 After the hackathon, move the admin to a multisig or renounce roles that are not essential. This will be announced before it happens.

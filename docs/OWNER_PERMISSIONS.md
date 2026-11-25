@@ -1,4 +1,4 @@
-# Owner permissions (ForecastLedger)
+# Owner permissions (ForecastLedger, ForewitScores and OpenForecasts)
 
 ForecastLedger is non upgradeable: no proxy, no selfdestruct, no delegatecall, no payable function. It holds no funds and no tokens and asks for no approvals.
 
@@ -17,6 +17,13 @@ ForecastLedger is non upgradeable: no proxy, no selfdestruct, no delegatecall, n
 * The allowlist of up to 4 Conditional Tokens contracts.
 * MIN_COMMIT_WINDOW and MIN_REVEAL_WINDOW: the shortest commit and reveal windows a round may have. On BSC mainnet (chain 56) the constructor refuses anything below 2 hours and 12 hours, and the mainnet deploy script fails before broadcasting if the configured windows are lower. Short windows exist only on test networks for fast end to end tests.
 * Maximum windows (7 days each), the resolution wait bounds (1 to 120 days), MAX_QUESTIONS (16), MAX_BATCH (100) and the commit hash scheme are compile time constants.
+
+## OpenForecasts (v2, any market, 0xa034D7B62d04c8c4ac57a8C62047015C00DD6404)
+* KEEPER (0xD1460596715c9f39a6EFBfd2760F62A4bF586C38) can post the market price for a forecast once, only within 120 seconds of its commit and before any reveal, or void a forecast within the same 120 seconds (reason codes in docs/OPEN_FORECASTS.md). It cannot touch a forecast after that, and cannot set outcomes or scores.
+* PAUSER (the admin wallet) can pause new commits only. Reveal, finalize and score keep working while paused. Only the admin can unpause.
+* DEFAULT_ADMIN can grant and revoke roles, including granting itself KEEPER. The admin seat moves by a two step transfer with a 1 day delay. Unlike ForecastLedger, PAUSER does not move with it: the handover grants PAUSER to the new admin and revokes it from the old one.
+* Nobody, the admin included, can edit commits, reveals, outcomes (they come only from the Conditional Tokens payouts) or scores, and the contract holds no assets. Constants (the 120 second windows, the 3 day reveal window, the 1 to 99 percent reveal range, the Conditional Tokens allowlist and the Agent ID contract) have no setter.
+* A price at 0 or 100 percent never counts on the site, so a stolen keeper key cannot mint skill that way.
 
 ## Plan after the hackathon
 * Move DEFAULT_ADMIN to a multisig, or renounce roles that are not essential. This will be announced before it happens.

@@ -1,6 +1,6 @@
 # Forewit threat model (ForecastLedger v1.2)
 
-Scope: contracts/src/ForecastLedger.sol, the keeper, the agent toolkit and the web app. Every item names the defence and the test that checks it (contracts/test). Status as of 23 Nov 2026: implemented and tested (65 tests, 100% coverage, see SECURITY.md); not deployed; independent review pending.
+Scope: contracts/src/ForecastLedger.sol and contracts/src/OpenForecasts.sol (v2, live 25 Nov 2026; its keeper, pause and admin powers are in docs/OWNER_PERMISSIONS.md and its pricing rule v2.1 in docs/OPEN_FORECASTS.md), the keeper, the agent toolkit and the web app. Every item names the defence and the test that checks it (contracts/test). Status as of 23 Nov 2026: implemented and tested (65 tests, 100% coverage, see SECURITY.md); not deployed; independent review pending.
 
 ## Assets
 * The integrity of each forecaster's track record (commits, reveals, scores).

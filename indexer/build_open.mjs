@@ -4,6 +4,7 @@
 import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { logsClient } from './lib/logs.mjs';
+import { roleHolders, operators } from './lib/flags.mjs';
 
 const big = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
 const OUTCOME = ['Unresolved', 'Yes', 'No', 'Void'];
@@ -32,7 +33,9 @@ export function openFromLogs(logs, blockTimes) {
     if (l.eventName === 'Scored') f.scored = { brier: String(a.brier), baselineBrier: String(a.baselineBrier), skill: String(a.skill), baselineUsed: !!a.baselineUsed, forfeited: !!a.forfeited };
   }
   const forecasts = [...byId.values()].map((f) => ({ ...f, finalized: finals[f.key] ?? null }));
-  return { forecasts, committers: [...new Set(forecasts.map((f) => f.forecaster))] };
+  // review L4: v2 role holders (keeper, admin, pauser) are operators too and are never ranked
+  const ops = operators(roleHolders(logs.filter((l) => l.eventName === 'RoleGranted' || l.eventName === 'RoleRevoked').map((l) => ({ eventName: l.eventName, role: l.args.role, account: l.args.account }))));
+  return { forecasts, committers: [...new Set(forecasts.map((f) => f.forecaster))], operators: ops };
 }
 
 export async function buildOpenSnapshot({ ledger, fromBlock, rpc, network = 'mainnet' }) {

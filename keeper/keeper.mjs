@@ -52,6 +52,7 @@ const big = (_, v) => (typeof v === 'bigint' ? v.toString() : v);
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 
 async function alert(msg) {
+  msg = String(msg).split(String.fromCharCode(10))[0].slice(0, 600); // one line: no stack traces or provider dumps in public alerts
   log('ALERT', msg);
   const { TELEGRAM_BOT_TOKEN: tg, TELEGRAM_CHAT_ID: chat } = process.env;
   if (tg && chat) await fetch(`https://api.telegram.org/bot${tg}/sendMessage`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: chat, text: `Forewit keeper (${args.network || 'testnet'}): ${msg}` }) }).catch(() => log('telegram alert failed'));
@@ -702,6 +703,9 @@ async function daily() {
   const d = new Date();
   d.setUTCHours(23, 0, 0, 0);
   if (d.getTime() - Date.now() < 3 * 3600 * 1000) throw new Error('less than 3 hours to 23:00 UTC; open tomorrow instead');
+  const pub = `keeper/archive/${args.network || 'testnet'}/rounds`;
+  const dup = existsSync(pub) && readdirSync(pub).some((f) => { try { const r = JSON.parse(readFileSync(`${pub}/${f}`, 'utf8')); return (r.kind ?? 'daily') === 'daily' && r.commitDeadline === d.toISOString(); } catch { return false; } });
+  if (dup) throw new Error(`a daily round with deadline ${d.toISOString()} is already open`);
   Object.assign(args, { 'commit-deadline': d.toISOString(), kind: 'daily' });
   await select();
   args.selection = `keeper/archive/${args.network || 'testnet'}/${new Date().toISOString().slice(0, 10)}_daily/selection.json`;

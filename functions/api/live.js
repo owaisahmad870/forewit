@@ -17,7 +17,7 @@ async function openIds(fetchImpl, now) {
     const r = await fetchImpl(SNAPSHOT);
     if (r.ok) {
       const snap = await r.json();
-      allowed = { at: now, ids: new Set((snap.open?.forecasts ?? []).map((f) => String(f.marketId))) };
+      allowed = { at: now, ids: new Set((snap.open?.forecasts ?? []).filter((f) => f.baselineBps != null && !f.voided).map((f) => String(f.marketId))) };
     }
   } catch { /* keep the last known list */ }
   return allowed.ids;

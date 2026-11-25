@@ -471,7 +471,7 @@ async function cmdStart(o, io) {
 
 /** The OpenForecasts contract for this network (pinned after deploy; FOREWIT_OPEN_LEDGER overrides it for tests). */
 export function openNet(net) {
-  const ledger = process.env.FOREWIT_OPEN_LEDGER || net.open;
+  const ledger = (net.chainId !== 56 && process.env.FOREWIT_OPEN_LEDGER) || net.open; // test override never on mainnet
   if (!isAddress(ledger ?? '')) throw new Error(`open forecasts are not live on ${net.name} yet (the OpenForecasts contract is not pinned). Daily rounds work today: ${CMD} start`);
   return { ...net, ledger };
 }

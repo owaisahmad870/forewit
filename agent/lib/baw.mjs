@@ -153,7 +153,7 @@ export async function sendWithConfirmation({ net, from, data, what, io }) {
   log('', `Risk warning: ${RISK_WARNING}`, `This sends the ${what} from ${from} to ${net.ledger} with value 0 (network gas only). Forewit pays no returns.`);
   const answer = await io.ask('Type yes to send it, anything else aborts: ');
   if (String(answer ?? '').trim() !== 'yes') throw new Error('aborted: you did not type yes. Nothing was sent.');
-  const exp = typeof d.expiresAt === 'string' && !/^d+$/.test(d.expiresAt) ? Date.parse(d.expiresAt) : Number(d.expiresAt); // docs: ms number
+  const exp = typeof d.expiresAt === 'string' && !/^\d+$/.test(d.expiresAt) ? Date.parse(d.expiresAt) : Number(d.expiresAt); // docs: ms number
   if (Number.isFinite(exp) && Date.now() >= exp) {
     throw new Error('the preview expired before you confirmed. Nothing was sent; run the command again for a fresh preview.');
   }

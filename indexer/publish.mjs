@@ -50,6 +50,7 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
   if (OPEN_LEDGER && OPEN_FROM_BLOCK) {
     try {
       out.open = await buildOpenSnapshot({ ledger: OPEN_LEDGER, fromBlock: OPEN_FROM_BLOCK, rpc, network });
+      out.operators = [...new Set([...(out.operators ?? []), ...(out.open.operators ?? [])])].sort();
     } catch (e) {
       console.error(`open forecasts skipped: ${e.message}`);
     }

@@ -6,6 +6,7 @@ import {
   keccakText, keccakWords, encodeCall, wordUint, wordAddress, wordBytes32, bytesToHex, isAddress, isBytes32,
 } from './keccak.mjs';
 import { sealForDeadline, AR_MARGIN_S } from './autoreveal.mjs';
+import { cleanText } from './question.mjs';
 
 export const OPEN_SIG = Object.freeze({
   commit: 'commit(address,bytes32,uint8,uint256,bytes32,uint64,bytes)',
@@ -51,7 +52,7 @@ export const openRevealForCalldata = ({ key, forecaster, bps, salt, ctf, conditi
 /** Predict.fun REST with the user's own key (mainnet requires one; testnet does not). */
 export async function predictApi(chainId, path, { key = process.env.PREDICT_API_KEY, fetchImpl = fetch } = {}) {
   if (chainId === 56 && !key) throw new Error(`browsing Predict.fun markets ${KEY_HELP}`);
-  const res = await fetchImpl((process.env.FOREWIT_PREDICT_API || API[chainId]) + path, { headers: chainId === 56 ? { 'x-api-key': key } : {}, signal: AbortSignal.timeout(15000) });
+  const res = await fetchImpl(((chainId !== 56 && process.env.FOREWIT_PREDICT_API) || API[chainId]) + path, { headers: chainId === 56 ? { 'x-api-key': key } : {}, signal: AbortSignal.timeout(15000) });
   if (res.status === 401 || res.status === 403) throw new Error(`Predict.fun refused the API key (HTTP ${res.status}); ${KEY_HELP}`);
   if (res.status === 429) throw new Error('Predict.fun rate limit reached for your key; wait a minute and try again');
   if (!res.ok) throw new Error(`Predict.fun API ${path.split('?')[0]}: HTTP ${res.status}`);
@@ -62,7 +63,7 @@ export const ctfFor = (chainId, m) => {
   if (chainId === 97 && process.env.FOREWIT_TEST_CTF) return process.env.FOREWIT_TEST_CTF; // local and testnet runs only
   return !m.isYieldBearing ? CTFS[chainId].std : m.isNegRisk ? CTFS[chainId].ybnr : CTFS[chainId].yb;
 };
-const clean = (s) => String(s ?? '').replace(/[^\x20-\x7e -￿]/g, '?').slice(0, 200);
+const clean = cleanText; // one cleaner everywhere: strips controls, zero width and bidi characters
 
 /** One market by id, with what a forecast needs: chain identifiers, the two outcomes, status and the end time. */
 export async function marketInfo(chainId, marketId, opts) {
