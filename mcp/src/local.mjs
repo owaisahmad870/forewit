@@ -1,6 +1,8 @@
-// Forewit local MCP server (stdio). Prepares commit, reveal and profile transactions and lists local receipts.
-// It never signs, never sends and never runs baw: it returns calldata and the baw preview command for the wallet owner.
-// Network access: the pinned public RPC of the chosen network only (read only eth_call). Logs go to stderr only.
+// Forewit local MCP server (stdio), run on each user's own machine or own cloud sandbox. Prepares commit, reveal and
+// profile transactions and lists local receipts. The wallet tools run that user's own Binance Agentic Wallet CLI (baw):
+// sending needs two human approvals the model cannot give, a confirmation form shown by the MCP client (elicitation)
+// and, when the wallet asks for it, approval in the Binance App. Forewit never holds a key or a wallet session.
+// Network access: the pinned public RPC (read only eth_call) and baw. Logs go to stderr only.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import {
@@ -9,6 +11,7 @@ import {
 import { selector, wordBool, wordUint } from '../vendor/agent/lib/keccak.mjs';
 import { NETWORKS, DEFAULT_NETWORK, BAW_CHAIN_IDS, RISK_WARNING } from '../vendor/agent/config.mjs';
 import { ok, guarded, paginate, cursorInput, address, roundId, VERSION } from './common.mjs';
+import { runBaw, sendWithConfirmation } from '../vendor/agent/lib/baw.mjs';
 
 const ANNOTATIONS = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
 const networkInput = z.enum(['mainnet', 'testnet']).optional().describe(`Network, default ${DEFAULT_NETWORK}.`);
@@ -200,6 +203,109 @@ export function createLocalServer({ home } = {}) {
       next_cursor,
     });
   }, { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false });
+
+  // Wallet tools: the signed in wallet is the user's own baw session on this machine or in this sandbox.
+  const SEND = { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true };
+  const walletAddress = () => {
+    const a = (runBaw(['wallet', 'address', '--json'])?.data?.addresses ?? []).find((x) => String(x.binanceChainId) === '56')?.address;
+    if (!/^0x[0-9a-fA-F]{40}$/.test(a ?? '')) throw new Error('the Agentic Wallet is not signed in or has no BSC address. Use wallet_sign_in first.');
+    return a;
+  };
+  // the human gate: a form the MCP client shows to the person; the model cannot fill it in
+  const humanIo = (log) => ({
+    isTTY: () => true,
+    log: (...l) => log.push(...l),
+    ask: async () => {
+      if (!server.server.getClientCapabilities()?.elicitation) {
+        throw new Error('this client cannot show a confirmation form (MCP elicitation), so Forewit will not send. Run the command line in your own terminal instead: npx forewit@latest start');
+      }
+      const r = await server.server.elicitInput({
+        message: ['Forewit: send this transaction from your Agentic Wallet?', ...log.filter((x) => x !== '').slice(-40)].join('\n').slice(0, 6000),
+        requestedSchema: { type: 'object', properties: { confirm: { type: 'string', title: 'Type yes to send', description: 'Anything else cancels. Value is 0; only network gas is paid.' } }, required: ['confirm'] },
+      });
+      return r.action === 'accept' ? String(r.content?.confirm ?? '') : '';
+    },
+  });
+  const sendOut = { status: z.enum(['BROADCASTED', 'PENDING_CONFIRMATION']), tx_hash: z.string().nullable(), note: z.string() };
+  const sent = (status, log) => ({
+    status, tx_hash: log.join('\n').match(/txHash: (0x[0-9a-fA-F]{64})/)?.[1] ?? null,
+    note: status === 'PENDING_CONFIRMATION' ? 'Approve it in the Binance App now. Never send it again.' : 'Sent.',
+  });
+
+  tool('wallet_status', {
+    title: 'Wallet status',
+    description: 'Reads the Binance Agentic Wallet on this machine: signed in or not, Agent ID, Developer Mode and the BSC address. Changes nothing.',
+    inputSchema: {},
+    outputSchema: { signed_in: z.boolean(), agent_id: z.string().nullable(), developer_mode: z.boolean().nullable(), bsc_address: z.string().nullable() },
+  }, async () => {
+    const signedIn = runBaw(['wallet', 'status', '--json'])?.data?.status === 'CONNECTED';
+    if (!signedIn) return ok({ signed_in: false, agent_id: null, developer_mode: null, bsc_address: null });
+    const id = runBaw(['wallet', 'agent-id', '--json'])?.data;
+    const dev = runBaw(['wallet', 'settings', '--json'])?.data?.devMode;
+    const exp = typeof dev?.expiresAt === 'number' ? dev.expiresAt * 1000 : Date.parse(dev?.expiresAt ?? '');
+    let addr = null;
+    try { addr = walletAddress(); } catch { /* shown as null */ }
+    return ok({ signed_in: true, agent_id: id?.claimed ? String(id.agentId ?? '') : null, developer_mode: dev?.enabled === true && exp > Date.now(), bsc_address: addr });
+  }, { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true });
+
+  tool('wallet_sign_in', {
+    title: 'Sign in to the Agentic Wallet',
+    description: 'Starts the Binance Agentic Wallet sign in. Show the person the link and the pairing code exactly as returned; they open the link, check the code in the Binance App and approve. Then call wallet_sign_in_wait with the qr_code_id. The link expires after about 5 minutes.',
+    inputSchema: {},
+    outputSchema: { already_signed_in: z.boolean(), link: z.string().nullable(), pairing_code: z.string().nullable(), qr_code_id: z.string().nullable() },
+  }, async () => {
+    const d = runBaw(['auth', 'signin', '--json'])?.data ?? {};
+    if (d.status === 'ALREADY_CONNECTED') return ok({ already_signed_in: true, link: null, pairing_code: null, qr_code_id: null });
+    if (!d.urlForWeb || !d.qrCodeId) throw new Error('sign in could not start; try again in a minute');
+    return ok({ already_signed_in: false, link: String(d.urlForWeb), pairing_code: String(d.pairingCode ?? ''), qr_code_id: String(d.qrCodeId) });
+  });
+
+  tool('wallet_sign_in_wait', {
+    title: 'Wait for the sign in approval',
+    description: 'Waits up to about 50 seconds for the person to approve the sign in in the Binance App. Call again while it says waiting; if it says expired, start over with wallet_sign_in.',
+    inputSchema: { qr_code_id: z.string().regex(/^[A-Za-z0-9-]{8,64}$/) },
+    outputSchema: { status: z.enum(['signed_in', 'waiting', 'expired']) },
+  }, async ({ qr_code_id }) => {
+    const r = runBaw(['auth', 'verify', '--qrCodeId', qr_code_id, '--json'], { timeout: 50000 });
+    if (runBaw(['wallet', 'status', '--json'])?.data?.status === 'CONNECTED') return ok({ status: 'signed_in' });
+    return ok({ status: r?.success === false && !r.unknown ? 'expired' : 'waiting' });
+  });
+
+  tool('commit_forecast', {
+    title: 'Commit a forecast from the Agentic Wallet',
+    description: "Commits the person's own forecast for a round from their signed in Agentic Wallet. Saves the reveal receipt (salt) on this machine first, runs the wallet preview, then shows the person a confirmation form; it sends only if they type yes there, and the Binance App may ask them to approve too. Only use percentages the person gave you. With auto_reveal (recommended, ask them) Forewit reveals for them after the deadline.",
+    inputSchema: {
+      probabilities_percent: z.array(z.number().min(0).max(100)).min(1).max(16).describe("The person's own chance for each question, in order, 1 to 99."),
+      round_id: roundInput,
+      auto_reveal: z.boolean().optional().describe('Default false (opt in). True: a copy locked until just after the deadline rides in the commit and Forewit reveals it.'),
+    },
+    outputSchema: { round_id: z.number().int(), from: z.string(), probabilities_bps: z.array(z.number().int()), auto_reveal: z.boolean(), receipt_file: z.string(), ...sendOut },
+  }, async ({ probabilities_percent, round_id, auto_reveal = false }) => {
+    const net = network('mainnet');
+    const from = walletAddress();
+    const { bps } = parseProbabilities(probabilities_percent.join(','));
+    const loaded = await loadRound(net, round_id === undefined ? undefined : String(round_id));
+    const plan = await commitPlan({ net, from, bps, home, loaded, autoReveal: auto_reveal });
+    const log = [`Round ${loaded.id} commit, your forecast: ${bps.map((b) => b / 100 + '%').join(', ')}`, `Auto reveal: ${plan.autoReveal ? 'on' : 'off'}`];
+    const status = await sendWithConfirmation({ net, from, data: plan.data, what: `commit for round ${loaded.id}`, io: humanIo(log) });
+    return ok({ round_id: loaded.id, from, probabilities_bps: bps, auto_reveal: plan.autoReveal, receipt_file: plan.file, ...sent(status, log) });
+  }, SEND);
+
+  tool('reveal_forecast', {
+    title: 'Reveal a forecast from the Agentic Wallet',
+    description: 'After the commit deadline: reveals the commit with the local receipt, through the same wallet preview and confirmation form. Not needed when auto reveal was on, unless status still shows not revealed an hour after the deadline.',
+    inputSchema: { round_id: roundInput },
+    outputSchema: { round_id: z.number().int(), from: z.string(), already_revealed: z.boolean(), status: z.enum(['BROADCASTED', 'PENDING_CONFIRMATION']).nullable(), tx_hash: z.string().nullable(), note: z.string() },
+  }, async ({ round_id }) => {
+    const net = network('mainnet');
+    const from = walletAddress();
+    const loaded = await loadRound(net, round_id === undefined ? undefined : String(round_id));
+    const plan = await revealPlan({ net, from, home, loaded });
+    if (plan.alreadyRevealed) return ok({ round_id: loaded.id, from, already_revealed: true, status: null, tx_hash: null, note: 'Already revealed.' });
+    const log = [`Round ${loaded.id} reveal: ${plan.bps.map((b) => b / 100 + '%').join(', ')}`];
+    const status = await sendWithConfirmation({ net, from, data: plan.data, what: `reveal for round ${loaded.id}`, io: humanIo(log) });
+    return ok({ round_id: loaded.id, from, already_revealed: false, ...sent(status, log) });
+  }, SEND);
 
   return server;
 }
