@@ -1,0 +1,24 @@
+# Read only check that the mainnet Predict.fun API returns the fields the v2 keeper relies on (stats.volume24hUsd on a
+# single market with includeStats=true, and the 1 minute chance history). Prints only yes or no and counts, never data.
+name: api-check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check fields
+        env:
+          KEY: ${{ secrets.PREDICT_API_KEY }}
+        run: |
+          H="x-api-key: $KEY"
+          ID=$(curl -s -H "$H" "https://api.predict.fun/v1/markets?status=OPEN&first=20&includeStats=true" | jq -r '[.data[] | select(.stats.volume24hUsd > 100)][0].id')
+          echo "sample market found: $([ -n "$ID" ] && [ "$ID" != null ] && echo yes || echo no)"
+          curl -s -H "$H" "https://api.predict.fun/v1/markets/$ID?includeStats=true" | jq -r '"single market stats.volume24hUsd present: " + (if .data.stats.volume24hUsd != null then "yes" else "no" end)'
+          FROM=$(( $(date +%s) - 900 ))
+          curl -s -H "$H" "https://api.predict.fun/v1/markets/$ID/timeseries?metric=chance&resolution=1m&from=$FROM&limit=20" | jq -r '"timeseries points in 15 min: " + ((.data.series // []) | length | tostring) + ", y is a number: " + (if ((.data.series // [])[0].y | type) == "number" then "yes" else "no" end)'
