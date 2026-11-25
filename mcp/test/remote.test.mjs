@@ -30,9 +30,9 @@ test('remote server', async (t) => {
   const client = await connect(createRemoteServer({ data: dir }));
   t.after(() => { restore(); rmSync(dir, { recursive: true, force: true }); });
 
-  await t.test('lists the eight read only tools with strict inputs and output schemas', async () => {
+  await t.test('lists the nine read only tools with strict inputs and output schemas', async () => {
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((x) => x.name).sort(), ['explain_scoring', 'get_baseline', 'get_crowd', 'get_current_round', 'get_leaderboard', 'get_my_status', 'get_question', 'get_round']);
+    assert.deepEqual(tools.map((x) => x.name).sort(), ['explain_scoring', 'get_baseline', 'get_crowd', 'get_current_round', 'get_leaderboard', 'get_my_status', 'get_question', 'get_round', 'get_upcoming']);
     for (const x of tools) {
       assert.equal(x.annotations.readOnlyHint, true, x.name);
       assert.equal(x.inputSchema.additionalProperties, false, x.name);
@@ -135,8 +135,17 @@ test('remote server', async (t) => {
     assert.equal(data.history.length, 2);
     assert.equal(data.history[1].result, 'scored');
     assert.equal(data.leaderboard.address, A);
+    assert.match(data.results.summary, /rounds played/);
+    const r1 = data.results.rounds.find((r) => r.round_id === 1);
+    assert.ok(['beat', 'behind', 'level', 'scored'].includes(r1.verdict) && r1.says.length > 10);
     const op = await call(client, 'get_my_status', { address: OP });
     assert.equal(op.data.leaderboard, null);
+  });
+
+  await t.test('get_upcoming lists open rounds and the next daily open', async () => {
+    const { data } = await call(client, 'get_upcoming');
+    assert.ok(Array.isArray(data.open));
+    assert.ok(Date.parse(data.next_daily_open) > Date.now());
   });
 
   await t.test('explain_scoring in both languages with the constants', async () => {

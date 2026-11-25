@@ -8,7 +8,7 @@ import { resolve, sep } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
-import { joinRounds, liveRound, phase, leaderboard, crowdVsMarket, K, MIN_ROUNDS, MIN_BASELINE_QUESTIONS, BRIER_MAX } from '../vendor/web/data.mjs';
+import { joinRounds, liveRound, phase, leaderboard, crowdVsMarket, walletResults, upcoming, K, MIN_ROUNDS, MIN_BASELINE_QUESTIONS, BRIER_MAX } from '../vendor/web/data.mjs';
 import { cleanText } from '../vendor/web/question.mjs';
 import { loadRound, ethCall, SIG, decodeReveal, phaseOf } from '../vendor/agent/forewit.mjs';
 import { encodeCall, wordUint, wordAddress, decodeWords, wordToBytes32 } from '../vendor/agent/lib/keccak.mjs';
@@ -165,6 +165,28 @@ const findRound = (ds, id) => {
 };
 
 // Leaderboard: opt in public profiles only, operator wallets never listed.
+// The results card in plain words (same numbers as the site's My results page). Points and miss scores are 0 to 100.
+const p1 = (x) => (x === null ? null : Math.round(x * 1000) / 10);
+const SAYS = {
+  beat: (r) => `You beat the market by ${Math.abs(p1(r.skill))} points (your miss score ${p1(r.brier)}, the market's ${p1(r.marketBrier)}).`,
+  behind: (r) => `The market was closer by ${Math.abs(p1(r.skill))} points (your miss score ${p1(r.brier)}, the market's ${p1(r.marketBrier)}).`,
+  level: () => 'Level with the market.',
+  scored: () => 'Scored; this round had no market price to compare with.',
+  forfeited: () => 'Missed: not revealed in time, counted as a loss.',
+  waiting: () => 'Revealed; waiting for the questions to settle (up to 7 days).',
+  reveal: () => 'Reveal needed now, before the reveal deadline.',
+  missed: () => 'Reveal window closed; scoring soon.',
+};
+export function resultsCard(snapshot, addr) {
+  const w = walletResults(snapshot, addr);
+  const scored = w.beat + w.behind;
+  const summary = !w.committed ? 'This wallet has not played a round yet.'
+    : `${w.committed} rounds played, ${w.revealed} revealed, ${w.forfeited} missed. ` +
+      (scored ? `Beat the market in ${w.beat} of ${scored} scored rounds; average ${p1(w.avgSkill) > 0 ? '+' : ''}${p1(w.avgSkill)} points per question against the market.` : 'No round scored yet.') +
+      (w.rank ? ` Leaderboard rank ${w.rank}.` : '') + ' Forewit moves no money; results are a track record, not winnings.';
+  return { summary, rounds: w.rounds.map((r) => ({ round_id: r.roundId, verdict: r.verdict, says: SAYS[r.verdict](r), points: p1(r.skill), your_miss: p1(r.brier), market_miss: p1(r.marketBrier) })) };
+}
+
 function publicRows(snapshot) {
   const ops = new Set((snapshot.operators ?? []).map((a) => String(a).toLowerCase()));
   const lb = leaderboard(snapshot);
@@ -212,7 +234,7 @@ function flattenBlocks(blocks) {
   return blocks.flatMap((b) => (typeof b === 'string' ? [b] : b.h ? [b.h] : b.strong ? [b.strong] : b.list ?? b.ol ?? []));
 }
 
-/** One McpServer with the eight read only tools. `data` is an https base URL or a local folder of published JSON. */
+/** One McpServer with the nine read only tools. `data` is an https base URL or a local folder of published JSON. */
 export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_DATA } = {}) {
   const server = new McpServer({ name: 'forewit', version: VERSION, title: 'Forewit (read only)' });
   const tool = (name, config, fn) =>
@@ -330,6 +352,10 @@ export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_
         questions: z.number().int().nullable(), brier: z.number().nullable(), skill: z.number().nullable(),
       })),
       leaderboard: rowShape.nullable(),
+      results: z.object({
+        summary: z.string(),
+        rounds: z.array(z.object({ round_id: z.number().int(), verdict: z.string(), says: z.string(), points: z.number().nullable(), your_miss: z.number().nullable(), market_miss: z.number().nullable() })),
+      }),
       next_cursor: z.string().nullable(),
     },
   }, async ({ address: addr, ...page }) => {
@@ -364,7 +390,25 @@ export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_
       },
       history,
       leaderboard: publicRows(d.snapshot).rows.find((r) => r.address === a) ?? null,
+      results: resultsCard(d.snapshot, a),
       next_cursor,
+    });
+  });
+
+  tool('get_upcoming', {
+    title: 'Upcoming rounds',
+    description: 'Rounds open for commits now (nearest deadline first, with question count and time left) and when the next daily round opens (about 03:10 UTC).',
+    outputSchema: {
+      open: z.array(z.object({ round_id: z.number().int(), questions: z.number().int(), commit_deadline: z.string(), hours_left: z.number() })),
+      next_daily_open: z.string(),
+    },
+  }, async () => {
+    const d = await ds();
+    const now = Date.now();
+    const u = upcoming(d.rounds, now);
+    return ok({
+      open: u.open.map((r) => ({ round_id: r.id, questions: r.questions.length, commit_deadline: r.commitDeadline.toISOString(), hours_left: Math.round((r.commitDeadline.getTime() - now) / 360000) / 10 })),
+      next_daily_open: u.nextOpen.toISOString(),
     });
   });
 

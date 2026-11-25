@@ -6,6 +6,8 @@ Two Model Context Protocol servers for Forewit, the commit and reveal forecastin
 
 * `forewit mcp`: local server over stdio. Prepares commit, reveal and profile transactions. Never signs, never sends, never runs baw.
 * `forewit mcp remote`: read only server over stateless Streamable HTTP, for hosting at `https://mcp.forewit.xyz/mcp`.
+* `forewit results --from <wallet>`: your results card in plain words (per round: beat or behind the market and by how many points; overall average).
+* `forewit upcoming`: rounds open now and when the next daily round opens.
 * `forewit <round|forecast|commit|reveal|status|receipt|agent|schedule>`: the Forewit CLI (same code as `agent/forewit.mjs`).
 
 Status: built and tested, not published to npm, not listed in the MCP Registry, not hosted. Mainnet is not deployed, so both servers target the BSC testnet ledger pinned in `agent/config.mjs` until the mainnet address is pinned there.
@@ -28,7 +30,8 @@ Tools, all `readOnlyHint: true`, each with a strict input schema (`additionalPro
 * `get_baseline {round_id}`: read from the ledger by `eth_call`, compared with the published data.
 * `get_crowd {cursor?, limit?}`: Agent ID Crowd versus market Brier, overall and per round.
 * `get_leaderboard {cursor?, limit?}`: opt in public profiles only; operator wallets are filtered out even when public.
-* `get_my_status {address, cursor?, limit?}`: latest round status from the ledger, history from the published data, the leaderboard row when public.
+* `get_my_status {address, cursor?, limit?}`: latest round status from the ledger, history from the published data, the leaderboard row when public, and a results card in plain words (per round: beat or behind the market and by how many points, with both miss scores; overall average).
+* `get_upcoming`: rounds open for commits now with time left, and when the next daily round opens.
 * `explain_scoring {lang?}`: the scoring page of the site (`en` or `zh`) plus the constants from the site's data layer and `agent/config.mjs`.
 
 Data sources:
