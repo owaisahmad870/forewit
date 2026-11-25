@@ -43,6 +43,9 @@ jobs:
           RPC: ${{ secrets.RPC_MAINNET_PRIMARY }}
           LEDGER: ${{ vars.LEDGER_MAINNET }}
           FROM: ${{ vars.INDEXER_FROM_BLOCK_MAINNET }}
+          # v2 open forecasts: publish.mjs adds the "open" section only once both are set
+          OPEN_LEDGER: ${{ vars.OPEN_MAINNET }}
+          OPEN_FROM_BLOCK: ${{ vars.OPEN_FROM_BLOCK_MAINNET }}
         run: |
           [ -n "$LEDGER" ] && [ -n "$FROM" ] || exit 0
           node indexer/publish.mjs --network mainnet --ledger "$LEDGER" --from-block "$FROM" ${RPC:+--rpc "$RPC"}
@@ -55,6 +58,18 @@ jobs:
         continue-on-error: true
         run: npm ci --no-audit --no-fund && node scripts/build.mjs
         working-directory: mcp
+      # /api/live (functions/api/live.js) reads Predict.fun prices with Forewit's own key; never printed, and the site
+      # still deploys when this step fails or the secret is unset
+      - name: Live price key for the Pages function
+        continue-on-error: true
+        env:
+          RAW_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          LIVE_KEY: ${{ secrets.PREDICT_LIVE_API_KEY }}
+        run: |
+          [ -n "$LIVE_KEY" ] || exit 0
+          export CLOUDFLARE_API_TOKEN="$(printf '%s' "$RAW_TOKEN" | sed 's/^\xEF\xBB\xBF//' | tr -d '\r\n ')"
+          printf '%s' "$LIVE_KEY" | npx --yes wrangler@4 pages secret put PREDICT_LIVE_API_KEY --project-name forewit
       - name: Deploy to Cloudflare Pages
         env:
           RAW_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
