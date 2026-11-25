@@ -221,13 +221,24 @@ export function matchReceipt(receipts, onchainCommit) {
 export const clean = (s) => String(s).replace(/[^\x20-\x7e]/g, '?').slice(0, 200);
 
 async function rpc(net, method, params) {
-  const res = await fetch(net.rpc, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!res.ok) throw new Error(`RPC ${method} failed: HTTP ${res.status}`);
+  // the pinned RPC first; its official fallbacks only after an HTTP or network error (a JSON RPC error is a real answer)
+  let res, lastErr;
+  for (const url of [net.rpc, ...(net.rpcFallbacks ?? [])]) {
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (res.ok) break;
+      lastErr = new Error(`RPC ${method} failed: HTTP ${res.status}`);
+    } catch (e) {
+      lastErr = new Error(`RPC ${method} failed: ${clean(e.message)}`);
+    }
+    res = null;
+  }
+  if (!res) throw lastErr;
   const body = await res.json();
   if (body.error) throw new Error(`RPC ${method} error: ${clean(body.error.message ?? JSON.stringify(body.error))}`);
   return body.result;

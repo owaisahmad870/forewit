@@ -7,6 +7,8 @@ export const NETWORKS = Object.freeze({
     chainId: 56,
     ledger: '0xd11e67ff70ACD42E01d79130f280162b00Bb09B6', // ForecastLedger v1.2, deployed 24 Nov 2026 (block 135450390), verified on BscScan and Sourcify
     rpc: 'https://bsc-rpc.publicnode.com',
+    // official BNB Chain endpoints, used only when the first answers with an HTTP or network error (rate limits on shared IPs)
+    rpcFallbacks: ['https://bsc-dataseed.bnbchain.org', 'https://bsc-dataseed1.defibit.io'],
     explorer: 'https://bscscan.com',
     roundFiles: 'https://forewit.xyz/data/rounds/', // public round JSON per round id, written by keeper open; agent uses it when --round-file is not given
   }),
@@ -15,6 +17,7 @@ export const NETWORKS = Object.freeze({
     chainId: 97,
     ledger: '0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1', // instance E (Forewit build); A to D are deprecated,
     rpc: 'https://bsc-testnet-rpc.publicnode.com',
+    rpcFallbacks: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545'],
     explorer: 'https://testnet.bscscan.com',
   }),
 });
