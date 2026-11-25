@@ -19,6 +19,7 @@ import { bsc, bscTestnet } from 'viem/chains';
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { takeBaseline } from './lib/baseline.mjs';
 import { logsClient } from '../indexer/lib/logs.mjs';
+import { ciphertextOf, openSealed, AR_MARGIN_S } from '../agent/lib/autoreveal.mjs';
 import * as sel from './lib/selection.mjs';
 
 const args = Object.fromEntries(process.argv.slice(3).reduce((a, v, i, arr) => (v.startsWith('--') ? [...a, [v.slice(2), arr[i + 1]?.startsWith('--') || arr[i + 1] === undefined ? 'true' : arr[i + 1]]] : a), []));
@@ -83,7 +84,7 @@ const read = async (fn, a = []) => pub.readContract({ address: await ledger(), a
 /** Simulate, send, wait; retry up to `tries` with backoff; never resend after a mined revert. */
 async function send(fn, a, { tries = 4, address, abi = ABI, until = Infinity } = {}) {
   const account = keeperAccount();
-  const w = createWalletClient({ account, chain: NET.chain, transport: transport() });
+  const w = createWalletClient({ account, chain: NET.chain, transport: transport(NET.rpc) }); // primary first, like reads
   for (let i = 1; ; i++) {
     try {
       const { request } = await pub.simulateContract({ account, address: address ?? (await ledger()), abi, functionName: fn, args: a });
@@ -295,10 +296,15 @@ async function committers(r) {
 }
 
 async function committersScan(r) {
+  return [...new Set((await commitLogsScan(r)).map((l) => l.args.forecaster))];
+}
+
+/** Every Committed log of round r (walks back from the head to the round's creation). */
+async function commitLogsScan(r) {
   const ev = ABI.find((x) => x.type === 'event' && x.name === 'Committed');
   const head = await logsPub.getBlockNumber();
   const created = (await read('getRound', [r])).createdAt;
-  const out = new Set();
+  const out = [];
   // walk back until before the round was created (0.45 s blocks); halve the window when the RPC limits log ranges
   let span = 5000n;
   for (let to = head; to > 0n; ) {
@@ -310,11 +316,49 @@ async function committersScan(r) {
       if (span > 50n && /limit|range|exceed/i.test(e.shortMessage || e.message)) { span /= 2n; continue; }
       throw e;
     }
-    for (const l of logs) out.add(l.args.forecaster);
+    out.push(...logs);
     if ((await logsPub.getBlock({ blockNumber: from })).timestamp < created) break;
     to = from - 1n;
   }
-  return [...out];
+  return out;
+}
+
+/**
+ * Auto reveal (agent/lib/autoreveal.mjs): after the commit deadline, open each time locked copy carried by a commit
+ * transaction and call revealFor, but only when the decrypted values hash to the commit stored onchain. Newest commit
+ * transaction first per wallet (a recommit replaces the older one). Per wallet errors are logged and never stop the tick.
+ */
+const AR_MAX_PER_RUN = Number(process.env.AUTO_REVEAL_MAX || 50); // keeper gas guard per tick
+async function autoReveal(r, round) {
+  const now = Math.floor(Date.now() / 1000);
+  if (now < Number(round.commitDeadline) + AR_MARGIN_S + 5 || now > Number(round.revealDeadline) - 120) return;
+  const byWallet = new Map();
+  for (const l of (await commitLogsScan(r)).sort((a, b) => Number(b.blockNumber - a.blockNumber) || b.logIndex - a.logIndex)) {
+    const k = l.args.forecaster.toLowerCase();
+    if (!byWallet.has(k)) byWallet.set(k, []);
+    byWallet.get(k).push(l);
+  }
+  let sent = 0;
+  for (const [, list] of byWallet) {
+    if (sent >= AR_MAX_PER_RUN) { log(`auto reveal round ${r}: per tick cap ${AR_MAX_PER_RUN} reached, the rest next tick`); break; }
+    const f = list[0].args.forecaster;
+    try {
+      if ((await read('flags', [r, f])) & 1) continue; // already revealed (by the user or an earlier tick)
+      const onchain = await read('getCommit', [r, f]);
+      for (const l of list) {
+        const ct = ciphertextOf((await pub.getTransaction({ hash: l.transactionHash })).input);
+        if (!ct) continue;
+        const { packed, salt } = await openSealed(ct);
+        if ((await read('computeCommitHash', [r, f, packed, salt])) !== onchain) continue; // an older or foreign copy
+        await send('revealFor', [r, f, packed, salt]);
+        log(`auto reveal round ${r}: revealed for ${f}`);
+        sent++;
+        break;
+      }
+    } catch (e) {
+      log(`auto reveal round ${r} ${f}: ${(e.shortMessage || e.message).split(String.fromCharCode(10))[0]}`);
+    }
+  }
 }
 
 async function score(rIn) {
@@ -403,6 +447,7 @@ async function tick({ stopAt = Infinity } = {}) {
     const round = await read('getRound', [r]);
     if (now < round.commitDeadline) { open.push(r); continue; }
     if (!round.isSealed) await seal(r);
+    if (now < round.revealDeadline) await autoReveal(r, round).catch((e) => log(`auto reveal round ${r} failed: ${(e.shortMessage || e.message).split(String.fromCharCode(10))[0]}`));
     await finalize(r);
     await score(r);
     if (!V32) continue;
@@ -672,7 +717,7 @@ const baselineCmd = async () => {
   for (const r of await dueAt(Number((await read('getRound', [await read('roundCount')])).commitDeadline) * 1000)) await baseline(r).catch((e) => errors.push(e));
   if (errors.length) throw errors[0];
 };
-const cmds = { adminwatch: adminWatch, select, open, topics, baseline: baselineCmd, seal, night, loop, scores, committers: async () => log(JSON.stringify(await committers(await roundArg()))), deadline: async () => console.log(String((await read('getRound', [await roundArg()])).commitDeadline)), finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
+const cmds = { autoreveal: async () => { const r = await roundArg(); await autoReveal(r, await read('getRound', [r])); }, adminwatch: adminWatch, select, open, topics, baseline: baselineCmd, seal, night, loop, scores, committers: async () => log(JSON.stringify(await committers(await roundArg()))), deadline: async () => console.log(String((await read('getRound', [await roundArg()])).commitDeadline)), finalize, score, tick, daily, watchdog, status: async () => log(JSON.stringify(await read('getRound', [BigInt(args.round)]), big)) };
 if (!cmds[cmd]) {
   console.log('usage: select | open | baseline | seal | night | scores | finalize | score | tick | daily | watchdog | status  (--network testnet|mainnet)');
   process.exit(1);

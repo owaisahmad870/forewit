@@ -17,6 +17,7 @@ import {
 import { writeSecretFile } from './lib/secure_file.mjs';
 import { presentQuestion } from './lib/question.mjs';
 import { assertCanExecute, sendWithConfirmation } from './lib/baw.mjs';
+import { sealForDeadline, AR_MARGIN_S } from './lib/autoreveal.mjs';
 import { NETWORKS, DEFAULT_NETWORK, BAW_CHAIN_IDS, MIN_BPS, MAX_BPS, MAX_QUESTIONS, RISK_WARNING } from './config.mjs';
 
 // Command name in printed hints: "forewit" from the npm bin, the repo path when run as agent/forewit.mjs.
@@ -425,7 +426,7 @@ function cmdForecast(o) {
  * Chain checks plus the saved receipt for one commit. Prints nothing; shared by the CLI and the MCP server.
  * The salt is written to disk before this returns, so nothing can be sent for a commit whose salt is not saved.
  */
-export async function commitPlan({ net, from, bps, home, loaded }) {
+export async function commitPlan({ net, from, bps, home, loaded, autoReveal = true }) {
   const { id, now, round } = loaded;
   if (now >= round.commitDeadline) throw new Error(`commits for round ${id} closed at ${fmtTime(round.commitDeadline)}`);
   if (bps.length !== round.questionCount) throw new Error(`round ${id} has ${round.questionCount} questions, you gave ${bps.length} probabilities`);
@@ -436,8 +437,11 @@ export async function commitPlan({ net, from, bps, home, loaded }) {
     [wordUint(id), wordAddress(from), wordUint(probe.packed), wordBytes32(probe.salt)])));
   if (wordToBytes32(onchainHash) !== commitHash(probe)) throw new Error('local commit hash encoding differs from the ledger computeCommitHash; refusing');
   const [existing] = decodeWords(await ethCall(net, encodeCall(SIG.getCommit, [wordUint(id), wordAddress(from)])));
+  // auto reveal: a time locked copy of packed and salt rides in the commit transaction (agent/lib/autoreveal.mjs)
+  const sealed = autoReveal ? await sealForDeadline({ packed: BigInt(receipt.packed), salt: receipt.salt, commitDeadline: round.commitDeadline }) : null;
+  if (sealed) receipt.autoReveal = { drandRound: sealed.drandRound, opensAfter: Number(round.commitDeadline) + AR_MARGIN_S };
   const file = saveReceipt(receipt, home);
-  return { receipt, file, existing: existing !== 0n, data: commitCalldata(id, receipt.commitHash) };
+  return { receipt, file, existing: existing !== 0n, data: commitCalldata(id, receipt.commitHash) + (sealed?.tail ?? ''), autoReveal: !!sealed };
 }
 
 async function cmdCommit(o, io) {
@@ -451,7 +455,7 @@ async function cmdCommit(o, io) {
 
 /** Saves the salt, then prints (or with --execute sends) the commit. Shared by commit and agent. */
 async function commitAndPrint({ net, from, bps, clamped, id, now, round, titles, o, io }) {
-  const { receipt, file, existing, data: commitData } = await commitPlan({ net, from, bps, home: o.home, loaded: { id, now, round } });
+  const { receipt, file, existing, data: commitData, autoReveal } = await commitPlan({ net, from, bps, home: o.home, loaded: { id, now, round }, autoReveal: !o['no-auto-reveal'] });
 
   say(
     `Saved reveal receipt (salt included, owner only access): ${file}`,
@@ -465,9 +469,10 @@ async function commitAndPrint({ net, from, bps, clamped, id, now, round, titles,
   if (existing) say('', 'NOTE: this wallet already committed in this round. Sending this commit replaces it; the older receipt is kept in case this one never lands.');
   if (o.execute) await sendWithConfirmation({ net, from, data: commitData, what: `commit for round ${id}`, io });
   else printWalletSteps(net, from, commitData, `commit for round ${id}`);
+  if (autoReveal) say('', `Auto reveal is on: your forecast is time locked inside the commit and opens only after the deadline, then Forewit reveals it for you (no second step, no gas from you). Keep the receipt anyway: you can still reveal yourself.`);
   say(
     '',
-    `Reveal after ${fmtTime(round.commitDeadline)} and before ${fmtTime(round.revealDeadline)}:`,
+    `${autoReveal ? 'Optional, only if auto reveal has not happened: reveal' : 'Reveal'} after ${fmtTime(round.commitDeadline)} and before ${fmtTime(round.revealDeadline)}:`,
     `  ${CMD} reveal --network ${net.name} --round ${id} --from ${from}`,
     `  or: ${CMD} agent --reveal --network ${net.name} --from ${from}${o.execute ? ' --execute' : ''}`,
     'Never share the salt or receipt before the commit deadline.',
@@ -829,6 +834,8 @@ ${CMD} <command> [flags]
   round     Show the current round (or --round N) and its questions, read from the chain
   forecast  --p 72,15,50          Validate and clamp percentages, show the packed value
   commit    --from 0x.. --p ..    Make a salt, save the reveal receipt, print the baw commit commands
+            auto reveal is on by default: a time locked copy rides in the commit and Forewit reveals it after the
+            deadline (--no-auto-reveal to keep the salt only on this machine and reveal yourself)
   reveal    --from 0x..           Load the saved salt, print the baw reveal commands (after the commit deadline)
             add --execute to commit or reveal to run baw preview, review it and send after typing yes
             (BSC mainnet only, interactive terminal only, never with a piped or scripted yes)
@@ -852,7 +859,7 @@ export async function main(argv, io = ttyIo) {
     options: {
       network: { type: 'string' }, round: { type: 'string' }, 'round-file': { type: 'string' }, execute: { type: 'boolean' }, from: { type: 'string' },
       p: { type: 'string' }, 'show-salt': { type: 'boolean' }, reveal: { type: 'boolean' }, 'env-file': { type: 'string' }, at: { type: 'string' },
-      install: { type: 'boolean' }, label: { type: 'string' }, off: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
+      install: { type: 'boolean' }, label: { type: 'string' }, off: { type: 'boolean' }, help: { type: 'boolean', short: 'h' }, 'no-auto-reveal': { type: 'boolean' },
     },
   });
   const cmds = { round: cmdRound, forecast: cmdForecast, commit: cmdCommit, reveal: cmdReveal, status: cmdStatus, receipt: cmdReceipt, profile: cmdProfile, agent: cmdAgent, schedule: cmdSchedule };

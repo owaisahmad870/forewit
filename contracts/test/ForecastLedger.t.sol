@@ -333,6 +333,27 @@ contract ForecastLedgerTest is Base {
         assertEq(ledger.getStats(alice).roundsCommitted, 1);
     }
 
+    // Auto reveal (agent side, no contract change): the commit transaction carries a time locked copy of packed and salt
+    // after the ABI arguments. The ABI decoder ignores trailing calldata, so the commit and its hash are unchanged, and
+    // anyone holding the decrypted values can revealFor once the commit deadline has passed.
+    function test_commit_with_trailing_autoreveal_bytes_then_revealFor() public {
+        (uint256 id,) = _createRound(2);
+        uint256 packed = uint256(7000) | (uint256(3000) << 16);
+        bytes32 salt = keccak256("salt");
+        bytes32 h = ledger.computeCommitHash(id, alice, packed, salt);
+        bytes memory tail = abi.encodePacked(bytes4(0x46574152), uint8(1), uint16(600), new bytes(600));
+        vm.prank(alice);
+        (bool ok,) = address(ledger).call(abi.encodePacked(abi.encodeCall(ledger.commit, (id, h)), tail));
+        assertTrue(ok);
+        assertEq(ledger.getCommit(id, alice), h);
+        vm.warp(ledger.getRound(id).commitDeadline);
+        vm.prank(bob); // any caller, for example the keeper
+        ledger.revealFor(id, alice, packed, salt);
+        assertEq(ledger.getStats(alice).roundsRevealed, 1);
+        (, uint8 status) = ledger.getReveal(id, alice);
+        assertEq(status & 1, 1);
+    }
+
     function test_commit_reverts() public {
         (uint256 id,) = _createRound(2);
         vm.startPrank(alice);

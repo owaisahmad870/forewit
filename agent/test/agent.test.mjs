@@ -33,7 +33,7 @@ const ABI = parseAbi([
 const FROM = '0xcBa4eE480E307a3fCBCbE6A25E3823595ade61D5';
 const net = NETWORKS.mainnet;
 const ZERO32 = '0x' + '00'.repeat(32);
-const chain = { now: 500, commit: ZERO32 };
+const chain = { now: 1795000500, commit: ZERO32 };
 const realFetch = globalThis.fetch;
 
 // Mainnet ledger fake; every other URL (the fake LLM) goes to the real fetch.
@@ -48,7 +48,7 @@ globalThis.fetch = async (url, init) => {
     const { functionName, args } = decodeFunctionData({ abi: ABI, data: params[0].data });
     const r = {
       roundCount: () => 1n,
-      getRound: () => ({ commitDeadline: 1000n, revealDeadline: 2000n, createdAt: 1n, questionCount: 2, outcomeYesMask: 0, voidMask: 0, resolvedMask: 0, baselineSet: false, isSealed: false, baselinePacked: 0n, resolutionWait: 604800n }),
+      getRound: () => ({ commitDeadline: 1795001000n, revealDeadline: 1795002000n, createdAt: 1n, questionCount: 2, outcomeYesMask: 0, voidMask: 0, resolvedMask: 0, baselineSet: false, isSealed: false, baselinePacked: 0n, resolutionWait: 604800n }),
       getQuestions: () => [{ conditionId: '0x' + '11'.repeat(32), ctf: FROM, yesSlot: 0 }, { conditionId: '0x' + '22'.repeat(32), ctf: FROM, yesSlot: 1 }],
       getCommit: () => chain.commit,
       getReveal: () => [0n, 0],
@@ -105,7 +105,7 @@ const reset = () => {
   llm.requests.length = 0;
   rmSync(process.env.FAKE_BAW_LOG, { force: true });
   rmSync(join(home, '.forewit'), { recursive: true, force: true });
-  chain.now = 500;
+  chain.now = 1795000500;
   chain.commit = ZERO32;
 };
 
@@ -185,7 +185,7 @@ test('forewit agent', async (t) => {
     await main(['agent', '--from', FROM, '--round-file', roundFile]);
     const [r] = receipts();
     await assert.rejects(main(['agent', '--reveal', '--from', FROM]), /no committed round is in its reveal window/);
-    chain.now = 1500;
+    chain.now = 1795001500;
     chain.commit = r.commitHash;
     out.length = 0;
     await main(['agent', '--reveal', '--from', FROM]);

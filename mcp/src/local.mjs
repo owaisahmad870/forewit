@@ -86,30 +86,31 @@ export function createLocalServer({ home } = {}) {
 
   tool('prepare_commit', {
     title: 'Prepare a commit',
-    description: 'Makes a random salt, saves the reveal receipt (salt included) in ~/.forewit with owner only access, and returns the commit hash, calldata and baw preview command. Probabilities are percentages, one per question, clamped to 1 to 99. The salt is not returned.',
+    description: 'Makes a random salt, saves the reveal receipt (salt included) in ~/.forewit with owner only access, and returns the commit hash, calldata and baw preview command. Probabilities are percentages, one per question, clamped to 1 to 99. The salt is not returned. Auto reveal is on by default: a copy of the forecast and salt, time locked to just after the commit deadline (drand quicknet), rides in the calldata, and Forewit reveals it for the user after the deadline; the user needs no second step.',
     inputSchema: {
       from: address.describe('Agentic wallet address that will send the commit.'),
       probabilities_percent: z.array(z.number().min(0).max(100)).min(1).max(16),
       round_id: roundInput,
       network: networkInput,
+      auto_reveal: z.boolean().optional().describe('Default true. False keeps the salt only on this machine; the user must then reveal after the deadline.'),
     },
     outputSchema: {
       network: z.string(), ledger: z.string(), round_id: z.number().int(), from: z.string(),
-      commit_deadline: z.string(), reveal_deadline: z.string(),
+      commit_deadline: z.string(), reveal_deadline: z.string(), auto_reveal: z.boolean(),
       probabilities_bps: z.array(z.number().int()), clamped_indexes: z.array(z.number().int()),
       packed: z.string(), commit_hash: z.string(), already_committed: z.boolean(),
       receipt_file: z.string(), salt_returned: z.literal(false),
       ...walletShape,
     },
-  }, async ({ from, probabilities_percent, round_id, network: name }) => {
+  }, async ({ from, probabilities_percent, round_id, network: name, auto_reveal = true }) => {
     const net = network(name);
     const { bps, clamped } = parseProbabilities(probabilities_percent.join(','));
     const loaded = await loadRound(net, round_id === undefined ? undefined : String(round_id));
-    const { receipt, file, existing, data } = await commitPlan({ net, from, bps, home, loaded });
+    const { receipt, file, existing, data, autoReveal } = await commitPlan({ net, from, bps, home, loaded, autoReveal: auto_reveal });
     console.error(`forewit mcp: saved receipt for round ${loaded.id} at ${file}`);
     return ok({
       network: net.name, ledger: net.ledger, round_id: loaded.id, from,
-      commit_deadline: iso(loaded.round.commitDeadline), reveal_deadline: iso(loaded.round.revealDeadline),
+      commit_deadline: iso(loaded.round.commitDeadline), reveal_deadline: iso(loaded.round.revealDeadline), auto_reveal: autoReveal,
       probabilities_bps: bps, clamped_indexes: clamped, packed: receipt.packed, commit_hash: receipt.commitHash,
       already_committed: existing, receipt_file: file, salt_returned: false,
       ...walletPart(net, from, data),

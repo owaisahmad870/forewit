@@ -36,7 +36,7 @@ function fakeRpc(chain, bodies) {
       const { functionName, args } = decodeFunctionData({ abi: ABI, data: params[0].data });
       const r = {
         roundCount: () => 1n,
-        getRound: () => ({ commitDeadline: 1000n, revealDeadline: 2000n, createdAt: 1n, questionCount: 2, outcomeYesMask: 0, voidMask: 0, resolvedMask: 0, baselineSet: false, isSealed: false, baselinePacked: 0n, resolutionWait: 604800n}),
+        getRound: () => ({ commitDeadline: 1795001000n, revealDeadline: 1795002000n, createdAt: 1n, questionCount: 2, outcomeYesMask: 0, voidMask: 0, resolvedMask: 0, baselineSet: false, isSealed: false, baselinePacked: 0n, resolutionWait: 604800n}),
         getQuestions: () => [{ conditionId: '0x' + '11'.repeat(32), ctf: FROM, yesSlot: 0 }, { conditionId: '0x' + '22'.repeat(32), ctf: FROM, yesSlot: 1 }],
         getCommit: () => chain.commit,
         getReveal: () => [0n, 0],
@@ -55,7 +55,7 @@ test('commit saves the salt first, never sends it, and reveal finds it', async (
   const saved = { fetch: globalThis.fetch, log: console.log, HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
   const out = [];
   const bodies = [];
-  const chain = { now: 500, commit: ZERO32 };
+  const chain = { now: 1795000500, commit: ZERO32 };
   process.env.HOME = home;
   process.env.USERPROFILE = home;
   globalThis.fetch = fakeRpc(chain, bodies);
@@ -80,12 +80,15 @@ test('commit saves the salt first, never sends it, and reveal finds it', async (
   }
   const printed = out.join('\n');
   assert.ok(printed.includes(`--to ${net.ledger} --value 0 --inputData 0xf2f03877`), 'commit preview targets the pinned ledger');
+  // auto reveal is on by default: the time locked copy follows the commit arguments and the receipt records its drand round
+  assert.match(printed, /--inputData 0xf2f03877[0-9a-f]{128}46574152/);
+  assert.ok(receipt.autoReveal.drandRound > 0 && /Auto reveal is on/.test(printed));
 
   // Reveal is refused before the commit deadline.
   await assert.rejects(main(['reveal', '--network', 'testnet', '--from', FROM]), /revealing early is refused/);
 
   // After the deadline, with this commit onchain, reveal prints the matching calldata.
-  chain.now = 1500;
+  chain.now = 1795001500;
   chain.commit = receipt.commitHash;
   out.length = 0;
   await main(['reveal', '--network', 'testnet', '--from', FROM]);
@@ -96,7 +99,7 @@ test('commit saves the salt first, never sends it, and reveal finds it', async (
   await assert.rejects(main(['reveal', '--network', 'testnet', '--from', FROM]), /forfeit/);
 
   // After the reveal deadline the window is closed.
-  chain.now = 2001;
+  chain.now = 1795002001;
   await assert.rejects(main(['reveal', '--network', 'testnet', '--from', FROM]), /closed/);
 });
 
@@ -106,7 +109,7 @@ test('round file titles: event question plus label, cross checked with the chain
   const out = [];
   process.env.HOME = home;
   process.env.USERPROFILE = home;
-  globalThis.fetch = fakeRpc({ now: 500, commit: ZERO32 }, []);
+  globalThis.fetch = fakeRpc({ now: 1795000500, commit: ZERO32 }, []);
   console.log = (...a) => out.push(a.join(' '));
   t.after(() => {
     Object.assign(globalThis, { fetch: saved.fetch });
