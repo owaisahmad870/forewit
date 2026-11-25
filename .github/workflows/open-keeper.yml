@@ -1,0 +1,63 @@
+# Forewit v2 keeper (keeper/open.mjs) for OpenForecasts: own wallet (OPEN_KEEPER_PRIVATE_KEY), own state branch
+# (open-state), own concurrency group, so it can never block or overwrite the v1 keeper. Idle until vars.OPEN_MAINNET
+# is set. Loops for 5.5 hours, polling every 10 seconds, then relays itself to a fresh run.
+name: open-keeper
+
+on:
+  schedule:
+    - cron: "41 */2 * * *" # restart a dropped loop (a running one makes this queue, then exit at once)
+  workflow_dispatch:
+
+permissions:
+  contents: write # open-state branch
+  actions: write # relay to a fresh run
+  issues: write # alerts
+
+concurrency:
+  group: open-keeper
+  cancel-in-progress: false
+
+jobs:
+  open:
+    if: vars.OPEN_MAINNET != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+      - run: npm ci --no-audit --no-fund
+      - name: Restore state
+        run: |
+          git fetch --depth 1 origin open-state && git worktree add ../state FETCH_HEAD || { git worktree add --detach ../state && git -C ../state switch --orphan open-state; }
+          for d in keeper/state keeper/archive; do [ -d "../state/$d" ] && mkdir -p "$d" && cp -r "../state/$d/." "$d/" || true; done
+      - name: Run the open keeper
+        env:
+          OPEN_NETWORK: mainnet
+          OPEN_LEDGER: ${{ vars.OPEN_MAINNET }}
+          OPEN_FROM_BLOCK: ${{ vars.OPEN_FROM_BLOCK_MAINNET }}
+          OPEN_CONFIRM_MAINNET: ${{ vars.OPEN_CONFIRM_MAINNET }}
+          OPEN_KEEPER_PRIVATE_KEY: ${{ secrets.OPEN_KEEPER_PRIVATE_KEY }}
+          RPC_MAINNET_PRIMARY: ${{ secrets.RPC_MAINNET_PRIMARY }}
+          RPC_MAINNET_FALLBACK: ${{ secrets.RPC_MAINNET_FALLBACK }}
+          PREDICT_API_KEY: ${{ secrets.PREDICT_API_KEY }}
+          ALERT_ISSUE_NUMBER: ${{ vars.ALERT_ISSUE_NUMBER }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node keeper/open.mjs
+      - name: Save state
+        if: always()
+        run: |
+          for d in keeper/state keeper/archive; do [ -d "$d" ] && mkdir -p "../state/$d" && cp -r "$d/." "../state/$d/"; done
+          cd ../state
+          git config user.name "forewit keeper" && git config user.email "keeper@users.noreply.github.com"
+          git add -A && { git diff --cached --quiet || git commit -qm "open keeper $(date -u +%FT%TZ)"; }
+          git push origin HEAD:refs/heads/open-state
+      - name: Relay to a fresh run
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ $(( $(date +%s) - JOB_START )) -lt 1200 ]; then echo "loop ended early: not relaying"; exit 1; fi
+          gh workflow run open-keeper.yml -R "$GITHUB_REPOSITORY"
