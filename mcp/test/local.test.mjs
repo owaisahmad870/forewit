@@ -25,9 +25,9 @@ test('local server', async (t) => {
   t.after(() => { restore(); rmSync(home, { recursive: true, force: true }); });
 
   let commit;
-  await t.test('lists seven tools with strict inputs and no extra capabilities', async () => {
+  await t.test('lists nine tools with strict inputs and no extra capabilities', async () => {
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((x) => x.name).sort(), ['commit_forecast', 'my_receipts', 'prepare_commit', 'prepare_profile', 'prepare_reveal', 'reveal_forecast', 'wallet_status']);
+    assert.deepEqual(tools.map((x) => x.name).sort(), ['commit_forecast', 'my_receipts', 'predict_market', 'prepare_commit', 'prepare_profile', 'prepare_reveal', 'reveal_forecast', 'search_markets', 'wallet_status']);
     for (const x of tools) {
       assert.equal(x.inputSchema.additionalProperties, false, x.name);
       assert.ok(x.outputSchema, x.name);

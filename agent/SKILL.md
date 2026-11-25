@@ -34,6 +34,18 @@ When the user says "Play Forewit":
 5. Commit with the flow for each round below (dry run, the printed preview, the user's explicit yes, execute).
 6. Tell them: with auto reveal there is nothing more to do; results appear when the questions settle. `forewit results --from <wallet>` shows them in plain words (beat the market or not, by how many points), and the same card is at https://forewit.xyz/#/me.
 
+## Forecast any market, any time (open forecasts)
+
+When the user wants a specific market (any category, any time, including 5 and 15 minute crypto Up or Down):
+
+1. The user needs their own free Predict.fun API key for market data: https://developers.predict.fun, then `PREDICT_API_KEY` in their environment. Forewit never sees or stores it.
+2. `forewit markets --search "<their words>"` finds the market and its id.
+3. Ask for their chance for outcome 1 (Yes or Up) or outcome 2 (No or Down), and about auto reveal.
+4. `forewit predict --market <id> --p <chance> [--outcome 2] --from <wallet> --auto-reveal`, then the printed preview, their explicit yes, execute (as in the flow below).
+5. One forecast per wallet per market, no changes later. The market price at the commit is recorded by Forewit within 2 minutes; results come when the market resolves: `forewit predictions --from <wallet>`, or https://forewit.xyz/#/me (live price shown there).
+
+With the Forewit MCP tools: `search_markets`, then `predict_market` (the person confirms in a form you cannot fill in).
+
 If the Forewit MCP tools are available (`commit_forecast`), prefer them: the user confirms in a form the client shows, which you cannot fill in. If the user is at their own terminal, `forewit start` walks them through everything by itself.
 
 ## Hard rules
