@@ -1,3 +1,4 @@
+import { STEPS_PATH, WORD_PATH, WORD_VIEWBOX } from './brandMark';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { LangContext, initialLang, translate, useT, type Lang } from './i18n';
 import { loadData, type Dataset } from './lib/data';
@@ -45,8 +46,8 @@ const MOON = <svg {...icon} fill="none" stroke="currentColor" strokeWidth="2" st
 const X_ICON = <svg {...icon} fill="currentColor"><path d="M17.8 3h3.1l-6.8 7.7 8 10.3h-6.2l-4.9-6.3L5.4 21H2.3l7.2-8.3L1.8 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.6z" /></svg>;
 
 const MARK = (
-  /* Same mark as public/favicon.svg: a forecast on the 0 to 1 probability scale. */
-  <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16h24M4 12.5v7M28 12.5v7" className="stroke-muted" strokeWidth="2" strokeLinecap="round" fill="none" /><path d="M13 9.5l6.5 6.5-6.5 6.5-6.5-6.5z" className="fill-accent" /></svg>
+  /* The Forewit wordmark (scripts/brand/build.py): the i dot climbs as three steps. */
+  <svg viewBox={WORD_VIEWBOX} className="h-6 w-auto" aria-hidden="true"><path d={WORD_PATH} className="fill-ink" /><path d={STEPS_PATH} className="fill-accent" /></svg>
 );
 
 /** Side navigation from 60rem; under it a top bar whose menu opens the same list. */
@@ -78,7 +79,7 @@ function Sidebar({ route, theme, setTheme }: { route: string[]; theme: string; s
   const brand = (
     <a href="#/" className="flex min-h-11 items-center gap-2 font-semibold">
       {MARK}
-      {t('brand')}
+      <span className="sr-only">{t('brand')}</span>
       {t('brandLocal') && <span lang="zh-CN" className="font-normal text-muted">{t('brandLocal')}</span>}
     </a>
   );

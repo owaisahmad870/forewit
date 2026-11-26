@@ -6,15 +6,16 @@ import { resolve } from 'node:path';
 
 const OUT = 'docs/posts/img';
 mkdirSync(OUT, { recursive: true });
-const C = { bg: '#0d1420', surface: '#141d2c', line: '#2a3850', text: '#e7ecf4', muted: '#9ba8bc', accent: '#a594ff', pos: '#7be0ae', market: '#98a2b3' };
+const M = JSON.parse(readFileSync('brand/mark.json', 'utf8'));
+const C = { bg: '#04090C', surface: '#0E151A', line: '#1F2A30', text: '#F2F4F5', muted: '#8C979E', accent: '#BCF053', pos: '#7be0ae', market: '#98a2b3' };
 const FONT = "'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif";
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 const frame = (body, foot = 'forewit.xyz') => `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" font-family="${FONT}">
 <rect width="1200" height="675" fill="${C.bg}"/>
 <circle cx="1080" cy="80" r="260" fill="${C.accent}" opacity="0.07"/>
-<g transform="translate(64 56)"><path d="M0 22h44M0 14v16M44 14v16" stroke="${C.muted}" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M22 8l14 14-14 14-14-14z" fill="${C.accent}"/>
-<text x="62" y="31" font-size="30" font-weight="700" fill="${C.text}">Forewit <tspan fill="${C.muted}" font-weight="400">先见</tspan></text></g>
+<g transform="translate(64 72) scale(0.028)"><path fill="${C.text}" d="${M.word}"/><path fill="${C.accent}" d="${M.steps}"/></g>
+<text x="${64 + M.viewBox[2] * 0.028 + 14}" y="72" font-size="26" fill="${C.muted}">先见</text>
 ${body}
 <line x1="64" y1="600" x2="1136" y2="600" stroke="${C.line}"/>
 <text x="64" y="638" font-size="22" fill="${C.muted}">${esc(foot)}</text>

@@ -1,3 +1,5 @@
+<picture><source media="(prefers-color-scheme: dark)" srcset="brand/forewit_wordmark_dark.svg"><img src="brand/forewit_wordmark_light.svg" alt="Forewit" width="280"></picture>
+
 # Forewit 先见
 
 A forecasting track record nobody can fake or buy. One Agent ID, one record, scored against the market, on BNB Smart Chain.

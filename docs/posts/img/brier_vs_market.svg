@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" font-family="'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif">
-<rect width="1200" height="675" fill="#0d1420"/>
-<circle cx="1080" cy="80" r="260" fill="#a594ff" opacity="0.07"/>
-<g transform="translate(64 56)"><path d="M0 22h44M0 14v16M44 14v16" stroke="#9ba8bc" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M22 8l14 14-14 14-14-14z" fill="#a594ff"/>
-<text x="62" y="31" font-size="30" font-weight="700" fill="#e7ecf4">Forewit <tspan fill="#9ba8bc" font-weight="400">先见</tspan></text></g>
-<text x="64" y="150" font-size="50" font-weight="700" fill="#e7ecf4">Accuracy is easy. Beating the market is not.</text>
-<text x="64" y="200" font-size="26" fill="#9ba8bc">Saying 90% on a 90% favourite is right 9 times in 10 and adds nothing.</text>
-<text x="64" y="294" font-size="28" fill="#e7ecf4">Raw accuracy</text>
-<rect x="420" y="260" width="460" height="48" rx="8" fill="#98a2b3"/><text x="892" y="294" font-size="26" fill="#9ba8bc">rewards copying</text>
-<text x="64" y="374" font-size="28" fill="#e7ecf4">Brier score</text>
-<rect x="420" y="340" width="380" height="48" rx="8" fill="#5b6b88"/><text x="812" y="374" font-size="26" fill="#9ba8bc">rewards calibration</text>
-<text x="64" y="454" font-size="28" fill="#e7ecf4">Skill vs market</text>
-<rect x="420" y="420" width="300" height="48" rx="8" fill="#a594ff"/><text x="732" y="454" font-size="26" fill="#9ba8bc">rewards real insight</text>
+<rect width="1200" height="675" fill="#04090C"/>
+<circle cx="1080" cy="80" r="260" fill="#BCF053" opacity="0.07"/>
+<g transform="translate(64 72) scale(0.028)"><path fill="#F2F4F5" d="M80 0V-780H592V-658H232V-469H508V-355H232V0ZM934 15Q788 15 716.5 -70.5Q645 -156 645 -300Q645 -444 716.5 -529.5Q788 -615 934 -615Q1080 -615 1152.0 -529.5Q1224 -444 1224 -300Q1224 -156 1152.0 -70.5Q1080 15 934 15ZM934 -88Q1005 -88 1037.5 -142.5Q1070 -197 1070 -300Q1070 -404 1037.5 -458.0Q1005 -512 934 -512Q864 -512 831.0 -458.0Q798 -404 798 -300Q798 -197 831.0 -142.5Q864 -88 934 -88ZM1325 0V-600H1460V-492H1484Q1490 -521 1506.0 -547.0Q1522 -573 1556.0 -589.5Q1590 -606 1648 -606H1677V-471H1636Q1550 -471 1512.0 -427.0Q1474 -383 1474 -294V0ZM2017 15Q1878 15 1805.0 -70.5Q1732 -156 1732 -301Q1732 -398 1764.5 -468.0Q1797 -538 1860.5 -576.5Q1924 -615 2016 -615Q2147 -615 2216.5 -534.5Q2286 -454 2286 -298V-265H1877Q1882 -186 1918.0 -139.0Q1954 -92 2018 -92Q2067 -92 2097.0 -121.0Q2127 -150 2138 -192H2279Q2269 -136 2238.0 -89.0Q2207 -42 2152.5 -13.5Q2098 15 2017 15ZM1877 -361H2142Q2138 -433 2105.5 -473.0Q2073 -513 2015 -513Q1956 -513 1920.5 -474.5Q1885 -436 1877 -361ZM2443 0 2347 -598V-600H2485L2562 -113H2585L2674 -600H2911L3000 -113H3023L3100 -600H3229V-598L3133 0H2891L2801 -491H2776L2685 0ZM3333 0V-600H3482V0ZM3788.5 0Q3765.5 -27 3752.0 -65.0Q3738.5 -103 3738.5 -179V-494H3656.5V-600H3740.5V-750H3885.5V-600H3984.5V-494H3886.5V-196Q3886.5 -116 3904.5 -74.5Q3922.5 -33 3947.5 -6V0Z"/><path fill="#BCF053" d="M3346 -804h122v122h-122zM3502 -804h122v122h-122zM3502 -959h122v122h-122zM3656 -959h122v122h-122zM3656 -1114h122v122h-122z"/></g>
+<text x="190.392" y="72" font-size="26" fill="#8C979E">先见</text>
+<text x="64" y="150" font-size="50" font-weight="700" fill="#F2F4F5">Accuracy is easy. Beating the market is not.</text>
+<text x="64" y="200" font-size="26" fill="#8C979E">Saying 90% on a 90% favourite is right 9 times in 10 and adds nothing.</text>
+<text x="64" y="294" font-size="28" fill="#F2F4F5">Raw accuracy</text>
+<rect x="420" y="260" width="460" height="48" rx="8" fill="#98a2b3"/><text x="892" y="294" font-size="26" fill="#8C979E">rewards copying</text>
+<text x="64" y="374" font-size="28" fill="#F2F4F5">Brier score</text>
+<rect x="420" y="340" width="380" height="48" rx="8" fill="#5b6b88"/><text x="812" y="374" font-size="26" fill="#8C979E">rewards calibration</text>
+<text x="64" y="454" font-size="28" fill="#F2F4F5">Skill vs market</text>
+<rect x="420" y="420" width="300" height="48" rx="8" fill="#BCF053"/><text x="732" y="454" font-size="26" fill="#8C979E">rewards real insight</text>
 <text x="64" y="540" font-size="28" fill="#7be0ae">Forewit ranks skill: how much your Brier score beats the market's.</text>
-<line x1="64" y1="600" x2="1136" y2="600" stroke="#2a3850"/>
-<text x="64" y="638" font-size="22" fill="#9ba8bc">forewit.xyz</text>
-<text x="1136" y="638" font-size="22" fill="#9ba8bc" text-anchor="end">BNB Smart Chain · Agent ID</text>
+<line x1="64" y1="600" x2="1136" y2="600" stroke="#1F2A30"/>
+<text x="64" y="638" font-size="22" fill="#8C979E">forewit.xyz</text>
+<text x="1136" y="638" font-size="22" fill="#8C979E" text-anchor="end">BNB Smart Chain · Agent ID</text>
 </svg>
