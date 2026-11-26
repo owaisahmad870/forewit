@@ -12,15 +12,55 @@ description: 用手机或任意浏览器，通过云端 AI 智能体参与先见
 为什么不用普通聊天窗口？Agentic Wallet 只能通过它的命令行工具签名，而这需要命令行环境。聊天窗口（claude.ai、ChatGPT）没有；云端编程智能体有，并且运行在你自己的沙盒里。
 {% endhint %}
 
-## 步骤
-1. 打开[先见智能体模板](https://github.com/owaisahmad870/forewit-agent-template)，点击 **Use this template**，再点击 **Create a new repository**，并选择 **Private**。
-2. 打开 **claude.ai/code**（或 Claude App 里的 Code 标签），连接 GitHub 并选择你的新仓库。
-3. 在环境设置中，允许访问 `www.binance.com`、`bsc-rpc.publicnode.com`、`forewit.xyz`、`api.github.com`、`api.predict.fun` 以及 npm 仓库。如需预测任意市场，再把你在 developers.predict.fun 免费创建的密钥添加为环境变量 `PREDICT_API_KEY`。之后每次会话开始时会自动完成设置。检查：智能体的网络检查返回 2xx 或 3xx，而不是 403。
-4. 发送 `Forecast a market: bitcoin 15 minute`（或 `Forecast today's Forewit round`）。智能体会给出一个登录链接和一个配对码。
-5. 在同一部手机上点击链接，在币安 App 里核对配对码并批准。智能体显示 CONNECTED 以及你的 BSC 地址。
-6. 给出你的概率。智能体把回执保存到你的私有仓库，并展示钱包预览（先见合约，金额为 0）。
-7. 输入 yes。你会得到一个交易哈希，或者提示你在币安 App 里批准。
-8. 这样就完成了：市场结算后自动揭示并计分。随时发送 `How did I do?` 查看结果。
+## 一次设置（约五分钟）
+以下均为真实截图。
+
+1. 打开[先见智能体模板](https://github.com/owaisahmad870/forewit-agent-template)，点击 **Use this template**，再点击 **Create a new repository**。
+
+   ![Use this template 菜单](../../.gitbook/assets/start_template.webp)
+2. 任意命名，选择 **Private**，点击 **Create repository**。回执保存在这里，所以务必保持私有。
+
+   ![选择 Private 的创建仓库表单](../../.gitbook/assets/start_private.webp)
+3. 打开 **claude.ai/code**（或 Claude App 里的 Code 标签）。按提示连接 GitHub，然后选择你的新仓库。
+
+   ![Claude Code 中的仓库选择器](../../.gitbook/assets/start_repo.webp)
+4. 打开旁边的云端环境菜单，选择 **New environment**，命名为 Forewit。
+
+   ![环境菜单中的 New environment](../../.gitbook/assets/start_envmenu.webp)
+
+   ![名为 Forewit 的新环境](../../.gitbook/assets/start_envname.webp)
+5. 打开 **Network access**，保持 **Limited**，每行粘贴一个以下网站，并保留 **package managers** 开启：
+
+   ```
+   www.binance.com
+   bsc-rpc.publicnode.com
+   forewit.xyz
+   api.github.com
+   api.predict.fun
+   ```
+
+   ![填入先见网站的 Network access](../../.gitbook/assets/start_network.webp)
+6. 预测任意市场：打开 **Environment variables**，把你在 developers.predict.fun 免费创建的密钥写成 `PREDICT_API_KEY=你的密钥`。这个环境只有你使用；切勿把密钥发到聊天里。然后点击 **Add environment**。
+
+   ![填有 PREDICT_API_KEY 的环境变量](../../.gitbook/assets/start_envvars.webp)
+7. 可选：添加先见连接器，让 Claude 在任何对话中回答先见问题。在 claude.ai 打开 **Plugins**，点击 **Add**，再点击 **Add custom connector**，命名为 Forewit 并粘贴 `https://forewit.xyz/mcp`。它只读取，从不发送任何内容。
+
+   ![填有先见地址的 Add custom connector](../../.gitbook/assets/start_connector.webp)
+
+之后每次会话开始时会自动完成设置。检查：智能体的网络检查返回 2xx 或 3xx，而不是 403。
+
+## 开始预测
+1. 用你的仓库和 Forewit 环境开始新会话，发送以下任意一条：
+   * `Forecast a market: bitcoin 15 minute`
+   * `Forecast today's Forewit round`
+   * `How did I do?`
+   * `What can I forecast right now?`
+   * `Explain how Forewit scores me`
+   * `Show the Forewit leaderboard`
+2. 智能体会给出一个登录链接和一个配对码。在同一部手机上点击链接，在币安 App 里核对配对码并批准。智能体显示 CONNECTED 以及你的 BSC 地址。
+3. 给出你的概率。智能体把回执保存到你的私有仓库，并展示钱包预览（先见合约，金额为 0）。
+4. 输入 yes。你会得到一个交易哈希，或者提示你在币安 App 里批准。
+5. 这样就完成了：市场结算后自动揭示并计分。随时发送 `How did I do?` 查看结果。
 
 {% hint style="warning" %}
 回执里包含 salt。请保持你的模板副本为私有，绝不要把 salt 粘贴到任何地方。丢失 salt 意味着该轮按弃权计算。
