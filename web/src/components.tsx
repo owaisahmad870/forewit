@@ -371,7 +371,7 @@ export function PlayInClaude() {
         <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" className={`transition-transform ${open ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
       {open && (
-        <div role="dialog" aria-label={t('claude.title')} className="fixed inset-x-4 top-16 z-30 max-h-[80vh] overflow-y-auto rounded-lg border border-line bg-surface text-left shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[24rem]">
+        <div role="dialog" aria-label={t('claude.title')} className="fixed inset-x-4 top-16 z-30 max-h-[80vh] overflow-y-auto rounded-lg border border-line bg-surface text-left shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[28rem]">
           <div className="p-4">
             <div className="flex items-center justify-between">
               <p className="flex items-center gap-2 font-semibold">{TERMINAL}{t('claude.setup')}</p>
@@ -388,7 +388,7 @@ export function PlayInClaude() {
               ))}
             </div>
             <div className="mt-3 flex items-stretch gap-2">
-              <pre className="min-w-0 flex-1 rounded-md border border-line bg-bg px-3 py-2 font-mono text-[0.8rem] leading-relaxed whitespace-pre-wrap break-all">{text}</pre>
+              <pre className="min-w-0 flex-1 rounded-md border border-line bg-bg px-3 py-2 font-mono text-[0.8rem] leading-relaxed whitespace-pre-wrap break-words">{text}</pre>
               <button type="button" onClick={copy} aria-label={copied ? t('ui.copied') : t('ui.copy')} title={copied ? t('ui.copied') : t('ui.copy')} className="flex w-10 shrink-0 items-center justify-center rounded-md border border-line text-muted hover:border-[var(--claude)] hover:text-ink">{copied ? CHECK : COPYDOC}</button>
             </div>
             <p className="mt-2 text-xs text-muted">{t(`claude.hint.${method}`)}</p>
