@@ -1,0 +1,65 @@
+{
+ "forecast": {
+  "key": "0xf19392eb44250c8f78e779f5d20b28c1fa36d46c95301fbfb25ba0d960ec3d7b",
+  "forecaster": "0x4Db416bAF0127AdCa78e7571038b763868ff282C",
+  "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+  "conditionId": "0xe57d35e428f5c192ead5752acbe8e4813a035b2a977fb6f51d5472f731ab781b",
+  "slot": 0,
+  "marketId": "4821084",
+  "committedAt": 1795734544,
+  "revealNotBefore": 1795737660,
+  "stage": "new",
+  "tries": 1,
+  "paid": true
+ },
+ "checkedAt": 1795734553,
+ "tries": 1,
+ "reason": 0,
+ "price": {
+  "ok": false,
+  "why": "price moved 4.5 points since the last bucket"
+ },
+ "market": {
+  "id": 4821084,
+  "conditionId": "0xe57d35e428f5c192ead5752acbe8e4813a035b2a977fb6f51d5472f731ab781b",
+  "tradingStatus": "OPEN",
+  "status": "REGISTERED",
+  "outcomes": [
+   {
+    "indexSet": 1
+   },
+   {
+    "indexSet": 2
+   }
+  ]
+ },
+ "category": {
+  "slug": "bitcoin-up-or-down-november-26-2026-6pm-et",
+  "endsAt": "2026-11-27T00:00:00.000Z",
+  "tradingSession": null
+ },
+ "history": [
+  {
+   "x": 1795734000,
+   "y": 45
+  },
+  {
+   "x": 1795734120,
+   "y": 47
+  },
+  {
+   "x": 1795734240,
+   "y": 47
+  },
+  {
+   "x": 1795734360,
+   "y": 49
+  },
+  {
+   "x": 1795734480,
+   "y": 39
+  }
+ ],
+ "liveMidBps": 3450,
+ "volume24hUsd": 1834.5
+}
