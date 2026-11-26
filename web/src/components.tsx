@@ -388,7 +388,7 @@ export function PlayInClaude() {
               ))}
             </div>
             <div className="mt-3 flex items-stretch gap-2">
-              <pre className="min-w-0 flex-1 overflow-x-auto rounded-md border border-line bg-bg px-3 py-2 font-mono text-[0.8rem] leading-relaxed">{text}</pre>
+              <pre className="min-w-0 flex-1 rounded-md border border-line bg-bg px-3 py-2 font-mono text-[0.8rem] leading-relaxed whitespace-pre-wrap break-all">{text}</pre>
               <button type="button" onClick={copy} aria-label={copied ? t('ui.copied') : t('ui.copy')} title={copied ? t('ui.copied') : t('ui.copy')} className="flex w-10 shrink-0 items-center justify-center rounded-md border border-line text-muted hover:border-[var(--claude)] hover:text-ink">{copied ? CHECK : COPYDOC}</button>
             </div>
             <p className="mt-2 text-xs text-muted">{t(`claude.hint.${method}`)}</p>
