@@ -186,7 +186,16 @@ export function App() {
     else delete document.documentElement.dataset.theme;
     store.set('theme', theme);
   }, [theme]);
-  useEffect(() => { loadData().then(setData, () => setError(true)); }, []);
+  useEffect(() => {
+    // refresh while the tab stays open (the data is rebuilt from the chain every 20 minutes); a failed refresh keeps the last data
+    let first = true;
+    const get = () => loadData().then((d) => { setData(d); setError(false); }, () => { if (first) setError(true); }).finally(() => { first = false; });
+    get();
+    const id = setInterval(get, 5 * 60000);
+    const onShow = () => { if (document.visibilityState === 'visible') get(); };
+    document.addEventListener('visibilitychange', onShow);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', onShow); };
+  }, []);
 
   return (
     <LangContext.Provider value={{ lang, setLang: chooseLang }}>

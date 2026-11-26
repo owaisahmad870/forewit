@@ -198,7 +198,7 @@ export function upcoming(rounds: Round[], now: number) {
 
 // The banner: every round in its reveal window (it overlaps the next round's commit window) plus the open round with the nearest commit deadline.
 export function bannerRounds(rounds: Round[], now: number) {
-  const reveal = rounds.filter((r) => phase(r, now) === 'reveal').sort((a, b) => a.revealDeadline.getTime() - b.revealDeadline.getTime());
+  const reveal = rounds.filter((r) => phase(r, now) === 'reveal' && r.revealedCount < r.commitCount).sort((a, b) => a.revealDeadline.getTime() - b.revealDeadline.getTime());
   const commit = rounds.filter((r) => phase(r, now) === 'commit').sort((a, b) => a.commitDeadline.getTime() - b.commitDeadline.getTime())[0] ?? null;
   return { reveal, commit };
 }

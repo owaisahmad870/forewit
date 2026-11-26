@@ -98,8 +98,11 @@ describe('round state uses the passed clock', () => {
     const rounds = joinRounds(snap([goldRound(1, {}), goldRound(2, {})]), []);
     const [r1, r2] = [1, 2].map((id) => rounds.find((r) => r.id === id)!);
     const at = (now: number) => { const b = bannerRounds(rounds, now); return { reveal: b.reveal.map((r) => r.id), commit: b.commit?.id ?? null }; };
+    r1.revealedCount = r1.commitCount - 1; // one reveal still owed
     expect(at(r1.commitDeadline.getTime() - 1)).toEqual({ reveal: [], commit: 1 });
     expect(at(r1.commitDeadline.getTime())).toEqual({ reveal: [1], commit: 2 });
+    r1.revealedCount = r1.commitCount; // everyone revealed: no reveal banner
+    expect(at(r1.commitDeadline.getTime())).toEqual({ reveal: [], commit: 2 });
     expect(at(r2.revealDeadline.getTime())).toEqual({ reveal: [], commit: null });
   });
 });

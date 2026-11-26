@@ -4,7 +4,8 @@ const loc = (lang: Lang) => (lang === 'zh' ? 'zh-CN' : 'en-GB');
 const MINUS = '−';
 
 export const fmtBrier = (x: number | null) => (x == null ? '' : x.toFixed(3));
-export const fmtSkill = (x: number | null) => (x == null ? '' : `${x > 0 ? '+' : x < 0 ? MINUS : ''}${Math.abs(x).toFixed(4)}`);
+// skill in points (Brier x 100, the unit My results and the plan use)
+export const fmtSkill = (x: number | null) => (x == null ? '' : `${x > 0 ? '+' : x < 0 ? MINUS : ''}${(Math.abs(x) * 100).toFixed(2)} pts`);
 export const fmtPct = (bps: number | null) => (bps == null ? '' : `${Math.round(bps / 100)}%`);
 export const fmtShare = (x: number | null) => (x == null ? '' : `${Math.round(x * 100)}%`);
 

@@ -128,7 +128,7 @@
   "leaderboard": {
     "title": "Leaderboard",
     "intro": "Only forecasters who opted in are listed. Everyone else counts only in the totals. Rank uses skill against the market price, shrunk toward zero for small samples.",
-    "totals": "{n} forecasters scored, {p} opted in to a public profile.",
+    "totals": "Forecasters scored: {n}. Opted in to a public profile: {p}.",
     "rank": "Rank",
     "forecaster": "Forecaster",
     "skill": "Skill",
@@ -140,7 +140,7 @@
     "unranked": "Not yet ranked",
     "unrankedNote": "Needs at least {r} distinct scoring days and {q} questions with a market price.",
     "empty": "No public forecasters yet. Opting in is optional and can be undone at any time.",
-    "formula": "Skill = sum of (market Brier minus own Brier) / (questions with a baseline + 20). Positive means better than the market.",
+    "formula": "Skill = sum of (market Brier minus own Brier) / (questions with a baseline + 20), in points (x 100). Positive means better than the market.",
     "postBaselineFlag": "Part of this skill came from commits made after the market baseline was posted (rule pre registered on 23 Nov 2026)."
   },
   "crowd": {
@@ -447,7 +447,8 @@
       "rounds": "Each day Forewit picks a few featured questions that everyone forecasts together, so the Agent ID Crowd can be compared with the market. No Predict.fun key needed. Your forecast stays sealed until the picks close, and auto reveal opens it afterwards.",
       "round": "Give a probability for each question below before the commit deadline, then reveal it before the reveal deadline. The square shows the market price, the diamond the crowd. Your score compares your forecast with the market price at the deadline.",
       "roundHidden": "Forecasts stay hidden until the commit deadline. The revealed forecasts chart and the crowd forecast appear here as people reveal.",
-      "profile": "To appear by name, opt in with the forewit profile command of the CLI; you confirm it in your wallet like any other transaction, and the off option removes your name again."
+      "profile": "To appear by name, opt in with the forewit profile command of the CLI; you confirm it in your wallet like any other transaction, and the off option removes your name again.",
+      "roundClosed": "Commits are closed. The square shows the market price at the deadline, the diamond the crowd. Each forecast is scored against that market price once the questions settle onchain."
     },
     "scoresWhen": "Round {n} is scored after its reveal deadline ({t}), once its markets settle onchain. Scores appear here then.",
     "docNav": "Docs pages",

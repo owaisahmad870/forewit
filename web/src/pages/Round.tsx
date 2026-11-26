@@ -51,7 +51,7 @@ export function RoundPage({ data, id }: { data: Dataset; id: number }) {
           <Badge tone={ph === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${ph}`)}</Badge>
         </div>
       </div>
-      <p className="max-w-[68ch]">{t('help.intro.round')}</p>
+      <p className="max-w-[68ch]">{t(ph === 'commit' ? 'help.intro.round' : 'help.intro.roundClosed')}</p>
       {ph === 'commit' && <p className="max-w-[68ch] text-sm text-muted">{t('help.intro.roundHidden')}</p>}
       {r.funnel && (
         <details className="max-w-[68ch] rounded-lg border border-line bg-surface p-3 text-sm">
