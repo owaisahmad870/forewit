@@ -37,6 +37,7 @@ description: 用手机或任意浏览器，通过云端 AI 智能体参与先见
    forewit.xyz
    api.github.com
    api.predict.fun
+   data-api.binance.vision
    ```
 
    ![填入先见网站的 Network access](../../.gitbook/assets/start_network.webp)

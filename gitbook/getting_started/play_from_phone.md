@@ -37,6 +37,7 @@ These are real screenshots.
    forewit.xyz
    api.github.com
    api.predict.fun
+   data-api.binance.vision
    ```
 
    ![Network access with the Forewit websites](../.gitbook/assets/start_network.webp)

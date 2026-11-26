@@ -3,7 +3,7 @@ import { useT } from '../i18n';
 
 // Commands, URL and hosts keep hyphens, so they live in code, not in the locale files (src/test/start.test.tsx checks them).
 const TEMPLATE_URL = 'https://github.com/owaisahmad870/forewit-agent-template';
-const PHONE_HOSTS = 'www.binance.com\nbsc-rpc.publicnode.com\nforewit.xyz\napi.github.com\napi.predict.fun';
+const PHONE_HOSTS = 'www.binance.com\nbsc-rpc.publicnode.com\nforewit.xyz\napi.github.com\napi.predict.fun\ndata-api.binance.vision';
 const CONNECTOR_URL = 'https://forewit.xyz/mcp';
 // Real screenshots in public/start, one list per phone step (index matches start.phone.steps).
 const PHONE_SHOTS: (string[] | undefined)[] = [['template'], ['private'], ['repo'], ['envmenu', 'envname'], ['network'], ['envvars'], ['connector']];
