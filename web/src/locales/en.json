@@ -368,14 +368,38 @@
       ]
     },
     "phone": {
-      "title": "From your phone",
+      "title": "With Claude Code, on your phone or any browser",
+      "intro": "No computer needed. Set it up once in about five minutes, then just chat. The pictures are real screenshots.",
       "steps": [
-        "Open the template below, tap Use this template and create a Private repository.",
-        "Open claude.ai/code and pick that repository.",
-        "In its environment settings, allow the websites in the first box below. For any market, also add your Predict.fun key there as PREDICT_API_KEY.",
-        "Send the message in the second box, tap the sign in link and approve in the Binance App.",
-        "Give your chance, check the preview, type yes."
+        "Open the template, tap Use this template, then Create a new repository.",
+        "Give it any name, choose Private and tap Create repository. Your forecast receipts are saved here, so keep it private.",
+        "Open claude.ai/code, or the Code tab in the Claude app. Connect GitHub if asked, then pick your new repository.",
+        "Tap the cloud menu next to it, choose New environment and name it Forewit.",
+        "Open Network access, keep Limited, paste these websites one per line and leave package managers on:",
+        "For any market: open Environment variables and add your free key from developers.predict.fun on this line. Only you use this environment. Never paste the key in chat. Then tap Add environment.",
+        "Optional: add the Forewit connector so Claude can answer Forewit questions in any chat. In claude.ai open Plugins, tap Add, then Add custom connector, name it Forewit and paste this address. It only reads and never sends anything.",
+        "Start a new session with your repository and the Forewit environment, then send one of the messages below.",
+        "Tap the sign in link, check the code in the Binance App and approve. Give your chance, read the preview, type yes. Auto reveal does the rest."
       ],
+      "examplesTitle": "Things you can ask",
+      "examples": [
+        "Forecast a market: bitcoin 15 minute",
+        "Forecast today's Forewit round",
+        "How did I do?",
+        "What can I forecast right now?",
+        "Explain how Forewit scores me",
+        "Show the Forewit leaderboard"
+      ],
+      "alt": {
+        "template": "GitHub template page with the Use this template menu open",
+        "private": "Create repository form with Private selected",
+        "repo": "Repository picker in Claude Code",
+        "envmenu": "Environment menu with New environment",
+        "envname": "New environment form named Forewit",
+        "network": "Network access set to Limited with the Forewit websites",
+        "envvars": "Environment variables with the PREDICT_API_KEY line",
+        "connector": "Add custom connector dialog with the Forewit address"
+      },
       "cta": "Open the Forewit agent template"
     },
     "any": {

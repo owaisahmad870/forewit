@@ -369,15 +369,39 @@
       ]
     },
     "phone": {
-      "title": "在手机上",
+      "title": "用 Claude Code，在手机或任意浏览器上",
+      "intro": "无需电脑。一次设置约五分钟，之后只需聊天。图片均为真实截图。",
       "steps": [
-        "打开下面的模板，点击 Use this template，创建一个私有（Private）仓库。",
-        "打开 claude.ai/code 并选择该仓库。",
-        "在它的环境设置中，允许访问第一个框里的网址。如需预测任意市场，再在那里添加你的 Predict.fun 密钥 PREDICT_API_KEY。",
-        "发送第二个框里的消息，点击登录链接并在币安 App 里批准。",
-        "给出你的概率，查看预览，输入 yes。"
+        "打开模板，点 Use this template，再点 Create a new repository。",
+        "任意命名，选择 Private，点 Create repository。你的预测凭据保存在这里，所以务必保持私有。",
+        "打开 claude.ai/code，或 Claude 应用里的 Code 标签。按提示连接 GitHub，然后选择你的新仓库。",
+        "点旁边的云图标菜单，选择 New environment，命名为 Forewit。",
+        "打开 Network access，保持 Limited，每行粘贴一个以下网站，并保留 package managers 开启：",
+        "预测任意市场：打开 Environment variables，按这一行填入你在 developers.predict.fun 免费获取的密钥。这个环境只有你使用。切勿把密钥发到聊天里。然后点 Add environment。",
+        "可选：添加 Forewit 连接器，让 Claude 在任何对话中回答 Forewit 问题。在 claude.ai 打开 Plugins，点 Add，再点 Add custom connector，命名为 Forewit 并粘贴这个地址。它只读取，从不发送任何内容。",
+        "用你的仓库和 Forewit 环境开始新会话，然后发送下面任意一条消息。",
+        "点登录链接，在币安 App 中核对代码并批准。给出你的概率，查看预览，输入 yes。自动揭示会完成其余步骤。"
       ],
-      "cta": "打开先见智能体模板"
+      "examplesTitle": "你可以这样问",
+      "examples": [
+        "预测一个市场：比特币 15 分钟",
+        "预测今天的 Forewit 精选",
+        "我的成绩如何？",
+        "现在可以预测什么？",
+        "解释 Forewit 如何给我计分",
+        "显示 Forewit 排行榜"
+      ],
+      "alt": {
+        "template": "GitHub 模板页面，Use this template 菜单已打开",
+        "private": "创建仓库表单，已选择 Private",
+        "repo": "Claude Code 中的仓库选择器",
+        "envmenu": "环境菜单中的 New environment",
+        "envname": "名为 Forewit 的新环境表单",
+        "network": "Network access 设为 Limited 并填入 Forewit 网站",
+        "envvars": "填有 PREDICT_API_KEY 这一行的环境变量",
+        "connector": "填有 Forewit 地址的 Add custom connector 对话框"
+      },
+      "cta": "打开 Forewit 智能体模板"
     },
     "any": {
       "title": "任意市场，随时预测",

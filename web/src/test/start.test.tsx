@@ -1,5 +1,5 @@
 // /start and docs/QUICKSTART: every forewit command shown exists in the CLI, and the prose follows the wording and house rules.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import en from '../locales/en.json';
@@ -40,6 +40,13 @@ describe('start commands', () => {
     expect(at('forewit-agent-template')).toBeGreaterThan(at('npx skills add owaisahmad870/forewit'));
     expect(at('npx forewit@latest predict')).toBeGreaterThan(at('forewit-agent-template'));
     expect(out).not.toContain('node agent/forewit.mjs');
+  });
+  it('every phone screenshot exists and the examples follow the steps', () => {
+    const out = renderToStaticMarkup(<Start />);
+    const shots = [...out.matchAll(/src="\/(start\/[a-z]+\.webp)"/g)].map((m) => m[1]);
+    expect(shots).toHaveLength(8);
+    for (const s of shots) expect(existsSync(new URL(`../../public/${s}`, import.meta.url)), s).toBe(true);
+    expect(out.indexOf(en.start.phone.examples[0])).toBeGreaterThan(out.indexOf('PREDICT_API_KEY='));
   });
 });
 
