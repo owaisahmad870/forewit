@@ -71,10 +71,10 @@ function Sidebar({ route, theme, setTheme }: { route: string[]; theme: string; s
         </li>
       ) : (
         <li key={path}>
-          <div className="flex items-center gap-0.5">
-            <a href="#/docs" aria-current={current === 'docs' && !route[1] ? 'page' : undefined} className={`${item(current === 'docs' && !route[1])} flex-1`}>{t(key)}</a>
-            <button type="button" aria-expanded={docsOpen} aria-controls="nav-docs" aria-label={t(docsOpen ? 'nav.collapse' : 'nav.expand')} onClick={() => setDocsOpen((x) => !x)} className="flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:bg-surface hover:text-ink">
-              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" className={`transition-transform ${docsOpen ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <div className={`${item(current === 'docs' && !route[1])} gap-1 pr-1`}>
+            <a href="#/docs" aria-current={current === 'docs' && !route[1] ? 'page' : undefined} className="flex min-h-10 items-center">{t(key)}</a>
+            <button type="button" aria-expanded={docsOpen} aria-controls="nav-docs" aria-label={t(docsOpen ? 'nav.collapse' : 'nav.expand')} onClick={() => setDocsOpen((x) => !x)} className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-surface-2 hover:text-ink">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" className={`transition-transform ${docsOpen ? 'rotate-90' : ''}`}><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
           </div>
           {docsOpen && (
