@@ -355,7 +355,7 @@ export function PlayInClaude() {
         <span>{t('claude.button')}</span>
       </button>
       {open && (
-        <div role="dialog" aria-label={t('claude.title')} className="fixed inset-x-4 top-16 z-30 max-h-[80vh] space-y-4 overflow-y-auto rounded-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem] border border-line border-t-2 border-t-[var(--claude)] bg-surface p-4 text-left shadow-lg">
+        <div role="dialog" aria-label={t('claude.title')} className="fixed inset-x-4 top-16 z-30 max-h-[80vh] space-y-4 overflow-y-auto rounded-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem] border border-line bg-surface p-4 text-left shadow-lg">
           <section>
             <h3 className="text-sm font-semibold">{t('claude.phone')}</h3>
             <p className="mt-0.5 text-xs text-muted">{t('claude.phoneNote')}</p>
