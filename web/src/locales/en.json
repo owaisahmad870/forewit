@@ -123,6 +123,7 @@
     "anyLink": "How to forecast any market"
   },
   "round": {
+    "col": {"round": "Round", "closes": "Picks close", "questions": "Questions", "status": "Status"},
     "title": "Picks #{n}",
     "all": "Daily picks",
     "kinds": {

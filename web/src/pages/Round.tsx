@@ -6,28 +6,48 @@ import { fmtShare, fmtUtc } from '../lib/format';
 export function Rounds({ data }: { data: Dataset }) {
   const { t, lang } = useT();
   const now = useNow(30000);
+  const th = 'px-3 py-2 text-left text-xs font-medium tracking-wide text-muted uppercase whitespace-nowrap';
+  const num = 'px-3 py-3 text-right tabular-nums';
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">{t('round.all')}</h1>
-      <p className="max-w-[68ch]">{t('help.intro.rounds')}</p>
-      <Explain terms={['commitsOpen', 'revealWindow', 'resolving', 'scored', 'commits']} summary="help.whatTerms" />
       {!data.rounds.length && <p className="text-muted">{t('round.noRounds')} {t('home.noRound')}</p>}
-      <ul className="space-y-2">
-        {data.rounds.map((r) => (
-          <li key={r.id}>
-            <a href={`#/round/${r.id}`} className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-surface p-4 hover:border-accent">
-              <span>
-                <span className="block font-semibold">{t('round.title', { n: r.id })}</span>
-                <span className="block text-sm text-muted">{fmtUtc(r.commitDeadline, lang)}</span>
-              </span>
-              <span className="flex flex-wrap items-center gap-3 text-sm">
-                <span className="text-muted">{t('round.commits')} <span className="text-ink">{r.commitCount}</span></span>
-                <Badge tone={phase(r, now) === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${phase(r, now)}`)}</Badge>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
+      {data.rounds.length > 0 && (
+        <div className="overflow-x-auto rounded-xl border border-line bg-surface">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-line">
+                <th scope="col" className={th}>{t('round.col.round')}</th>
+                <th scope="col" className={`${th} hidden sm:table-cell`}>{t('round.col.closes')}</th>
+                <th scope="col" className={`${th} text-right`}>{t('round.col.questions')}</th>
+                <th scope="col" className={`${th} text-right`}>{t('round.commits')}</th>
+                <th scope="col" className={`${th} text-right`}>{t('round.col.status')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.rounds.map((r) => {
+                const ph = phase(r, now);
+                return (
+                  <tr key={r.id} className="border-b border-line last:border-0">
+                    <th scope="row" className="px-3 py-3 text-left font-normal">
+                      <a href={`#/round/${r.id}`} className="font-semibold text-accent underline-offset-4 hover:underline">{t('round.title', { n: r.id })}</a>
+                      <span className="block text-xs text-muted sm:hidden">{fmtUtc(r.commitDeadline, lang)}</span>
+                    </th>
+                    <td className="hidden px-3 py-3 whitespace-nowrap text-muted sm:table-cell">{fmtUtc(r.commitDeadline, lang)}</td>
+                    <td className={num}>{r.questions.filter((q) => q.title).length}</td>
+                    <td className={num}>{r.commitCount}</td>
+                    <td className="px-3 py-3 text-right"><Badge tone={ph === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${ph}`)}</Badge></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <section className="space-y-2 border-t border-line pt-4 text-sm text-muted">
+        <p className="max-w-[68ch]">{t('help.intro.rounds')}</p>
+        <Explain terms={['commitsOpen', 'revealWindow', 'resolving', 'scored', 'commits']} summary="help.whatTerms" />
+      </section>
       <NextLinks to={['start', 'leaderboard', 'docs']} />
     </div>
   );

@@ -123,6 +123,7 @@
     "anyLink": "如何预测任意市场"
   },
   "round": {
+    "col": {"round": "轮次", "closes": "截止", "questions": "问题", "status": "状态"},
     "title": "精选 #{n}",
     "all": "每日精选",
     "kinds": {
