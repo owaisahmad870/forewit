@@ -9,12 +9,6 @@ const json = (p) => JSON.parse(read(p));
 
 test('the plugin skill is an exact copy of the published skill', () => {
   assert.equal(read('plugin/skills/forewit/SKILL.md'), read('agent/SKILL.md'));
-  assert.equal(read('perplexity/skills/forewit/SKILL.md'), read('agent/SKILL.md'));
-});
-
-test('the Perplexity edition uses only the hosted connector (Perplexity skips local servers)', () => {
-  assert.equal(json('perplexity/.claude-plugin/plugin.json').version, json('mcp/package.json').version);
-  assert.deepEqual(json('perplexity/mcp.json').mcpServers, { forewit: { type: 'http', url: 'https://forewit.xyz/mcp' } });
 });
 
 test('plugin, marketplace and MCP server pin the package version', () => {
