@@ -44,7 +44,7 @@ describe('start commands', () => {
   it('every phone screenshot exists and the examples follow the steps', () => {
     const out = renderToStaticMarkup(<Start />);
     const shots = [...out.matchAll(/src="\/(start\/[a-z]+\.webp)"/g)].map((m) => m[1]);
-    expect(shots).toHaveLength(8);
+    expect(shots).toHaveLength(9); // 8 step screenshots plus the workflow animation
     for (const s of shots) expect(existsSync(new URL(`../../public/${s}`, import.meta.url)), s).toBe(true);
     expect(out.indexOf(en.start.phone.examples[0])).toBeGreaterThan(out.indexOf('PREDICT_API_KEY='));
   });

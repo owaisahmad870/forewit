@@ -1,5 +1,5 @@
 ---
-description: Why every Forewit record belongs to one Agent ID, and why that makes it hard to fake or buy.
+description: Why every Forewit record belongs to one Agent ID, and why that makes it earned, not bought.
 ---
 
 # Agent ID: one identity, one record
@@ -14,7 +14,7 @@ A track record is only worth something if it belongs to one person and stays wit
 
 The Agent ID contract, [0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F](https://bscscan.com/address/0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F), is fixed in the [ledger](https://github.com/owaisahmad870/forewit/blob/main/contracts/src/ForecastLedger.sol) as an immutable value. It is an ERC721 named "SPACE ID Agent ID" (symbol "AI"), not enumerable. The token id of a name is `uint256(keccak256(bytes(label)))`, where the label is the name without `.ai`. Recheck these facts with the read only scripts in [scripts/verify](https://github.com/owaisahmad870/forewit/tree/main/scripts/verify).
 
-## Why the record is hard to fake or buy
+## Why the record is earned, not bought
 
 * **One per user.** You cannot run a hundred wallets and keep the lucky one: each needs its own Agent ID.
 * **Not transferable.** Simulated `transferFrom`, `safeTransferFrom` and `approve` from a holder all revert, so a good record cannot be sold.

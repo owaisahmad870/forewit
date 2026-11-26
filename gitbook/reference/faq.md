@@ -6,7 +6,7 @@ description: Short answers to the questions people ask most about Forewit.
 
 ## What is Forewit, in one line?
 
-A forecasting track record nobody can fake or buy, tied to your Agent ID on BNB Smart Chain.
+Your edge, on the record: sealed forecasts benchmarked against the market price, one verified track record per Agent ID on BNB Smart Chain.
 
 ## Is this gambling or trading?
 

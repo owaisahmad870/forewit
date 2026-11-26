@@ -25,7 +25,7 @@ From a copy of the repository it is `node agent/forewit.mjs start`. It walks you
 1. It checks for the Binance Agentic Wallet CLI and offers to install it (`@binance/agentic-wallet@1.12.0`).
 2. It signs you in: it prints a link and a pairing code, and you approve in the Binance App.
 3. It checks your Agent ID and Developer Mode, and explains the fix if one is missing.
-4. It shows today's questions one by one and asks your chance from 1 to 99 for each.
+4. It shows today's questions one by one and asks your odds from 1 to 99 for each.
 5. It asks whether Forewit should reveal for you after the deadline (auto reveal, recommended), then shows the wallet preview and sends only after you type `yes`.
 
 At the end it prints your results card link, [forewit.xyz/#/me](https://forewit.xyz/#/me). The steps below do the same by hand.

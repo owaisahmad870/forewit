@@ -4,7 +4,7 @@ description: Make your first Forewit forecast from your computer, your AI agent 
 
 # Quickstart
 
-Each day Forewit picks a few real questions. You give your chance for each one, it is sealed onchain, and later scored against the market price.
+Each day Forewit picks a few real questions. You set your odds for each one, it is sealed onchain, and later scored against the market price.
 
 Forecasting scores only. Not financial advice.
 
@@ -18,7 +18,7 @@ Forecasting scores only. Not financial advice.
 
 1. Install Node.js from [nodejs.org](https://nodejs.org) if you do not have it yet.
 2. Run `npx forewit@latest start`. On Windows PowerShell type `npx.cmd forewit@latest start`.
-3. Open the sign in link, check the pairing code in the Binance App and approve. Then type your chance from 1 to 99 for each question.
+3. Open the sign in link, check the pairing code in the Binance App and approve. Then type your odds from 1 to 99 for each question.
 4. Say yes to auto reveal (recommended), read the wallet preview and type `yes` to send.
 
 ## Path 2: your AI agent

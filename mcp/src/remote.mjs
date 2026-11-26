@@ -26,7 +26,7 @@ const START = {
     steps: [
       { step: 1, do: 'Set up your agent, then install the Binance Agentic Wallet skill and its command line wallet, baw, as the Binance App shows under Agentic Wallet, Use My Own AI Agent. On Windows PowerShell type npm.cmd instead of npm. Skip this if you already did.', command: 'npx skills add binance/binance-skills-hub --skill binance-agentic-wallet && npm install -g @binance/agentic-wallet@1.12.0' },
       { step: 2, do: 'In that same agent, add Forewit with one line.', command: 'npx skills add owaisahmad870/forewit --skill forewit' },
-      { step: 3, do: 'Say "Play Forewit". Your agent signs you in to your wallet (you approve in the Binance App), shows the round, asks your chance for each question, offers auto reveal (say yes), shows the wallet preview and sends only after your yes.', command: null },
+      { step: 3, do: 'Say "Play Forewit". Your agent signs you in to your wallet (you approve in the Binance App), shows the round, asks your odds for each question, offers auto reveal (say yes), shows the wallet preview and sends only after your yes.', command: null },
     ],
     why_this_connector_cannot_send: 'The Binance Agentic Wallet signs only through an agent on your own machine or sandbox, and the hackathon rules forbid any server holding your wallet session. This connector reads rounds, markets and your results; sending happens in your own agent.',
     after: 'With auto reveal there is no second step. When the questions settle, ask here "how did I do?" or open https://forewit.xyz/#/me. On a computer without an agent, the command npx forewit@latest start does all of it in a terminal.',
@@ -402,7 +402,7 @@ ${REPLY_STYLE}` });
         summary: z.string(),
         rounds: z.array(z.object({ round_id: z.number().int(), verdict: z.string(), says: z.string(), points: z.number().nullable(), your_miss: z.number().nullable(), market_miss: z.number().nullable() })),
         predictions: z.array(z.object({ market_id: z.string(), outcome: z.number().int(), status: z.string(), your_chance_pct: z.number().nullable(), says: z.string(), points: z.number().nullable(), your_miss: z.number().nullable(), market_miss: z.number().nullable() }))
-          .describe('Open forecasts (v2) on any Predict.fun market, newest first; your chance is null while sealed.'),
+          .describe('Open forecasts (v2) on any Predict.fun market, newest first; your forecast is null while sealed.'),
       }),
       next_cursor: z.string().nullable(),
     },

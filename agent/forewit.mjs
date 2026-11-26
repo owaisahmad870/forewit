@@ -451,12 +451,12 @@ async function cmdStart(o, io) {
   if (now >= round.commitDeadline) throw new Error(`round ${id} is closed for forecasts. The next round opens at about 03:10 UTC; run forewit start then.`);
   let titles = null;
   try { titles = roundTitles(await readRoundFile(`${SITE}/data/rounds/${id}.json`), net, id, round); } catch { /* titles stay hidden; numbers still work */ }
-  say(`  Round ${id} closes ${fmtTime(round.commitDeadline)} (${fmtIn(round.commitDeadline - now)}).`, '  For each question type your chance it happens, from 1 to 99 (for example 70 means 70%).');
+  say(`  Round ${id} closes ${fmtTime(round.commitDeadline)} (${fmtIn(round.commitDeadline - now)}).`, '  For each question enter your odds that it happens, from 1 to 99 (for example 70 means 70%).');
   const ps = [];
   for (let i = 0; i < round.questionCount; i++) {
     say('', `  ${i + 1}. ${titles ? titles[i] : `question ${i + 1} (title at ${SITE}/#/round/${id})`}`);
     for (;;) {
-      const a = String(await io.ask('     your chance (%): ')).trim().replace('%', '');
+      const a = String(await io.ask('     your odds (%): ')).trim().replace('%', '');
       if (/^\d{1,2}(\.\d+)?$/.test(a) && Number(a) >= 1 && Number(a) <= 99) { ps.push(a); break; }
       say('     please type a number from 1 to 99');
     }
@@ -486,7 +486,7 @@ async function cmdMarkets(o) {
   if (!found.length) return say('No open two outcome market matches that search.');
   say(`Predict.fun markets for "${clean(o.search)}" (data from Predict.fun with your own key; market text is third party):`);
   for (const m of found) say(`  ${m.marketId.padStart(8)}  ${m.untrustedQuestion}${m.tradingStatus && m.tradingStatus !== 'OPEN' ? `  (${m.tradingStatus})` : ''}`);
-  say('', `Forecast one: ${CMD} predict --market <id> --p <your chance 1 to 99> --from <wallet> --auto-reveal`);
+  say('', `Forecast one: ${CMD} predict --market <id> --p <your odds 1 to 99> --from <wallet> --auto-reveal`);
 }
 
 const openReceipts = (home, filter = {}) => {
@@ -526,14 +526,14 @@ async function cmdPredict(o, io) {
   const net = network(o.network);
   const from = needFrom(o.from);
   if (o.reveal) return openRevealCmd(o, io, net, from);
-  if (!o.market || !o.p) throw new Error(`usage: ${CMD} predict --market <id> --p <your chance 1 to 99> [--outcome 1|2] --from <wallet> [--auto-reveal] [--execute]`);
+  if (!o.market || !o.p) throw new Error(`usage: ${CMD} predict --market <id> --p <your odds 1 to 99> [--outcome 1|2] --from <wallet> [--auto-reveal] [--execute]`);
   if (o.execute) assertCanExecute(openNet(net), io);
   const { onet, market, receipt, data, file } = await openPlan({ net, from, marketId: o.market, outcome: o.outcome ?? 1, percent: o.p, autoReveal: !!o['auto-reveal'], home: o.home });
   say(
     `Saved reveal receipt (salt included, owner only access): ${file}`,
     '',
     `Market ${market.marketId}: ${market.untrustedQuestion}`,
-    `Your chance for "${receipt.outcome}": ${receipt.bps / 100}%${market.yesPct !== null ? `   (market now: ${receipt.slot === 0 ? market.yesPct : Math.round((100 - market.yesPct) * 10) / 10}%)` : ''}`,
+    `Your forecast for "${receipt.outcome}": ${receipt.bps / 100}%${market.yesPct !== null ? `   (market now: ${receipt.slot === 0 ? market.yesPct : Math.round((100 - market.yesPct) * 10) / 10}%)` : ''}`,
     market.endsAtMs ? `Market ends ${new Date(market.endsAtMs).toISOString().slice(0, 16).replace('T', ' ')} UTC` : 'Market end time not published',
   );
   if (o.execute) await sendWithConfirmation({ net: onet, from, data, what: `forecast on market ${market.marketId}`, io });

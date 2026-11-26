@@ -1,4 +1,4 @@
-import { Blocks, Card, Explain, NextLinks, ScoresWhen } from '../components';
+import { Blocks, Card, Explain, NextLinks, OnThisPage, ScoresWhen, slugId } from '../components';
 import { useT } from '../i18n';
 import { crowdVsMarket, type Dataset } from '../lib/data';
 import { fmtBrier } from '../lib/format';
@@ -43,6 +43,7 @@ export function DocPage({ slug: asked }: { slug: string }) {
     <article className="space-y-4">
       <a href="#/docs" className="inline-flex min-h-11 items-center text-sm text-accent">{t('docs.title')}</a>
       <h1 className="text-2xl font-semibold">{t(`docs.pages.${slug}.title`)}</h1>
+      <OnThisPage items={blocks.flatMap((b) => (typeof b === 'object' && 'h' in b ? [{ id: slugId(b.h), label: b.h }] : []))} />
       <Blocks blocks={blocks} />
       {i >= 0 && (
         <nav aria-label={t('help.docNav')} className="flex flex-col gap-2 pt-4 sm:flex-row">

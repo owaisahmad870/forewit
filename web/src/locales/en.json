@@ -1,7 +1,7 @@
 {
   "brand": "Forewit",
   "brandLocal": "",
-  "tagline": "A forecasting track record nobody can fake or buy. One Agent ID, one record, scored against the market.",
+  "tagline": "Your edge, on the record.",
   "risk": "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.",
   "riskLocal": "",
   "nav": {
@@ -18,6 +18,8 @@
     "x": "Forewit on X (opens in a new tab)"
   },
   "ui": {
+    "onThisPage": "In this article",
+    "callout": { "note": "Note", "tip": "Tip", "important": "Important" },
     "toLight": "Light theme",
     "toDark": "Dark theme",
     "otherLang": "中文",
@@ -51,6 +53,17 @@
     "No": "No",
     "Void": "Void",
     "Unresolved": "Unresolved"
+  },
+  "table": {
+    "caption": "Today's questions with the market price and the crowd forecast",
+    "question": "Question",
+    "closes": "Market closes",
+    "market": "Market",
+    "crowd": "Crowd",
+    "result": "Result",
+    "sealed": "Sealed",
+    "pending": "Pending",
+    "spread": "Forecast spread per question"
   },
   "home": {
     "liveRound": "Today's picks",
@@ -126,12 +139,13 @@
     }
   },
   "leaderboard": {
+    "aboutTitle": "About these numbers",
     "title": "Leaderboard",
     "intro": "Only forecasters who opted in are listed. Everyone else counts only in the totals. Rank uses skill against the market price, shrunk toward zero for small samples.",
     "totals": "Forecasters scored: {n}. Opted in to a public profile: {p}.",
     "rank": "Rank",
     "forecaster": "Forecaster",
-    "skill": "Skill",
+    "skill": "Edge vs market",
     "brier": "Brier",
     "calibration": "Calibration error",
     "questions": "Questions",
@@ -145,7 +159,7 @@
   },
   "crowd": {
     "title": "Agent ID Crowd",
-    "intro": "The Agent ID Crowd combines every revealed forecast into one probability per question. Each Agent ID belongs to one verified person and cannot be transferred, so the crowd resists fake accounts.",
+    "intro": "The Agent ID Crowd combines every revealed forecast into one probability per question. Each Agent ID belongs to one verified person and cannot be transferred, so the crowd resists duplicate accounts.",
     "methodTitle": "Method v1 (pre registered 23 Nov 2026, before any mainnet round)",
     "method": [
       "Weights: equal weight for anyone with fewer than 3 resolved rounds. After that, 0.1 plus max(0, shrunk skill) divided by the average skill of established forecasters (shrinkage K = 20). Only rounds resolved before this round's commit deadline count, so nothing leaks from the future.",
@@ -181,11 +195,11 @@
     "calError": "Calibration error {p} points.",
     "rankRule": "Ranking needs an opt in, 5 scoring days and 20 questions with a market price.",
     "diagramTitle": "Reliability diagram",
-    "diagramNote": "Your chance (across) against how often it happened (up), in 10 bins; {n} revealed answers with an outcome. On the diagonal is well calibrated. Bigger dot, more answers.",
+    "diagramNote": "Your forecast (across) against how often it happened (up), in 10 bins; {n} revealed answers with an outcome. On the diagonal is well calibrated. Bigger dot, more answers.",
     "diagramEmpty": "No revealed answers with an outcome yet.",
     "diagramAria": "Reliability diagram of {n} answers",
     "binTip": "Said about {c}%, happened {f}% ({n} answers)",
-    "axisChance": "your chance",
+    "axisChance": "your forecast",
     "axisHappened": "happened",
     "picksTitle": "Daily round picks",
     "market": "Market {m}",
@@ -203,12 +217,12 @@
           "Two ways to forecast, one track record:",
           {
             "list": [
-              "Any market, any time: give your chance on any yes or no market on Predict.fun. The market price at your commit is posted onchain within 2 minutes, and you are scored against it when the market settles.",
+              "Any market, any time: set your odds on any yes or no market on Predict.fun. The market price at your commit is posted onchain within 2 minutes, and you are scored against it when the market settles.",
               "The daily round: a few featured questions each day with a fixed deadline. The market price just before the deadline is the baseline."
             ]
           },
           "Your forecast stays sealed, so nobody can copy it. With auto reveal on, Forewit opens it for you after the deadline or when the market ends, so there is no second step.",
-          "Scores are tied to your Agent ID. An Agent ID cannot be transferred and there is one per Binance user, so a track record cannot be bought, sold or faked with many wallets.",
+          "Scores are tied to your Agent ID. An Agent ID cannot be transferred and there is one per Binance user, so a track record is earned, never bought, sold or spread across many wallets.",
           "The Agent ID Crowd combines all revealed forecasts into one forecast per question, and the site shows whether it beats the market."
         ]
       },
@@ -217,7 +231,7 @@
         "blocks": [
           {
             "list": [
-              "Brier score: (your chance minus what happened) squared, from 0 (perfect) to 1 (fully wrong). Lower is better.",
+              "Brier score: (your forecast minus what happened) squared, from 0 (perfect) to 1 (fully wrong). Lower is better.",
               "Skill: the market's Brier minus yours. Above 0 means you were closer to the truth than the market.",
               "A forecast that is never revealed counts as the worst possible score. Revealing is never worse.",
               "Void questions (an unclear or early resolution) are skipped for everyone.",
@@ -285,7 +299,7 @@
             "list": [
               "Sealed: nobody can read a forecast before its deadline, so nobody can copy it.",
               "Scored against the market: copying the market price scores about zero skill.",
-              "One Agent ID per person, so nobody can fake a record with many wallets.",
+              "One Agent ID per person, so every record is earned by one forecaster.",
               "Market titles and all API text are treated as data, never as instructions.",
               "This site is read only: no wallet connection and no secrets."
             ]
@@ -369,10 +383,14 @@
     "startNote": "Starts are often sent by automated agents that try new Agent ID contracts. Only forecasts build a track record."
   },
   "start": {
+    "time": "About 5 minutes · No money moves, only a small network fee",
+    "video": { "alt": "Short animation of the phone setup: template, private repository, Claude Code, Forewit environment, allowed websites, optional key and connector.", "caption": "The phone setup in 25 seconds. Every step is detailed below." },
+    "keyWarn": "Never paste your Predict.fun key in a chat. Keep it in the environment variables only.",
+    "next": { "title": "Next steps", "me": "Check your results", "leaderboard": "See where you rank", "scoring": "Learn how scoring works" },
     "title": "Start forecasting",
-    "intro": "Pick one way below. The first time takes about five minutes. Forewit moves no money: you only pay a tiny network fee.",
+    "intro": "Pick one of the three ways below. Each ends with the same sealed forecast on BNB Smart Chain.",
     "need": {
-      "title": "What you need",
+      "title": "Prerequisites",
       "list": [
         "An Agent ID, claimed in the Binance App.",
         "Developer Mode on: Binance App, Agentic Wallet, Settings.",
@@ -393,7 +411,7 @@
       "steps": [
         "Add the Binance Agentic Wallet skill and its wallet tool:",
         "Add Forewit:",
-        "Say \"Play Forewit\". Your agent shows the questions, asks your chances and sends only after your yes."
+        "Say \"Play Forewit\". Your agent shows the questions, asks for your odds and sends only after your yes."
       ]
     },
     "phone": {
@@ -407,8 +425,8 @@
         "Open Network access, keep Limited, paste these websites one per line and leave package managers on:",
         "For any market: open Environment variables and add your free key from developers.predict.fun on this line. Only you use this environment. Never paste the key in chat. Then tap Add environment.",
         "Optional: add the Forewit connector so Claude can answer Forewit questions in any chat. In claude.ai open Plugins, tap Add, then Add custom connector, name it Forewit and paste this address. It only reads and never sends anything.",
-        "Start a new session with your repository and the Forewit environment, then send one of the messages below. For a market you picked yourself, copy its question from predict.fun (or a few words of it) into the message, with your chance if you know it. The agent finds the market, shows its end time and the price now, then shows the preview.",
-        "Tap the sign in link, check the code in the Binance App and approve. Give your chance, read the preview, type yes. Auto reveal does the rest."
+        "Start a new session with your repository and the Forewit environment, then send one of the messages below. For a market you picked yourself, copy its question from predict.fun (or a few words of it) into the message, with your odds if you have them. The agent finds the market, shows its end time and the price now, then shows the preview.",
+        "Tap the sign in link, check the code in the Binance App and approve. Set your odds, read the preview, type yes. Auto reveal does the rest."
       ],
       "examplesTitle": "Things you can ask",
       "examples": [
@@ -460,7 +478,7 @@
     "glossary": "Glossary",
     "glossaryIntro": "Every term and number this site uses, in plain words.",
     "go": {
-      "start": "Start: make your first forecast",
+      "start": "Make your first call",
       "rounds": "See all daily picks",
       "docs": "Read the docs",
       "scoring": "How scoring works",
@@ -469,7 +487,7 @@
       "me": "See my results"
     },
     "intro": {
-      "home": "Give your chance on real prediction market questions. Forewit records the market price at that moment and, once the market settles, scores whether you beat it. Every score builds a public track record tied to your Agent ID that nobody can buy or fake.",
+      "home": "Set your odds on live prediction markets. Forewit seals each forecast, benchmarks it against the market price and settles the result onchain. Every call builds a verified track record bound to your Agent ID.",
       "rounds": "Each day Forewit picks a few featured questions that everyone forecasts together, so the Agent ID Crowd can be compared with the market. No Predict.fun key needed. Your forecast stays sealed until the picks close, and auto reveal opens it afterwards.",
       "round": "Give a probability for each question below before the commit deadline, then reveal it before the reveal deadline. The square shows the market price, the diamond the crowd. Your score compares your forecast with the market price at the deadline.",
       "roundHidden": "Forecasts stay hidden until the commit deadline. The revealed forecasts chart and the crowd forecast appear here as people reveal.",
@@ -507,7 +525,7 @@
       },
       "market": {
         "t": "Market price",
-        "d": "The price of Yes on the Predict.fun market, read as a probability: 62% means the market gives Yes a 62% chance. Before the deadline the site shows the latest published price."
+        "d": "The price of Yes on the Predict.fun market, read as a probability: 62% means the market prices Yes at 62%. Before the deadline the site shows the latest published price."
       },
       "baseline": {
         "t": "Market at deadline (baseline)",
@@ -652,8 +670,8 @@
     "predTitle": "Open forecasts",
     "predIntro": "Forecasts on any market, made at any time. They count in the same record as your rounds.",
     "pred": "Market {m}, outcome {o}",
-    "chance": "your chance {p}%",
-    "sealed": "your chance stays sealed until the market ends",
+    "chance": "your forecast {p}%",
+    "sealed": "your forecast stays sealed until the market ends",
     "live": "Market now: {p}%",
     "liveSource": "Predict.fun data, updated every 15 seconds while this page is open.",
     "p": {

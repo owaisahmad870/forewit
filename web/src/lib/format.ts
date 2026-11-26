@@ -12,6 +12,9 @@ export const fmtShare = (x: number | null) => (x == null ? '' : `${Math.round(x 
 export function fmtUtc(d: Date, lang: Lang) {
   return new Intl.DateTimeFormat(loc(lang), { timeZone: 'UTC', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(d) + ' UTC';
 }
+export function fmtDay(d: Date, lang: Lang) {
+  return new Intl.DateTimeFormat(loc(lang), { timeZone: 'UTC', day: 'numeric', month: 'short' }).format(d);
+}
 export function fmtLocal(d: Date, lang: Lang) {
   return new Intl.DateTimeFormat(loc(lang), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZoneName: 'short' }).format(d);
 }

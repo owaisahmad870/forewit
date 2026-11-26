@@ -2,7 +2,7 @@
 
 # Forewit 先见
 
-A forecasting track record nobody can fake or buy. One Agent ID, one record, scored against the market, on BNB Smart Chain.
+Your edge, on the record. Set your odds on live prediction markets; Forewit seals each forecast, benchmarks it against the market price and settles the result onchain. One Agent ID, one verified track record, on BNB Smart Chain.
 
 * Site: [forewit.xyz](https://forewit.xyz) (start here: [forewit.xyz/#/start](https://forewit.xyz/#/start), live proof: [forewit.xyz/#/proof](https://forewit.xyz/#/proof))
 * Docs: [gitbook/](gitbook/README.md) (GitBook source, English and [中文](gitbook/zh/README.md))
@@ -19,7 +19,7 @@ Forecasting scores only. Not financial advice.
 5. ForewitScores publishes a Merkle root of opted in scores, so any contract or agent can verify a Forewit skill onchain.
 
 ## Quickstart
-* One command on a computer: `npx forewit@latest start` (Windows PowerShell: `npx.cmd forewit@latest start`). It checks the wallet tool, signs you in with a pairing code you approve in the Binance App, checks your Agent ID and Developer Mode, asks your chance for each of today's questions, offers auto reveal (Forewit reveals for you after the deadline from a time locked copy, so there is no second step) and sends only after you type yes. Your results card: [forewit.xyz/#/me](https://forewit.xyz/#/me).
+* One command on a computer: `npx forewit@latest start` (Windows PowerShell: `npx.cmd forewit@latest start`). It checks the wallet tool, signs you in with a pairing code you approve in the Binance App, checks your Agent ID and Developer Mode, asks your odds for each of today's questions, offers auto reveal (Forewit reveals for you after the deadline from a time locked copy, so there is no second step) and sends only after you type yes. Your results card: [forewit.xyz/#/me](https://forewit.xyz/#/me).
 * Step by step on a computer: install the Binance Agentic Wallet CLI, sign in, then `npx -y forewit@0.1.8 round` and `npx -y forewit@0.1.8 commit --execute --from <your Agentic Wallet> --p 60,40,50,30`. Every send shows a preview and waits for you to type yes. Full guide: [gitbook/getting_started/quickstart.md](gitbook/getting_started/quickstart.md).
 * From a phone or any browser: make a private copy of [forewit-agent-template](https://github.com/owaisahmad870/forewit-agent-template) and let your own cloud agent (Claude Code on the web, Codex cloud) do the typing: [gitbook/getting_started/play_from_phone.md](gitbook/getting_started/play_from_phone.md).
 * The next day, unless you chose auto reveal: `npx -y forewit@0.1.8 reveal --execute --from <wallet> --round <n>`. A commit that is never revealed counts as a forfeit.

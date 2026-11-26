@@ -8,7 +8,7 @@ Two Model Context Protocol servers for Forewit, the commit and reveal forecastin
 * `forewit mcp remote`: read only server over stateless Streamable HTTP, for hosting at `https://mcp.forewit.xyz/mcp`.
 * `forewit results --from <wallet>`: your results card in plain words (per round: beat or behind the market and by how many points; overall average).
 * `forewit upcoming`: rounds open now and when the next daily round opens.
-* `forewit markets --search "<words>"` and `forewit predict --market <id> --p <chance> --auto-reveal`: forecast any binary Predict.fun market at any time, scored against its price at your commit. Needs your own free key from https://developers.predict.fun as `PREDICT_API_KEY` (Forewit never sees it). The signed in Agentic Wallet is used when `--from` is omitted.
+* `forewit markets --search "<words>"` and `forewit predict --market <id> --p <probability> --auto-reveal`: forecast any binary Predict.fun market at any time, scored against its price at your commit. Needs your own free key from https://developers.predict.fun as `PREDICT_API_KEY` (Forewit never sees it). The signed in Agentic Wallet is used when `--from` is omitted.
 * `forewit <start|round|forecast|commit|reveal|status|receipt|predictions|agent|schedule>`: the Forewit CLI (same code as `agent/forewit.mjs`).
 
 Status: published on npm with provenance and listed in the MCP Registry as io.github.owaisahmad870/forewit. Both servers target the BSC mainnet contracts pinned in `agent/config.mjs`. The remote server is hosted at https://forewit.xyz/mcp (add it as a connector in Claude).

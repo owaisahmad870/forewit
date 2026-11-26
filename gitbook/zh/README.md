@@ -1,5 +1,5 @@
 ---
-description: 一份无法伪造、无法购买的预测记录，绑定你在 BNB Smart Chain 上的 Agent ID。
+description: 你的判断，链上为证。密封预测，以市场价格为基准，每个 Agent ID 一份可验证的预测记录，运行在 BNB Smart Chain 上。
 ---
 
 # 先见 Forewit

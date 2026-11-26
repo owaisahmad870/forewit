@@ -6,7 +6,7 @@ description: 关于先见 Forewit 最常见问题的简短回答。
 
 ## 一句话介绍先见 Forewit？
 
-一份无法伪造、无法购买的预测记录，绑定你在 BNB Smart Chain 上的 Agent ID。
+你的判断，链上为证：密封预测，以市场价格为基准，每个 Agent ID 一份可验证的预测记录，运行在 BNB Smart Chain 上。
 
 ## 这是投机或交易吗？
 

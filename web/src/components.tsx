@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useT } from './i18n';
 import { INSTALL_SNIPPETS } from './commands';
 import { bannerRounds, bins10, phase, type Question, type Round } from './lib/data';
-import { fmtCountdown, fmtLocal, fmtPct, fmtUtc } from './lib/format';
+import { fmtCountdown, fmtDay, fmtLocal, fmtPct, fmtUtc } from './lib/format';
 
 export function useNow(ms = 1000) {
   const [now, setNow] = useState(() => Date.now());
@@ -54,6 +54,45 @@ export function OutcomeBadge({ outcome }: { outcome: Question['outcome'] }) {
 }
 
 // The probability rule: one 0 to 100% track per question with the market and crowd marked and labelled.
+// one row per question: figures in rows, never tiles (Hallmark critique); the close date hides on phones to keep rows calm
+export function QuestionTable({ questions, crowdSealed, showResult }: { questions: Question[]; crowdSealed: boolean; showResult: boolean }) {
+  const { t, lang } = useT();
+  const th = 'px-2 py-2 text-left text-xs font-medium tracking-wide text-muted uppercase sm:px-3';
+  const num = 'px-2 py-3 text-right tabular-nums whitespace-nowrap sm:px-3';
+  return (
+    <div className="-mx-1 overflow-x-auto">
+      <table className="w-full border-collapse text-sm">
+        <caption className="sr-only">{t('table.caption')}</caption>
+        <thead>
+          <tr className="border-b border-line">
+            <th scope="col" className={`${th} hidden w-8 sm:table-cell`}>#</th>
+            <th scope="col" className={th}>{t('table.question')}</th>
+            <th scope="col" className={`${th} hidden sm:table-cell`}>{t('table.closes')}</th>
+            <th scope="col" className={`${th} text-right`}>{t('table.market')}</th>
+            <th scope="col" className={`${th} text-right`}>{t('table.crowd')}</th>
+            {showResult && <th scope="col" className={`${th} text-right`}>{t('table.result')}</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {questions.map((q) => {
+            const market = q.baseline ?? (q.marketPrice != null ? Math.round(q.marketPrice * 10000) : null);
+            return (
+              <tr key={q.index} className="border-b border-line last:border-0 align-top">
+                <td className="hidden px-3 py-3 text-muted tabular-nums sm:table-cell">{q.index + 1}</td>
+                <th scope="row" className="px-2 py-3 text-left font-normal sm:px-3"><QuestionTitle title={q.title} /></th>
+                <td className="hidden px-3 py-3 whitespace-nowrap text-muted sm:table-cell">{q.endsAt ? <span title={fmtUtc(q.endsAt, lang)}>{fmtDay(q.endsAt, lang)}</span> : ''}</td>
+                <td className={`${num} text-market`}>{market != null ? fmtPct(market) : <span className="text-muted">{t('table.pending')}</span>}</td>
+                <td className={`${num} font-semibold`}>{q.crowd != null ? fmtPct(q.crowd) : <span className="font-normal text-muted">{crowdSealed ? t('table.sealed') : t('table.pending')}</span>}</td>
+                {showResult && <td className="px-3 py-3 text-right"><OutcomeBadge outcome={q.outcome} /></td>}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function ProbRule({ market, crowd, marketLabel }: { market: number | null; crowd: number | null; marketLabel: string }) {
   const { t } = useT();
   const marks = [
@@ -166,14 +205,42 @@ export function ScoresWhen({ rounds }: { rounds: Round[] }) {
   return r ? <p className="mt-2 text-sm text-muted">{t('help.scoresWhen', { n: r.id, t: fmtUtc(r.revealDeadline, lang) })}</p> : null;
 }
 
-type Block = string | { h: string } | { list: string[] } | { ol: string[] } | { strong: string } | { code: string };
+// Microsoft Learn style helpers: labelled callouts and an "In this article" jump list (hash routes, so it scrolls instead of linking)
+export function Callout({ kind, children }: { kind: 'note' | 'tip' | 'important'; children: ReactNode }) {
+  const { t } = useT();
+  const bar = kind === 'important' ? 'border-l-neg' : kind === 'tip' ? 'border-l-pos' : 'border-l-accent';
+  return (
+    <div role="note" className={`max-w-[68ch] rounded-r-lg border border-l-4 border-line ${bar} bg-surface-2 p-3`}>
+      <p className="text-xs font-semibold tracking-wide uppercase">{t(`ui.callout.${kind}`)}</p>
+      <div className="mt-1">{children}</div>
+    </div>
+  );
+}
+export const slugId = (x: string) => 'h-' + x.toLowerCase().replace(/[^a-z0-9一-鿿]+/g, '_').slice(0, 40);
+export function OnThisPage({ items }: { items: { id: string; label: string }[] }) {
+  const { t } = useT();
+  if (items.length < 2) return null;
+  return (
+    <nav aria-label={t('ui.onThisPage')} className="max-w-[68ch] border-l-2 border-line pl-4">
+      <p className="text-sm font-semibold">{t('ui.onThisPage')}</p>
+      <ul className="mt-1 space-y-0.5 text-sm">
+        {items.map((x) => <li key={x.id}><button type="button" onClick={() => document.getElementById(x.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="min-h-9 text-left text-accent hover:underline">{x.label}</button></li>)}
+      </ul>
+    </nav>
+  );
+}
+
+type Block = string | { h: string } | { list: string[] } | { ol: string[] } | { strong: string } | { code: string } | { note: string } | { tip: string } | { important: string };
 export function Blocks({ blocks }: { blocks: Block[] }) {
   return (
     <div className="max-w-[68ch] space-y-4 leading-relaxed">
       {blocks.map((b, i) =>
         typeof b === 'string' ? <p key={i}>{b}</p>
-        : 'h' in b ? <h2 key={i} className="pt-2 text-lg font-semibold">{b.h}</h2>
-        : 'strong' in b ? <p key={i} className="rounded-lg border border-line bg-surface-2 p-3 font-semibold">{b.strong}</p>
+        : 'h' in b ? <h2 key={i} id={slugId(b.h)} className="scroll-mt-20 pt-2 text-lg font-semibold">{b.h}</h2>
+        : 'strong' in b ? <Callout key={i} kind="note"><p className="font-semibold">{b.strong}</p></Callout>
+        : 'note' in b ? <Callout key={i} kind="note"><p>{b.note}</p></Callout>
+        : 'tip' in b ? <Callout key={i} kind="tip"><p>{b.tip}</p></Callout>
+        : 'important' in b ? <Callout key={i} kind="important"><p>{b.important}</p></Callout>
         : 'code' in b ? <CopyBlock key={i} text={INSTALL_SNIPPETS[b.code] ?? b.code} />
         : 'list' in b ? <ul key={i} className="list-disc space-y-2 pl-5">{b.list.map((x, j) => <li key={j}>{x}</li>)}</ul>
         : <ol key={i} className="list-decimal space-y-2 pl-5">{b.ol.map((x, j) => <li key={j}>{x}</li>)}</ol>,

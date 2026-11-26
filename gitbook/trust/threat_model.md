@@ -4,7 +4,7 @@ description: How Forewit defends a track record, and the risks we accept and dis
 
 # Threat model and accepted risks
 
-A track record is only worth something if nobody can fake it. This page lists the main ways someone could try, how Forewit stops them, and the risks that remain.
+A track record is only worth something if it is earned honestly. This page lists the main ways someone could try, how Forewit stops them, and the risks that remain.
 
 ## The simple picture
 

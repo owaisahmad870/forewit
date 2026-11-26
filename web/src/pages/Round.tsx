@@ -1,4 +1,4 @@
-import { Badge, Card, DateLine, Explain, Histogram, NextLinks, OutcomeBadge, ProbRule, QuestionTitle, useNow } from '../components';
+import { Badge, Card, DateLine, Explain, Histogram, NextLinks, QuestionTable, QuestionTitle, useNow } from '../components';
 import { useT } from '../i18n';
 import { phase, type Dataset, type Round } from '../lib/data';
 import { fmtShare, fmtUtc } from '../lib/format';
@@ -88,21 +88,15 @@ export function RoundPage({ data, id }: { data: Dataset; id: number }) {
 
       <h2 className="pt-2 text-lg font-semibold">{t('round.questions')}</h2>
       {r.questions.length > visible.length && <p className="text-sm text-muted">{t('round.hidden', { n: r.questions.length - visible.length })}</p>}
-      <ol className="space-y-3">
-        {visible.map((q) => (
-          <li key={q.index}>
-            <Card>
-              <div className="flex items-start justify-between gap-3">
-                <QuestionTitle title={q.title} />
-                <OutcomeBadge outcome={q.outcome} />
-              </div>
-              {q.endsAt && <p className="mt-1 text-sm text-muted">{t('round.endsAt', { t: fmtUtc(q.endsAt, lang) })}</p>}
-              <ProbRule market={q.baseline ?? (q.marketPrice != null ? Math.round(q.marketPrice * 10000) : null)} crowd={q.crowd} marketLabel={q.baseline != null ? t('home.marketAtDeadline') : t('home.marketPrice')} />
-              {ph !== 'commit' && <Histogram q={q} />}
-            </Card>
-          </li>
-        ))}
-      </ol>
+      <Card><QuestionTable questions={visible} crowdSealed={ph === 'commit' || ph === 'reveal'} showResult={ph !== 'commit'} /></Card>
+      {ph !== 'commit' && visible.some((q) => q.forecasts.length) && (
+        <details className="rounded-xl border border-line bg-surface p-4">
+          <summary className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-accent">{t('table.spread')}</summary>
+          <ol className="mt-2 divide-y divide-line">
+            {visible.map((q) => <li key={q.index} className="py-3"><QuestionTitle title={q.title} /><Histogram q={q} /></li>)}
+          </ol>
+        </details>
+      )}
       <Explain terms={['forecast', 'market', 'baseline', 'crowd', 'histogram', 'void']} summary="help.whatTerms" />
       <NextLinks to={['start', 'scoring', 'rounds']} />
     </div>

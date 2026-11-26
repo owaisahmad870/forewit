@@ -1,5 +1,5 @@
 ---
-description: 为什么每份先见 Forewit 记录都属于一个 Agent ID，以及这为什么让记录难以伪造或买卖。
+description: 为什么每份先见 Forewit 记录都属于一个 Agent ID，以及这为什么让记录只能靠实力赢得，无法买卖。
 ---
 
 # Agent ID：一个身份，一份记录
@@ -14,7 +14,7 @@ description: 为什么每份先见 Forewit 记录都属于一个 Agent ID，以�
 
 Agent ID 合约 [0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F](https://bscscan.com/address/0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F) 以不可变值固定在[账本](https://github.com/owaisahmad870/forewit/blob/main/contracts/src/ForecastLedger.sol)中。它是一个 ERC721，名为 "SPACE ID Agent ID"（符号 "AI"），不可枚举。名称的 token id 为 `uint256(keccak256(bytes(label)))`，其中 label 是不带 `.ai` 的名称。可用 [scripts/verify](https://github.com/owaisahmad870/forewit/tree/main/scripts/verify) 中的只读脚本重新核对这些事实。
 
-## 为什么记录难以伪造或买卖
+## 为什么记录只能赢得，无法买卖
 
 * **每人一个。** 你无法开一百个钱包只留下运气好的那个：每个钱包都需要自己的 Agent ID。
 * **不可转让。** 从持有者模拟调用 `transferFrom`、`safeTransferFrom` 和 `approve` 都会回滚，所以好记录无法出售。

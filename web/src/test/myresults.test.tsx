@@ -34,7 +34,7 @@ describe('my results with open forecasts', () => {
     const html = page({ rounds: [round], open: { forecasts: [scored], committers: [A] } });
     expect(html).toContain('Round 1');
     expect(html).toContain('Market 502, outcome 1');
-    expect(html).toContain('your chance 80%');
+    expect(html).toContain('your forecast 80%');
     expect(html).toContain('You beat the market by 12.0 points');
   });
 });

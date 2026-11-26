@@ -325,7 +325,7 @@ ${REPLY_STYLE}` });
     const net = network('mainnet');
     const from = walletAddress();
     const plan = await openPlan({ net, from, marketId: market_id, outcome, percent, autoReveal: auto_reveal, home });
-    const log = [`Market ${market_id}: ${plan.market.untrustedQuestion}`, `Your chance for "${plan.receipt.outcome}": ${plan.receipt.bps / 100}%`, `Auto reveal: ${auto_reveal ? 'on' : 'off'}`];
+    const log = [`Market ${market_id}: ${plan.market.untrustedQuestion}`, `Your forecast for "${plan.receipt.outcome}": ${plan.receipt.bps / 100}%`, `Auto reveal: ${auto_reveal ? 'on' : 'off'}`];
     const status = await sendWithConfirmation({ net: plan.onet, from, data: plan.data, what: `forecast on market ${market_id}`, io: humanIo(log) });
     return ok({ market_id, untrusted_question: plan.market.untrustedQuestion, outcome: plan.receipt.outcome, percent: plan.receipt.bps / 100, auto_reveal, receipt_file: plan.file, ...sent(status, log) });
   }, SEND);

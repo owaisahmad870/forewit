@@ -1,4 +1,4 @@
-import { Card, Badge, Explain, NextLinks, ProbRule, QuestionTitle, SampleBadge, ScoresWhen, useNow } from '../components';
+import { Card, Badge, Explain, NextLinks, QuestionTable, SampleBadge, ScoresWhen, useNow } from '../components';
 import { useT } from '../i18n';
 import { crowdVsMarket, liveRound, phase, type Dataset } from '../lib/data';
 import { fmtBrier, fmtCountdown, fmtUtc } from '../lib/format';
@@ -50,8 +50,8 @@ export function Home({ data }: { data: Dataset }) {
   return (
     <div className="space-y-5">
       <header className="pt-2">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t('brand')}{t('brandLocal') && <span lang="zh-CN" className="ml-3 font-normal text-muted">{t('brandLocal')}</span>}</h1>
-        <p className="mt-2 max-w-[40ch] text-lg text-muted">{t('tagline')}</p>
+        <p className="text-sm font-semibold text-muted">{t('brand')}{t('brandLocal') && <span lang="zh-CN" className="ml-2 font-normal">{t('brandLocal')}</span>}</p>
+        <h1 className="mt-1 max-w-[20ch] text-3xl font-semibold tracking-tight sm:text-4xl">{t('tagline')}</h1>
         <p className="mt-3 max-w-[68ch]">{t('help.intro.home')}</p>
         <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
           <a href="#/start" className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 font-semibold text-accent-ink">{t('help.go.start')}</a>
@@ -73,14 +73,7 @@ export function Home({ data }: { data: Dataset }) {
               </p>
             )}
             <p className="mt-2 text-sm text-muted">{t('home.picksNote')}</p>
-            <ol className="mt-4 divide-y divide-line border-t border-line">
-              {visible.map((q) => (
-                <li key={q.index} className="py-3">
-                  <QuestionTitle title={q.title} />
-                  <ProbRule market={q.baseline ?? (q.marketPrice != null ? Math.round(q.marketPrice * 10000) : null)} crowd={q.crowd} marketLabel={q.baseline != null ? t('home.marketAtDeadline') : t('home.marketPrice')} />
-                </li>
-              ))}
-            </ol>
+            <div className="mt-4"><QuestionTable questions={visible} crowdSealed={ph === 'commit' || ph === 'reveal'} showResult={false} /></div>
             {r.questions.length > visible.length && <p className="mt-2 text-sm text-muted">{t('round.hidden', { n: r.questions.length - visible.length })}</p>}
             <p className="mt-3 text-sm text-muted">
               {r.hasBaseline ? null : r.marketPriceAt ? t('home.priceAt', { t: fmtUtc(r.marketPriceAt, lang) }) : t('home.noPrice')}
