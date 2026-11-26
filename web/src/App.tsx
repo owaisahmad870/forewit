@@ -131,7 +131,7 @@ function RiskBanner() {
   if (seen) return null;
   return (
     <div role="region" aria-label={t('docs.pages.risk.title')} className="border-b border-accent bg-surface-2">
-      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex max-w-5xl flex-col gap-3 px-4 py-3 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm">
           <p lang="en" className="font-semibold">{t('risk')}</p>
           {t('riskLocal') && <p className="mt-1">{t('riskLocal')}</p>}
@@ -232,7 +232,7 @@ export function App() {
         <Sidebar route={route} theme={theme} setTheme={setTheme} />
         <div className="min-w-0 flex-1">
           <RiskBanner />
-          <main id="main" tabIndex={-1} className={`mx-auto min-h-svh px-4 py-6 sm:px-8 ${route[0] === 'docs' || route[0] === 'start' || route[0] === 'play' ? 'max-w-7xl' : 'max-w-5xl'}`}>
+          <main id="main" tabIndex={-1} className={`min-h-svh px-4 py-6 sm:px-8 ${route[0] === 'docs' || route[0] === 'start' || route[0] === 'play' ? 'max-w-7xl' : 'max-w-5xl'}`}>
             <Page route={route} data={data} error={error} />
           </main>
           <Footer data={data} />
