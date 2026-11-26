@@ -5,6 +5,7 @@
   "risk": "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.",
   "riskLocal": "",
   "nav": {
+    "profiles": "Profiles",
     "expand": "Show docs pages",
     "collapse": "Hide docs pages",
     "home": "Home",

@@ -5,6 +5,7 @@
   "risk": "Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.",
   "riskLocal": "仅为预测评分，不构成财务建议。Forewit 不接受投注、不持有资金、不支付任何回报。预测市场和加密资产风险较高，在你所在的地区可能受到限制。",
   "nav": {
+    "profiles": "个人主页",
     "expand": "展开文档页面",
     "collapse": "收起文档页面",
     "home": "首页",

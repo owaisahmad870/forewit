@@ -34,6 +34,7 @@ const NAV = [
   ['start', 'nav.start'],
   ['rounds', 'nav.rounds'],
   ['leaderboard', 'nav.leaderboard'],
+  ['profile', 'nav.profiles'],
   ['me', 'nav.me'],
   ['crowd', 'nav.crowd'],
   ['docs', 'nav.docs'],
@@ -110,14 +111,14 @@ function Sidebar({ route, theme, setTheme }: { route: string[]; theme: string; s
     <>
       <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col gap-6 overflow-y-auto border-r border-line bg-bg px-3 py-4 min-[60rem]:flex">
         <div className="px-2">{brand}</div>
-        <nav aria-label={t('nav.main')} className="flex-1">{links}<div className="mt-2 border-t border-line pt-2">{social}</div></nav>
-        <div className="px-2">{toggles}</div>
+        <nav aria-label={t('nav.main')} className="flex-1">{links}</nav>
+        <div className="space-y-2 border-t border-line pt-3">{social}<div className="px-2">{toggles}</div></div>
       </aside>
       <header className="border-b border-line min-[60rem]:hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-2">{brand}{toggles}</div>
         <details ref={menu} className="border-t border-line">
           <summary className="flex min-h-11 cursor-pointer items-center px-4 text-sm">{t('nav.menu')}</summary>
-          <nav aria-label={t('nav.main')} className="px-2 pb-2">{links}<div className="mt-2 border-t border-line pt-2">{social}</div></nav>
+          <nav aria-label={t('nav.main')} className="px-2 pb-2">{links}<div className="mt-3 border-t border-line pt-2">{social}</div></nav>
         </details>
       </header>
     </>
