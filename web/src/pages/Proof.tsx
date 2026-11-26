@@ -3,7 +3,7 @@ import { useT } from '../i18n';
 import type { Dataset, Snapshot } from '../lib/data';
 import { fmtUtc } from '../lib/format';
 
-// Fields written by indexer/build.mjs that data.ts does not type yet. scoresRoots is a placeholder until ForewitScores (C3) ships.
+// Fields written by indexer/publish.mjs that data.ts does not type yet. scoresRoots: ForewitScores roots the keeper posted.
 type ProofSnapshot = Snapshot & {
   agentId?: string | null;
   start?: { contract: string; count: number; players: { player: string; number: number; at: number; tx: string }[] } | null;

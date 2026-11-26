@@ -63,6 +63,14 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
   } catch (e) {
     console.error(`starts skipped: ${e.message}`);
   }
+  // ForewitScores roots the keeper posted (it writes scores/<epoch>.json next to this data): listed on /proof
+  try {
+    const dir = `${outDir}/scores`;
+    if (existsSync(dir)) out.scoresRoots = readdirSync(dir).filter((f) => /^\d+\.json$/.test(f)).map((f) => JSON.parse(readFileSync(`${dir}/${f}`, 'utf8')))
+      .sort((a, b) => Number(a.epoch) - Number(b.epoch)).map((e) => ({ epoch: String(e.epoch), roundId: String(e.roundId), root: e.root, leafCount: e.leafCount, tx: e.tx ?? null }));
+  } catch (e) {
+    console.error(`scores roots skipped: ${e.message}`);
+  }
   // /proof counts distinct Agent ID holders across both contracts
   out.metrics.distinctCommitters = new Set([...out.rounds.flatMap((r) => r.committers.map((a) => a.toLowerCase())), ...(out.open?.committers ?? [])]).size;
   // market groups from the keeper's newest daily download: aggregate counts only (Predict.fun terms forbid redistribution)
