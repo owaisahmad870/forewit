@@ -50,8 +50,7 @@ export function Home({ data }: { data: Dataset }) {
   return (
     <div className="space-y-5">
       <header className="pt-2">
-        <p className="text-sm font-semibold text-muted">{t('brand')}{t('brandLocal') && <span lang="zh-CN" className="ml-2 font-normal">{t('brandLocal')}</span>}</p>
-        <h1 className="mt-1 max-w-[20ch] text-3xl font-semibold tracking-tight sm:text-4xl">{t('tagline')}</h1>
+        <h1 className="max-w-[20ch] text-3xl font-semibold tracking-tight sm:text-4xl">{t('tagline')}</h1>
         <p className="mt-3 max-w-[68ch]">{t('help.intro.home')}</p>
         <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
           <a href="#/start" className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 font-semibold text-accent-ink">{t('help.go.start')}</a>
