@@ -16,8 +16,8 @@ description: Forewit 涉及的每一把密钥和每一个秘密：由谁保管�
 ## 团队的密钥
 
 * **管理员**（[0xF3b4728B30F0F380d77dE9d025E33680F66591bD](https://bscscan.com/address/0xF3b4728B30F0F380d77dE9d025E33680F66591bD)）。加密的密钥库保存在所有者的电脑上，并有离线副本（每个副本的解密检查尚待完成）。可以授予和撤销角色，可以暂停新轮次和新提交。泄露后别人可以分配角色或暂停新轮次，但仍然无法修改任何预测、分数或结果。管理员席位本身只能通过带 1 天延迟的两步转移来变更。计划：迁移到需要 3 人中 2 人在不同设备上签名的多签，并在执行前公告。
-* **Keeper**（[0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18](https://bscscan.com/address/0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18)）。热钱包密钥，作为加密的 GitHub Actions 机密保存，供每日任务使用。在两个合约上持有轮次管理员角色，以及少量用于 Gas 的 BNB。
-* **部署者**（[0x6732027E7f908E274bF4360Ce19cC182F82d008C](https://bscscan.com/address/0x6732027E7f908E274bF4360Ce19cC182F82d008C)）。部署了两个合约，不持有任何角色，因此泄露不会改变链上任何东西。
+* **Keeper**（[0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18](https://bscscan.com/address/0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18)）。热钱包密钥，作为加密的 GitHub Actions 机密保存，供每日任务使用。在 ForecastLedger 和 ForewitScores 上持有轮次管理员角色，以及少量用于 Gas 的 BNB。
+* **部署者**（[0x6732027E7f908E274bF4360Ce19cC182F82d008C](https://bscscan.com/address/0x6732027E7f908E274bF4360Ce19cC182F82d008C)）。部署了全部四个合约，不持有任何角色，因此泄露不会改变链上任何东西。
 * **服务令牌**（RPC 提供商、Cloudflare Pages、健康检查、Predict.fun 只读密钥）。作为加密的 GitHub Actions 机密保存。它们都无法触及合约或任何用户数据。泄露后轮换令牌即可。
 * **npm 版本** 通过 GitHub Actions 的可信发布并附带来源证明发布，因此不存在可被窃取的长期 npm 令牌。你可以在 npm 上将任何版本与其源码提交核对。
 
@@ -33,7 +33,7 @@ description: Forewit 涉及的每一把密钥和每一个秘密：由谁保管�
 
 我们的处理：
 
-1. 管理员在两个合约上撤销泄露密钥的轮次管理员角色。一旦管理员钱包有 Gas（正在为此充值），撤销在下一个区块生效。
+1. 管理员在 ForecastLedger 和 ForewitScores 上撤销泄露密钥的轮次管理员角色。一旦管理员钱包有 Gas（正在为此充值），撤销在下一个区块生效。
 2. 管理员把该角色授予新的 Keeper 密钥，并替换 GitHub 机密。
 3. 管理员撤销任何错误的根，并重新发布正确的根。
 4. 我们在 24 小时内在[更新日志](../reference/changelog.md)和 X 上公布受影响的轮次和交易。

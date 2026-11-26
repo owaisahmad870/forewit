@@ -86,4 +86,4 @@ It has had independent reviews by separate AI agents, with 0 open High and 0 ope
 
 ## Is the code open?
 
-Yes, under the MIT license: [github.com/owaisahmad870/forewit](https://github.com/owaisahmad870/forewit). Both contracts are verified on BscScan and Sourcify.
+Yes, under the MIT license: [github.com/owaisahmad870/forewit](https://github.com/owaisahmad870/forewit). All four contracts are verified on BscScan and Sourcify.

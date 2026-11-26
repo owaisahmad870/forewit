@@ -13,9 +13,15 @@ description: 审查了什么，发现了什么，修复了什么，还有哪些�
 ## 概要
 
 * 未解决的 High 级发现：0。未解决的 Medium 级发现：0。
-* 两个合约均已在 BSC 主网上线，并在 BscScan 和 Sourcify 上验证（完全匹配）。
+* 四个合约（ForecastLedger、OpenForecasts、ForewitScores、ForewitStart）均已在 BSC 主网上线，并在 BscScan 和 Sourcify 上验证（完全匹配）。
 * 已接受的风险在 [威胁模型与已接受风险](threat_model.md) 中如实列出。
 
+
+## ForewitStart 审查，2026 年 11 月 26 日
+
+* Slither：0 项发现。8 个 Foundry 测试，包括 2,000 次模糊测试。
+* 独立审查：没有 Low 以上的问题。L1：它信任 Agent ID 合约的 balanceOf。L2：即使 Agent ID 之后被移除，开始记录仍会保留，因此开始记录从不被理解为“当前持有 Agent ID”。
+* 没有所有者、没有管理员、没有资金、没有代币。
 ## ForecastLedger 审查
 
 ### 首次审查，2026 年 11 月 23 日

@@ -232,7 +232,7 @@
       "owner": {
         "title": "Safety and owner permissions",
         "blocks": [
-          "All three contracts cannot be upgraded, hold no funds and ask for no approvals. Every transaction you send has value 0.",
+          "All four contracts (ForecastLedger, OpenForecasts, ForewitScores, ForewitStart) cannot be upgraded, hold no funds and ask for no approvals. ForewitStart has no owner at all. Every transaction you send has value 0.",
           {
             "h": "Nobody, including the admin, can"
           },
@@ -250,6 +250,7 @@
             "list": [
               "Daily round (ForecastLedger): create rounds by the published selection rule, post the market baseline once in the last 15 minutes before the deadline, and pause new commits. Pause never blocks reveal or scoring.",
               "Any market (OpenForecasts): post the market price once, or void a forecast, only within 120 seconds of its commit; pause new commits only.",
+              "Free start (ForewitStart): no roles at all; nobody can change or stop it.",
               "Admin: grant and revoke roles. Moving the admin seat takes two steps with a 1 day delay."
             ]
           },

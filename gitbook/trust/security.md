@@ -13,7 +13,7 @@ The reviews below were run by separate AI agents working from a fresh context, e
 ## Summary
 
 * Open High findings: 0. Open Medium findings: 0.
-* Both contracts are live on BSC mainnet and verified on BscScan and Sourcify (exact match).
+* All four contracts (ForecastLedger, OpenForecasts, ForewitScores, ForewitStart) are live on BSC mainnet and verified on BscScan and Sourcify (exact match).
 * Accepted risks are listed plainly in [Threat model and accepted risks](threat_model.md).
 
 ## ForecastLedger reviews
@@ -56,6 +56,12 @@ The reviews below were run by separate AI agents working from a fresh context, e
 * I1 to I6, Info: a pass survives a revoke, `MAX_AGE` measures post time, recompute edge cases, opt out is not retroactive, example gate details. **Open** as Info.
 
 A delta review of the fixes (commit 40a8373) found no High or Medium. Its D1 finding (the indexer missed some token moves) was then fixed in the indexer; that fix has a test but was not reviewed again.
+
+## ForewitStart review, 26 Nov 2026
+
+* Slither: 0 findings. 8 Foundry tests including a 2,000 run fuzz.
+* Independent review: nothing above Low. L1: it trusts the Agent ID contract's balanceOf. L2: a start stays recorded if an Agent ID is later removed, so a start is never read as "holds an Agent ID now".
+* No owner, no admin, no funds, no token.
 
 ## Tools and tests
 

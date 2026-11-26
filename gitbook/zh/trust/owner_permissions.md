@@ -1,18 +1,18 @@
 ---
-description: 先见 Forewit 团队对两个合约拥有的全部权限，以及任何人都无法做到的事。
+description: 先见 Forewit 团队对四个合约拥有的全部权限，以及任何人都无法做到的事。
 ---
 
 # 所有者权限
 
 简而言之：团队可以运行轮次、发布分数根。任何人（包括团队）都无法修改预测、分数或结果，也无法动用任何人的资金。合约本身不持有任何资产。
 
-两个合约都不可升级：没有代理，没有 selfdestruct，没有 delegatecall，没有 payable 函数。
+四个合约（ForecastLedger、OpenForecasts、ForewitScores、ForewitStart）都不可升级：没有代理，没有 selfdestruct，没有 delegatecall，没有 payable 函数。
 
 ## 谁持有哪个角色（链上读回，2026 年 11 月 24 日）
 
-* 管理员（Admin）：[0xF3b4728B30F0F380d77dE9d025E33680F66591bD](https://bscscan.com/address/0xF3b4728B30F0F380d77dE9d025E33680F66591bD)。两个合约的默认管理员，也是 ForecastLedger 的暂停者。目前是单一密钥，不是多签。
-* Keeper：[0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18](https://bscscan.com/address/0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18)。两个合约的轮次管理者。这是一把热密钥，通过 GitHub Actions 运行每日任务。
-* 部署者（Deployer）：[0x6732027E7f908E274bF4360Ce19cC182F82d008C](https://bscscan.com/address/0x6732027E7f908E274bF4360Ce19cC182F82d008C)。部署了两个合约，**不持有任何角色**。
+* 管理员（Admin）：[0xF3b4728B30F0F380d77dE9d025E33680F66591bD](https://bscscan.com/address/0xF3b4728B30F0F380d77dE9d025E33680F66591bD)。ForecastLedger、ForewitScores 和 OpenForecasts 的默认管理员，也是 ForecastLedger 的暂停者。ForewitStart 完全没有管理员。目前是单一密钥，不是多签。
+* Keeper：[0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18](https://bscscan.com/address/0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18)。ForecastLedger 和 ForewitScores 的轮次管理者。这是一把热密钥，通过 GitHub Actions 运行每日任务。
+* 部署者（Deployer）：[0x6732027E7f908E274bF4360Ce19cC182F82d008C](https://bscscan.com/address/0x6732027E7f908E274bF4360Ce19cC182F82d008C)。部署了全部四个合约，**不持有任何角色**。
 
 这些钱包属于“运营方”，永远不参与排名，也永远不会获得 ForewitScores 叶子。
 

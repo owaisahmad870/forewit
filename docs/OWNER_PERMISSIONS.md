@@ -1,4 +1,4 @@
-# Owner permissions (ForecastLedger, ForewitScores and OpenForecasts)
+# Owner permissions (ForecastLedger, ForewitScores, OpenForecasts and ForewitStart)
 
 ForecastLedger is non upgradeable: no proxy, no selfdestruct, no delegatecall, no payable function. It holds no funds and no tokens and asks for no approvals.
 

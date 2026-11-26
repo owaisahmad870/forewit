@@ -6,13 +6,13 @@ description: Every power the Forewit team holds over the two contracts, and what
 
 Short version: the team can run rounds and post score roots. Nobody, the team included, can edit a forecast, a score or an outcome, or touch anyone's funds. The contracts hold none.
 
-Both contracts are non upgradeable: no proxy, no selfdestruct, no delegatecall, no payable function.
+All four contracts (ForecastLedger, OpenForecasts, ForewitScores, ForewitStart) are non upgradeable: no proxy, no selfdestruct, no delegatecall, no payable function.
 
 ## Who holds which role (read back onchain, 24 Nov 2026)
 
-* Admin: [0xF3b4728B30F0F380d77dE9d025E33680F66591bD](https://bscscan.com/address/0xF3b4728B30F0F380d77dE9d025E33680F66591bD). Default admin on both contracts, and pauser on ForecastLedger. A single key today, not a multisig.
-* Keeper: [0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18](https://bscscan.com/address/0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18). Round manager on both contracts. A hot key that runs the daily jobs from GitHub Actions.
-* Deployer: [0x6732027E7f908E274bF4360Ce19cC182F82d008C](https://bscscan.com/address/0x6732027E7f908E274bF4360Ce19cC182F82d008C). Deployed both contracts and holds **no role**.
+* Admin: [0xF3b4728B30F0F380d77dE9d025E33680F66591bD](https://bscscan.com/address/0xF3b4728B30F0F380d77dE9d025E33680F66591bD). Default admin on ForecastLedger, ForewitScores and OpenForecasts, and pauser on ForecastLedger. ForewitStart has no admin at all. A single key today, not a multisig.
+* Keeper: [0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18](https://bscscan.com/address/0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18). Round manager on ForecastLedger and ForewitScores. A hot key that runs the daily jobs from GitHub Actions.
+* Deployer: [0x6732027E7f908E274bF4360Ce19cC182F82d008C](https://bscscan.com/address/0x6732027E7f908E274bF4360Ce19cC182F82d008C). Deployed all four contracts and holds **no role**.
 
 These wallets are "operators". They are never ranked and never get a ForewitScores leaf.
 

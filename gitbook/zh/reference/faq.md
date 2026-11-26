@@ -86,4 +86,4 @@ description: 关于先见 Forewit 最常见问题的简短回答。
 
 ## 代码开源吗？
 
-开源，采用 MIT 许可证：[github.com/owaisahmad870/forewit](https://github.com/owaisahmad870/forewit)。两个合约都已在 BscScan 和 Sourcify 验证。
+开源，采用 MIT 许可证：[github.com/owaisahmad870/forewit](https://github.com/owaisahmad870/forewit)。四个合约都已在 BscScan 和 Sourcify 验证。
