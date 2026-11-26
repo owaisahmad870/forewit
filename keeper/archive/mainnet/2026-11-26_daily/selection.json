@@ -1,0 +1,124 @@
+{
+  "rule": "QUESTION_SELECTION v3.1",
+  "kind": "daily",
+  "commitDeadline": "2026-11-26T23:00:00.000Z",
+  "resolutionDays": 7,
+  "eligible": 7,
+  "chosen": [
+    {
+      "marketId": 4812155,
+      "conditionId": "0xb3fb6d691bee92d6e2dc7b0c77e15072099dbb8016832566a074ff96a2c733bc",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "bitcoin-up-or-down-on-november-27-2026",
+      "endsAt": "2026-11-27T17:00:00.000Z",
+      "eventQuestion": "Bitcoin Up or Down on November 27?",
+      "label": "Bitcoin Up or Down on November 27?",
+      "marketQuestion": "Bitcoin Up or Down on November 27?",
+      "tags": [
+        "Crypto",
+        "BTC",
+        "Up/Down",
+        "Daily"
+      ],
+      "title": "Bitcoin Up or Down on November 27?",
+      "dailyCrypto": true,
+      "vol24h": 0
+    },
+    {
+      "marketId": 4812156,
+      "conditionId": "0x126b50629a6ba64f6b9f9271c25acf4226da67f86d3d8380b8293cb2d4ed23ac",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "ethereum-up-or-down-on-november-27-2026",
+      "endsAt": "2026-11-27T17:00:00.000Z",
+      "eventQuestion": "Ethereum Up or Down on November 27?",
+      "label": "Ethereum Up or Down on November 27?",
+      "marketQuestion": "Ethereum Up or Down on November 27?",
+      "tags": [
+        "Crypto",
+        "ETH",
+        "Up/Down",
+        "Daily"
+      ],
+      "title": "Ethereum Up or Down on November 27?",
+      "dailyCrypto": true,
+      "vol24h": 0
+    },
+    {
+      "marketId": 4812157,
+      "conditionId": "0xb15f2bb6e68482c62bd43351bbf25e3e409d4b551b38a4f82d9eb55c3597109a",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "bnb-up-or-down-on-november-27-2026",
+      "endsAt": "2026-11-27T17:00:00.000Z",
+      "eventQuestion": "BNB Up or Down on November 27?",
+      "label": "BNB Up or Down on November 27?",
+      "marketQuestion": "BNB Up or Down on November 27?",
+      "tags": [
+        "Crypto",
+        "Up/Down",
+        "Daily",
+        "BNB"
+      ],
+      "title": "BNB Up or Down on November 27?",
+      "dailyCrypto": true,
+      "vol24h": 0
+    },
+    {
+      "marketId": 4799005,
+      "conditionId": "0x6e425ac3b31f038501fd69a40a514a76e82808f2c47aea52c16a803f1c4b7fd3",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "highest-temperature-in-seoul-on-november-27-2026",
+      "endsAt": "2026-11-27T12:00:00.000Z",
+      "eventQuestion": "Highest temperature in Seoul (Incheon) on November 27?",
+      "label": "15°C",
+      "marketQuestion": "Will the highest temperature in Seoul (Incheon) be 15°C on November 27?",
+      "tags": [
+        "Weather"
+      ],
+      "title": "15°C",
+      "dailyCrypto": false,
+      "vol24h": 343.77
+    },
+    {
+      "marketId": 4799618,
+      "conditionId": "0xd87791a70634c3580590f837a62d778a68d2d5da2caf291959bcd833b0a8495b",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "highest-temperature-in-shanghai-on-november-27-2026",
+      "endsAt": "2026-11-27T12:00:00.000Z",
+      "eventQuestion": "Highest temperature in Shanghai on November 27?",
+      "label": "22°C",
+      "marketQuestion": "Will the highest temperature in Shanghai be 22°C on November 27?",
+      "tags": [
+        "Weather"
+      ],
+      "title": "22°C",
+      "dailyCrypto": false,
+      "vol24h": 141.71
+    },
+    {
+      "marketId": 4799602,
+      "conditionId": "0xf4291abd968edbb2c633b62368887e4bd4b9c8fe798a415749436d4e9fc18490",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "highest-temperature-in-shenzhen-on-november-27-2026",
+      "endsAt": "2026-11-27T12:00:00.000Z",
+      "eventQuestion": "Highest temperature in Shenzhen on November 27?",
+      "label": "23°C",
+      "marketQuestion": "Will the highest temperature in Shenzhen be 23°C on November 27?",
+      "tags": [
+        "Weather"
+      ],
+      "title": "23°C",
+      "dailyCrypto": false,
+      "vol24h": 109.99
+    }
+  ],
+  "funnel": {
+    "open": 16166,
+    "binary": 10469,
+    "notSports": 5121,
+    "liquid": 126,
+    "notPolitics": 78,
+    "inWindow": 7,
+    "events": 6,
+    "chosen": 6
+  }
+}

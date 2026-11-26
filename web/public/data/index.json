@@ -2,11 +2,12 @@
   "sample": false,
   "network": 56,
   "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
-  "publishedAt": "2026-11-26T00:19:49.216Z",
+  "publishedAt": "2026-11-26T05:50:35.711Z",
   "note": "Live data from BSC mainnet.",
   "snapshot": "snapshot.json",
   "rounds": [
     "rounds/1.json",
-    "rounds/2.json"
+    "rounds/2.json",
+    "rounds/3.json"
   ]
 }
