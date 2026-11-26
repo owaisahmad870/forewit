@@ -11,7 +11,7 @@ on:
     types: [completed]
   workflow_dispatch:
   schedule:
-    - cron: "*/20 * * * *" # fresh data from the chain every 20 minutes, not only when a keeper run ends
+    - cron: "*/20 * * * *" # best effort: GitHub drops most of these; open-keeper.yml requests a rebuild every 20 minutes
 
 permissions:
   contents: read

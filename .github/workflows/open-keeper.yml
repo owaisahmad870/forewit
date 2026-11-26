@@ -46,7 +46,11 @@ jobs:
           PREDICT_API_KEY: ${{ secrets.PREDICT_API_KEY }}
           ALERT_ISSUE_NUMBER: ${{ vars.ALERT_ISSUE_NUMBER }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: node keeper/open.mjs
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # GitHub drops most site.yml cron starts, so this always on loop asks for a site data rebuild every 20 minutes
+          (while sleep 1200; do gh workflow run site.yml -R "$GITHUB_REPOSITORY" || echo "site rebuild request failed"; done) &
+          node keeper/open.mjs
       - name: Save state
         if: always()
         run: |
