@@ -4,6 +4,21 @@
 import { loadDataset, DEFAULT_DATA } from './remote.mjs';
 import { phase, walletResults } from '../vendor/web/data.mjs';
 import { liveBaseline, BACKTEST } from '../vendor/agent/lib/baseline.mjs';
+import { NETWORKS } from '../vendor/agent/config.mjs';
+import { bawPreview } from '../vendor/agent/forewit.mjs';
+
+const START_SELECTOR = '0xbe9a6555'; // start()
+const STARTED_AT = '0xaab035b7'; // startedAt(address)
+
+/** startedAt(address) on ForewitStart, 0 when not started; null when the contract is not pinned or unreachable. */
+export async function startedAt(address, net = NETWORKS.mainnet, fetchImpl = fetch) {
+  if (!net.start) return null;
+  try {
+    const data = STARTED_AT + address.slice(2).toLowerCase().padStart(64, '0');
+    const r = await fetchImpl(net.rpc, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: net.start, data }, 'latest'] }), signal: AbortSignal.timeout(10000) });
+    return Number(BigInt((await r.json()).result));
+  } catch { return null; }
+}
 
 const CLI = 'npx forewit@latest';
 const pct = (x) => Math.round(x * 100);
@@ -28,13 +43,17 @@ export function todayRound(rounds, now) {
   return open.find((r) => r.featured) ?? open.find((r) => r.kind === 'daily') ?? null;
 }
 
-export async function buildPlan({ address, now = Date.now(), data = process.env.FOREWIT_DATA || DEFAULT_DATA, fetchImpl = fetch, baseline = liveBaseline } = {}) {
+export async function buildPlan({ address, now = Date.now(), data = process.env.FOREWIT_DATA || DEFAULT_DATA, fetchImpl = fetch, baseline = liveBaseline, net = NETWORKS.mainnet } = {}) {
   if (!/^0x[0-9a-fA-F]{40}$/.test(address ?? '')) throw new Error('give your Agent ID wallet address: --from 0x...');
   const ds = await loadDataset(data);
   const a = address.toLowerCase();
   const w = walletResults(ds.snapshot, a);
   const r = todayRound(ds.rounds, now);
   const out = { version: 1, now: new Date(now).toISOString(), address: a, today: null, duties: [], record: null, next: null, report: [] };
+
+  // Free first step: ForewitStart.start() (value 0, once per wallet). Not a forecast; counted apart on the site.
+  const st = await startedAt(a, net, fetchImpl);
+  if (st === 0) out.start = { why: 'free, once: starts your Forewit record (not a forecast)', to: net.start, inputData: START_SELECTOR, value: '0', preview: bawPreview({ chainId: 56, from: a, to: net.start.toLowerCase(), data: START_SELECTOR }) };
 
   // Duties: rounds this wallet committed to that wait for a reveal (auto reveal does it; otherwise the user must).
   for (const wr of w.rounds.filter((x) => x.verdict === 'reveal')) {
@@ -79,6 +98,7 @@ export async function buildPlan({ address, now = Date.now(), data = process.env.
 
   // Caveman report: 6 lines max, numbers only.
   const t = out.today, rec = out.record;
+  if (out.start) out.report.push('Not started yet: 1 free tap starts your record (start(), value 0).');
   if (t) out.report.push(t.alreadyCommitted ? `Today round ${t.roundId}: done. Sealed. Auto reveal handles it.` : `Today round ${t.roundId}: ${t.questions.length} questions, closes in ${t.closesIn}.`);
   else out.report.push('No round open now.');
   if (t && !t.alreadyCommitted) {

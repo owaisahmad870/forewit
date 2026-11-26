@@ -1,6 +1,6 @@
 # BSC mainnet deploy of ForecastLedger or ForewitScores (Owais's yes required). Loads only the RPC and Etherscan key from .env,
 # never prints them; the deployer keystore password is typed at forge's prompt.
-param([string]$Script = 'DeployMainnet')  # DeployMainnet (ForecastLedger) or DeployScoresMainnet (ForewitScores)
+param([string]$Script = 'DeployMainnet')  # DeployMainnet (ForecastLedger), DeployScoresMainnet (ForewitScores) or DeployStartMainnet (ForewitStart)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 function Get-EnvValue($name) { (Get-Content "$root\.env" | Where-Object { $_ -match "^$name=" } | Select-Object -First 1).Split('=', 2)[1].Trim() }

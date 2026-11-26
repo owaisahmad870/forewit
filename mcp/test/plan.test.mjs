@@ -27,7 +27,7 @@ test('plan for a new wallet and for a wallet that already committed', async () =
   assert.deepEqual(p.today.questions.map((q) => [q.kind, q.suggestPct]), [['crypto', 62], ['needsView', null]]);
   assert.equal(calls.length, 1, 'baseline runs only for questions with an end time');
   assert.match(p.today.command, /commit --round 2 --p 62,<your %> --from 0xd{40} --auto-reveal --execute$/);
-  assert.ok(p.report.length <= 6 && p.report.every((l) => !l.includes(INJECTION)), 'short report, no third party text');
+  assert.ok(p.report.length <= 7 && p.report.every((l) => !l.includes(INJECTION)), 'short report, no third party text');
   assert.equal(p.record.rounds, 0);
   assert.ok(p.routine.limits.callsPerDay === 1 && p.routine.limits.value === '0');
 
@@ -49,4 +49,21 @@ test('baseline errors degrade to needsView, never throw', async () => {
   const p = await buildPlan({ address: '0x' + 'e'.repeat(40), now, data: dir, baseline: async () => { throw new Error('blocked'); } });
   assert.equal(p.today.questions[0].kind, 'needsView');
   assert.match(p.today.questions[0].why, /unreachable \(blocked\)/);
+});
+
+test('a wallet that has not started gets the free start() call; a started one does not', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'forewit_plan_'));
+  const now = Date.now();
+  writeData(dir, { ledger, now });
+  const net = { rpc: 'http://rpc.test', start: '0x' + 'ab'.repeat(20) };
+  const rpcSays = (v) => async (url, init) => { assert.equal(url, net.rpc); assert.match(JSON.parse(init.body).params[0].data, /^0xaab035b7/); return { json: async () => ({ result: '0x' + v.toString(16).padStart(64, '0') }) }; };
+  const fresh = await buildPlan({ address: '0x' + 'f'.repeat(40), now, data: dir, net, fetchImpl: rpcSays(0) });
+  assert.equal(fresh.start.inputData, '0xbe9a6555');
+  assert.equal(fresh.start.value, '0');
+  assert.match(fresh.start.preview, /--to 0x(ab){20} --value 0 --inputData 0xbe9a6555/);
+  assert.match(fresh.report[0], /free tap/);
+  const started = await buildPlan({ address: '0x' + 'f'.repeat(40), now, data: dir, net, fetchImpl: rpcSays(1_800_000_000) });
+  assert.equal(started.start, undefined);
+  const unpinned = await buildPlan({ address: '0x' + 'f'.repeat(40), now, data: dir, net: { ...net, start: null } });
+  assert.equal(unpinned.start, undefined);
 });

@@ -11,6 +11,7 @@ export const NETWORKS = Object.freeze({
     rpcFallbacks: ['https://bsc-dataseed.bnbchain.org', 'https://bsc-dataseed1.defibit.io'],
     explorer: 'https://bscscan.com',
     open: '0xa034D7B62d04c8c4ac57a8C62047015C00DD6404', // OpenForecasts (v2), deployed 25 Nov 2026 (block 135672274), verified on BscScan and Sourcify; FOREWIT_OPEN_LEDGER overrides it for tests
+    start: null, // ForewitStart (start() and mint(), free, once per wallet): pinned after the mainnet deploy
     roundFiles: 'https://forewit.xyz/data/rounds/', // public round JSON per round id, written by keeper open; agent uses it when --round-file is not given
   }),
   testnet: Object.freeze({
