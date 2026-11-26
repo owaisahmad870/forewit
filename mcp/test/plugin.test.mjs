@@ -7,9 +7,8 @@ const root = new URL('../../', import.meta.url);
 const read = (p) => readFileSync(new URL(p, root), 'utf8').replace(/\r\n/g, '\n');
 const json = (p) => JSON.parse(read(p));
 
-test('plugin skills are exact copies of the published skills', () => {
+test('the plugin skill is an exact copy of the published skill', () => {
   assert.equal(read('plugin/skills/forewit/SKILL.md'), read('agent/SKILL.md'));
-  assert.equal(read('plugin/skills/forelens/SKILL.md'), read('skills/forelens/SKILL.md'));
 });
 
 test('plugin, marketplace and MCP server pin the package version', () => {

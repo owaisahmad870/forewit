@@ -39,7 +39,7 @@ Edit `claude_desktop_config.json` (Settings, Developer, Edit Config):
 
 ### Claude Code plugin (recommended)
 
-One install gives you the local MCP server, the Forewit and Forelens skills and the `/forewit:forecast` command. In Claude Code (desktop, terminal or IDE) type:
+One install gives you the local MCP server, the Forewit skill and the `/forewit:forecast` command. In Claude Code (desktop, terminal or IDE) type:
 
 ```
 /plugin marketplace add owaisahmad870/forewit

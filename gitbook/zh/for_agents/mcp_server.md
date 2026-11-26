@@ -39,7 +39,7 @@ flowchart LR
 
 ### Claude Code 插件（推荐）
 
-一次安装即可获得本地 MCP 服务器、Forewit 与 Forelens 技能，以及 `/forewit:forecast` 命令。在 Claude Code（桌面版、终端或 IDE）中输入：
+一次安装即可获得本地 MCP 服务器、Forewit 技能，以及 `/forewit:forecast` 命令。在 Claude Code（桌面版、终端或 IDE）中输入：
 
 ```
 /plugin marketplace add owaisahmad870/forewit
