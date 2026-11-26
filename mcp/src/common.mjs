@@ -38,3 +38,13 @@ export function paginate(items, { cursor, limit = 25 }) {
 
 export const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/, 'must be a 0x prefixed 20 byte hex address');
 export const roundId = z.number().int().min(1).max(1e9);
+
+// How agents should talk to the person (both servers send it as MCP instructions; agent/SKILL.md says the same).
+export const REPLY_STYLE = [
+  'Reply style for Forewit: short and concrete.',
+  '1. First line: the result or the next action. No preamble, no recap, no closing pleasantries.',
+  '2. Steps numbered, at most 5 items in any list.',
+  '3. Numbers, not adjectives: percent, points, minutes, UTC times.',
+  '4. Errors: what failed and the fix, in one or two lines.',
+  '5. End with one line: "Next: <one concrete step>".',
+].join(String.fromCharCode(10));

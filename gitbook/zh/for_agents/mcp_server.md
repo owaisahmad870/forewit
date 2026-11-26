@@ -19,7 +19,8 @@ flowchart LR
 
 1. 安装 Node 22 或更高版本（这是该包的最低要求）。
 2. 把服务器添加到你的客户端。各处使用的命令都相同：`npx -y forewit mcp`。
-3. 重启客户端，确认出现七个工具：`prepare_commit`、`prepare_reveal`、`prepare_profile`、`my_receipts`、`wallet_status`、`commit_forecast`、`reveal_forecast`。
+3. 重启客户端，确认出现十个工具：`forewit_plan`、`prepare_commit`、`prepare_reveal`、`prepare_profile`、`my_receipts`、`wallet_status`、`commit_forecast`、`reveal_forecast`、`search_markets`、`predict_market`。
+4. 发送“规划我今天的 Forewit”。智能体会先调用 `forewit_plan`：今天的轮次、加密问题的基准概率、尚未开始时的免费开始、待揭示事项、你的记录，以及下次运行的时间。
 
 ### Claude Desktop
 
@@ -58,6 +59,7 @@ claude mcp add forewit -- npx -y forewit mcp
 
 所有工具默认使用 BSC 主网。`network` 可取 `mainnet` 或 `testnet`。
 
+* `forewit_plan {from}`：从这里开始。返回 `report`（原样展示的简短几行）和 `plan`：今天的轮次、每个加密涨跌问题的基准概率（已回测，见 [docs/BASELINE.md](https://github.com/owaisahmad870/forewit/blob/main/docs/BASELINE.md)）、需要你判断的问题、带自动揭示的提交命令、钱包尚未开始时的免费 `start()` 调用、待揭示事项、记录、连续天数和 `next.at`。只读。
 * `prepare_commit {from, probabilities_percent, round_id?, network?, auto_reveal?}`
   * `probabilities_percent`：每个问题一个百分比，共 1 到 16 个数字，限制在 1 到 99 之间。
   * 从 ledger 读取轮次。超过提交截止时间或问题数量不对时会拒绝。

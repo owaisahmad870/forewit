@@ -23,6 +23,13 @@ Commands: `plan`, `round`, `forecast`, `commit`, `reveal`, `status`, `receipt`, 
 
 By default the CLI never signs or sends anything: it prints the exact `baw` commands, which you run only as described below. With `--execute` (commit and reveal, BSC mainnet only) it runs the preview itself and sends only after the wallet owner types yes in an interactive terminal.
 
+## Reply style (every message)
+1. First line: the result or the next action. No preamble, no recap, no closing pleasantries.
+2. Steps numbered, at most 5 items in any list.
+3. Numbers, not adjectives: percent, points, minutes, UTC times.
+4. Errors: what failed and the fix, in one or two lines.
+5. End with one line: "Next: <one concrete step>".
+
 ## Play Forewit (the short path)
 
 When the user says "Play Forewit" (or any daily Forewit request), start with one call:

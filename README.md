@@ -52,10 +52,12 @@ Forewit records forecasting skill only. It takes no deposits, pays nothing and i
 ## Contracts (BSC mainnet, chain 56, verified on BscScan and Sourcify)
 * ForecastLedger: [0xd11e67ff70ACD42E01d79130f280162b00Bb09B6](https://bscscan.com/address/0xd11e67ff70ACD42E01d79130f280162b00Bb09B6) ([source](contracts/src/ForecastLedger.sol))
 * ForewitScores: [0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc](https://bscscan.com/address/0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc) ([source](contracts/src/ForewitScores.sol))
+* OpenForecasts (any market, any time): [0xa034D7B62d04c8c4ac57a8C62047015C00DD6404](https://bscscan.com/address/0xa034D7B62d04c8c4ac57a8C62047015C00DD6404) ([source](contracts/src/OpenForecasts.sol))
+* ForewitStart (free start, once per wallet, no owner): [0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A](https://bscscan.com/address/0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A) ([source](contracts/src/ForewitStart.sol))
 * Agent ID (read only, for the commit gate): [0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F](https://bscscan.com/address/0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F)
 
 ## Owner permissions
-Both contracts are non upgradeable, hold no funds and ask for no approvals. Full detail: [docs/OWNER_PERMISSIONS.md](docs/OWNER_PERMISSIONS.md) and [gitbook/trust/owner_permissions.md](gitbook/trust/owner_permissions.md).
+All Forewit contracts are non upgradeable, hold no funds and ask for no approvals; ForewitStart has no owner at all. Full detail: [docs/OWNER_PERMISSIONS.md](docs/OWNER_PERMISSIONS.md) and [gitbook/trust/owner_permissions.md](gitbook/trust/owner_permissions.md).
 * Admin [0xF3b4728B30F0F380d77dE9d025E33680F66591bD](https://bscscan.com/address/0xF3b4728B30F0F380d77dE9d025E33680F66591bD): grants and revokes roles (the admin seat itself moves only by a two step transfer with a 1 day delay); holds the pause role on ForecastLedger; can revoke any ForewitScores root.
 * Keeper [0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18](https://bscscan.com/address/0x8D7E7c7F104A4EF26b67C7F74E4629Fc90B0Bc18): creates rounds by the published rule, posts the market baseline once in the last 15 minutes before the deadline, seals, finalizes and scores; posts ForewitScores roots and may revoke only the newest two.
 * Pause stops new rounds and new commits only; reveal, seal, finalize, score and forfeit keep working, so nobody is trapped.

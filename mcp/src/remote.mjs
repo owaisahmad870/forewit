@@ -13,7 +13,7 @@ import { cleanText } from '../vendor/web/question.mjs';
 import { loadRound, ethCall, SIG, decodeReveal, phaseOf } from '../vendor/agent/forewit.mjs';
 import { encodeCall, wordUint, wordAddress, decodeWords, wordToBytes32 } from '../vendor/agent/lib/keccak.mjs';
 import { NETWORKS, MIN_BPS, MAX_BPS, MAX_QUESTIONS, RISK_WARNING } from '../vendor/agent/config.mjs';
-import { ok, guarded, paginate, cursorInput, address, roundId, VERSION } from './common.mjs';
+import { ok, guarded, paginate, cursorInput, address, roundId, VERSION, REPLY_STYLE } from './common.mjs';
 import SCORING from '../vendor/scoring.json' with { type: 'json' }; // a static import, so the Workers bundle carries it
 
 
@@ -281,7 +281,8 @@ function flattenBlocks(blocks) {
 
 /** One McpServer with the eleven read only tools. `data` is an https base URL or a local folder of published JSON. */
 export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_DATA } = {}) {
-  const server = new McpServer({ name: 'forewit', version: VERSION, title: 'Forewit (read only)' });
+  const server = new McpServer({ name: 'forewit', version: VERSION, title: 'Forewit (read only)' }, { instructions: `Read only Forewit data: rounds, results, leaderboard, crowd, markets. To forecast, the person needs the Forewit CLI or the local MCP (npx -y forewit@latest plan --from <wallet>); get_started explains it.
+${REPLY_STYLE}` });
   const tool = (name, config, fn) =>
     server.registerTool(name, { ...config, inputSchema: z.object(config.inputSchema ?? {}).strict(), outputSchema: z.object(config.outputSchema), annotations: { ...READ_ONLY, title: config.title } }, guarded(fn));
   const ds = () => loadDataset(data);

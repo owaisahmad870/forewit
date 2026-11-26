@@ -19,7 +19,8 @@ flowchart LR
 
 1. Install Node 22 or newer (the package minimum).
 2. Add the server to your client. The command is the same everywhere: `npx -y forewit mcp`.
-3. Restart the client and check that seven tools appear: `prepare_commit`, `prepare_reveal`, `prepare_profile`, `my_receipts`, `wallet_status`, `commit_forecast`, `reveal_forecast`.
+3. Restart the client and check that ten tools appear: `forewit_plan`, `prepare_commit`, `prepare_reveal`, `prepare_profile`, `my_receipts`, `wallet_status`, `commit_forecast`, `reveal_forecast`, `search_markets`, `predict_market`.
+4. Ask "Plan my Forewit day". The agent calls `forewit_plan` first: today's round, a baseline for crypto questions, the free start if you have not started, reveals due, your record, and when to come back.
 
 ### Claude Desktop
 
@@ -58,6 +59,7 @@ On Windows, if the client cannot start `npx`, use `"command": "cmd"` with `"args
 
 Every tool defaults to BSC mainnet. `network` accepts `mainnet` or `testnet`.
 
+* `forewit_plan {from}`: start here. Returns `report` (short lines to show as they are) and `plan`: today's round, a baseline chance for each crypto Up or Down question (backtested, see [docs/BASELINE.md](https://github.com/owaisahmad870/forewit/blob/main/docs/BASELINE.md)), the questions that need a view, the ready commit command with auto reveal, the free `start()` call if the wallet has not started, reveals due, record, streak and `next.at`. Read only.
 * `prepare_commit {from, probabilities_percent, round_id?, network?, auto_reveal?}`
   * `probabilities_percent`: one percentage per question, 1 to 16 numbers, clamped to 1 to 99.
   * Reads the round from the ledger. Refuses after the commit deadline or on a wrong question count.

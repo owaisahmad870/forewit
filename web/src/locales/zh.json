@@ -339,7 +339,8 @@
     "rebuild": "任何人都可以用 indexer/build.mjs 从链上事件重建这些数据。",
     "adminTitle": "团队链上操作（{n}）",
     "adminNote": "自部署以来 ForecastLedger 上的每一次角色授予或撤销、暂停以及管理员席位变更，均读取自链上。最前面的几条是部署本身。之后的任何条目都是团队操作，可在 BscScan 上核对。",
-    "adminBlock": "区块 {n}"
+    "adminBlock": "区块 {n}",
+    "started": "已免费开始的 Agent ID 持有者（不是预测）"
   },
   "start": {
     "title": "开始预测",

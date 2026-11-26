@@ -6,6 +6,7 @@ import { fmtUtc } from '../lib/format';
 // Fields written by indexer/build.mjs that data.ts does not type yet. scoresRoots is a placeholder until ForewitScores (C3) ships.
 type ProofSnapshot = Snapshot & {
   agentId?: string | null;
+  start?: { contract: string; count: number; players: { player: string; number: number; at: number; tx: string }[] } | null;
   firstCommits?: Record<string, { tx: string | null; roundId: string; block: string }>;
   scoresRoots?: { roundId?: string | number; root: string; tx?: string | null }[];
   adminLog?: { event: string; block: string; tx: string | null; role?: string; account?: string; by?: string; newAdmin?: string }[];
@@ -19,6 +20,13 @@ const EXPLORERS: Record<number, { url: string; key: 'mainnet' | 'testnet' }> = {
 
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 const link = 'text-accent underline underline-offset-4';
+
+// The other submitted Forewit contracts on BSC mainnet (agent/config.mjs and gitbook/reference/addresses.md list the same).
+const MAINNET_EXTRA: [string, string][] = [
+  ['OpenForecasts', '0xa034D7B62d04c8c4ac57a8C62047015C00DD6404'],
+  ['ForewitScores', '0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc'],
+  ['ForewitStart', '0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A'],
+];
 
 export function proofFacts(snap: ProofSnapshot) {
   const seen = new Set<string>();
@@ -73,8 +81,9 @@ export function Proof({ data }: { data: Dataset }) {
 
       <section aria-labelledby="proof-numbers">
         <h2 id="proof-numbers" className="sr-only">{t('proof.numbers')}</h2>
-        <dl className="grid gap-3 sm:grid-cols-3">
+        <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {stat(f.holders.length, t('proof.holders'))}
+          {snap.start && stat(snap.start.count, t('proof.started'))}
           {stat(f.rounds, t('proof.rounds'))}
           {stat(`${f.resolved} / ${f.questions}`, t('proof.resolved', { void: f.voided }))}
         </dl>
@@ -85,6 +94,7 @@ export function Proof({ data }: { data: Dataset }) {
         <h2 className="text-lg font-semibold">{t('proof.contracts')}</h2>
         <dl className="mt-2 divide-y divide-line">
           <Addr a={snap.ledger} label="ForecastLedger" />
+          {net?.key === 'mainnet' && MAINNET_EXTRA.map(([label, a]) => <Addr key={a} a={a} label={label} />)}
           {snap.agentId && <Addr a={snap.agentId} label={t('proof.agentId')} />}
           {f.ctfs.map((c) => <Addr key={c} a={c} label={t('proof.ctf')} />)}
         </dl>

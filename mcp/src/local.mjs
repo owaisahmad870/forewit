@@ -12,7 +12,7 @@ import {
 import { searchMarkets, KEY_HELP } from '../vendor/agent/lib/open.mjs';
 import { selector, wordBool, wordUint } from '../vendor/agent/lib/keccak.mjs';
 import { NETWORKS, DEFAULT_NETWORK, BAW_CHAIN_IDS, RISK_WARNING } from '../vendor/agent/config.mjs';
-import { ok, guarded, paginate, cursorInput, address, roundId, VERSION } from './common.mjs';
+import { ok, guarded, paginate, cursorInput, address, roundId, VERSION, REPLY_STYLE } from './common.mjs';
 import { runBaw, sendWithConfirmation } from '../vendor/agent/lib/baw.mjs';
 
 const ANNOTATIONS = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true };
@@ -85,7 +85,8 @@ async function saltGate(receipts, warnings) {
 
 /** `home` is the folder that holds .forewit/ (default: the user's home directory). It is not a tool input. */
 export function createLocalServer({ home } = {}) {
-  const server = new McpServer({ name: 'forewit-local', version: VERSION, title: 'Forewit (local, prepares transactions)' });
+  const server = new McpServer({ name: 'forewit-local', version: VERSION, title: 'Forewit (local, prepares transactions)' }, { instructions: `Start every Forewit session with forewit_plan and show its report lines as they are.
+${REPLY_STYLE}` });
   const tool = (name, config, fn, annotations = ANNOTATIONS) =>
     server.registerTool(name, { ...config, inputSchema: z.object(config.inputSchema).strict(), outputSchema: z.object(config.outputSchema), annotations: { ...annotations, title: config.title } }, guarded(fn));
 

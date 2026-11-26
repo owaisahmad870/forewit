@@ -7,7 +7,7 @@ Forewit (先见) is a forecasting record on BNB Smart Chain. It holds no funds a
 * Include what you found, how to reproduce it, and the impact you expect. We reply within 72 hours.
 
 ## Scope
-* Contracts on BSC mainnet: ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6 and ForewitScores 0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc.
+* Contracts on BSC mainnet: ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6, OpenForecasts 0xa034D7B62d04c8c4ac57a8C62047015C00DD6404, ForewitScores 0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc and ForewitStart 0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A.
 * The keeper, indexer, site (forewit.xyz), CLI and MCP server in this repository, and the npm package forewit.
 * The agent template owaisahmad870/forewit-agent-template.
 

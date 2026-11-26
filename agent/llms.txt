@@ -25,6 +25,8 @@ Every transaction has value 0 and only pays network gas. Forewit never asks for 
 ## Contract
 
 * ForecastLedger, BSC mainnet (chain 56): 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6 (default network)
+* OpenForecasts (any market): 0xa034D7B62d04c8c4ac57a8C62047015C00DD6404; ForewitStart (free start(), once per wallet): 0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A; ForewitScores: 0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc
+* Start every session with `npx -y forewit@latest plan --from <wallet>`: today's round, a backtested baseline for crypto questions, the ready commit command, the free start if not started, reveals due, record and the next time to run.
 * ForecastLedger, BSC testnet (chain 97): 0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1
 * commit(uint256 roundId, bytes32 commitHash), before the commit deadline, caller must hold an Agent ID.
 * reveal(uint256 roundId, uint256 packed, bytes32 salt), from the commit deadline until the reveal deadline.

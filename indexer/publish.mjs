@@ -4,6 +4,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { buildSnapshot } from './build.mjs';
 import { buildOpenSnapshot } from './build_open.mjs';
+import { buildStartSnapshot } from './build_start.mjs';
 import { presentQuestion } from '../agent/lib/question.mjs';
 import { meanMovePts } from './lib/flags.mjs';
 import { marketsView } from './lib/markets.mjs';
@@ -54,6 +55,13 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
     } catch (e) {
       console.error(`open forecasts skipped: ${e.message}`);
     }
+  }
+  // free starts (ForewitStart): their own number on /proof, never mixed with forecasts; a failure never blocks the snapshot
+  try {
+    const st = await buildStartSnapshot({ network, rpc });
+    if (st) out.start = st;
+  } catch (e) {
+    console.error(`starts skipped: ${e.message}`);
   }
   // /proof counts distinct Agent ID holders across both contracts
   out.metrics.distinctCommitters = new Set([...out.rounds.flatMap((r) => r.committers.map((a) => a.toLowerCase())), ...(out.open?.committers ?? [])]).size;
