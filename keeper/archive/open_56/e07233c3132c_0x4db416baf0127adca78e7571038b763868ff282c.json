@@ -1,0 +1,66 @@
+{
+ "forecast": {
+  "key": "0xe07233c3132c9094cbc44f081765b4a87f5fb282b99620636542d7b7136b217e",
+  "forecaster": "0x4Db416bAF0127AdCa78e7571038b763868ff282C",
+  "ctf": "0x9400F8Ad57e9e0F352345935d6D3175975eb1d9F",
+  "conditionId": "0x3f62261c8143c88e36fc4f069adcc3bf37326eca8f7988ea2d4a6c287b8a3864",
+  "slot": 1,
+  "marketId": "4100393",
+  "committedAt": 1795695953,
+  "revealNotBefore": 1796101260,
+  "stage": "new",
+  "tries": 1,
+  "paid": true
+ },
+ "checkedAt": 1795695961,
+ "tries": 1,
+ "reason": 0,
+ "price": {
+  "ok": true,
+  "bps": 9600,
+  "at": 1795695840
+ },
+ "market": {
+  "id": 4100393,
+  "conditionId": "0x3f62261c8143c88e36fc4f069adcc3bf37326eca8f7988ea2d4a6c287b8a3864",
+  "tradingStatus": "OPEN",
+  "status": "REGISTERED",
+  "outcomes": [
+   {
+    "indexSet": 1
+   },
+   {
+    "indexSet": 2
+   }
+  ]
+ },
+ "category": {
+  "slug": "what-price-will-solana-hit-in-november-2026",
+  "endsAt": "2026-12-01T05:00:00.000Z",
+  "tradingSession": null
+ },
+ "history": [
+  {
+   "x": 1795695360,
+   "y": 4
+  },
+  {
+   "x": 1795695480,
+   "y": 4
+  },
+  {
+   "x": 1795695600,
+   "y": 4
+  },
+  {
+   "x": 1795695720,
+   "y": 4
+  },
+  {
+   "x": 1795695840,
+   "y": 4
+  }
+ ],
+ "liveMidBps": 320,
+ "volume24hUsd": 299.08
+}
