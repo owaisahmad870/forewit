@@ -236,6 +236,14 @@
     "noScore": "No score yet"
   },
   "docs": {
+    "cards": {
+      "start": "Three ways to make your first sealed forecast: phone, computer or your AI agent.",
+      "how": "Seal a forecast, reveal it later, and see how it compares with the market price.",
+      "scoring": "How the Brier score works, and how skill against the market sets your rank.",
+      "owner": "What the owner can and cannot change, and how the contracts protect your record.",
+      "risk": "Forecasting scores only. No bets, no funds held, no returns paid.",
+      "faq": "Short answers to the most common questions."
+    },
     "title": "Docs",
     "intro": "How Forewit works, how it scores, and what its owner can and cannot do.",
     "pages": {

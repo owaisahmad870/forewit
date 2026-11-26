@@ -10,10 +10,9 @@ export const DOC_SLUGS = ['how', 'scoring', 'owner', 'risk', 'faq'] as const;
 // old slugs keep working: security merged into owner; selection stays reachable from the round page
 const ALIAS: Record<string, string> = { security: 'owner' };
 
-const firstLine = (blocks: Block[] | undefined) => (blocks?.find((b) => typeof b === 'string') as string | undefined) ?? '';
 
 export function DocsIndex() {
-  const { t, raw } = useT();
+  const { t } = useT();
   return (
     <DocShell current="index" title={t('docs.title')} lead={t('docs.intro')} toc={[]} footer={false}>
       <ul className="grid gap-3 sm:grid-cols-2">
@@ -21,7 +20,7 @@ export function DocsIndex() {
           <li key={k}>
             <a href={href} className="flex h-full flex-col rounded-lg border border-line bg-surface p-4 hover:border-accent">
               <span className="font-semibold text-accent">{t(label)}</span>
-              <span className="mt-1 line-clamp-2 text-sm text-muted">{k === 'start' ? t('start.intro') : firstLine(raw<Block[] | undefined>(`docs.pages.${k}.blocks`))}</span>
+              <span className="mt-1 text-sm text-muted">{t(`docs.cards.${k}`)}</span>
             </a>
           </li>
         ))}

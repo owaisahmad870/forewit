@@ -60,7 +60,7 @@ def step_card(i, names, head, sub):
     each_w = (box_w - gap * (len(shots) - 1)) // len(shots)
     x = 56
     for s in shots:
-        k = min(each_w / s.width, box_h / s.height, 1.6)
+        k = min(each_w / s.width, box_h / s.height, 1.0)  # never upscale: the screenshots stay sharp
         s = s.resize((int(s.width * k), int(s.height * k)), Image.LANCZOS)
         cx = x + (each_w - s.width) // 2
         d.rounded_rectangle((cx - 2, top - 2, cx + s.width + 1, top + s.height + 1), radius=6, outline=LINE, width=2)
@@ -85,10 +85,12 @@ def main():
             frames.append(Image.blend(im, nxt, a))
             durations.append(70)
     webp = SHOTS / "workflow.webp"
-    frames[0].save(webp, save_all=True, append_images=frames[1:], duration=durations, loop=0, quality=82, method=6)
-    gif_frames = [f.resize((960, 540), Image.LANCZOS).quantize(colors=128, method=Image.Quantize.MEDIANCUT) for f in frames]
+    frames[0].save(webp, save_all=True, append_images=frames[1:], duration=durations, loop=0, quality=94, method=6)
+    # GIF: full size, hard cuts (crossfades band badly in 256 colours), own palette per card, no dithering on flat UI
+    hard = [(im, ms) for im, ms in zip(frames, durations) if ms > 100]
+    gif_frames = [im.quantize(colors=256, method=Image.Quantize.MAXCOVERAGE, dither=Image.Dither.NONE) for im, _ in hard]
     gif = ROOT / "docs" / "posts" / "img" / "workflow.gif"
-    gif_frames[0].save(gif, save_all=True, append_images=gif_frames[1:], duration=durations, loop=0, optimize=True)
+    gif_frames[0].save(gif, save_all=True, append_images=gif_frames[1:], duration=[ms for _, ms in hard], loop=0, optimize=True)
     frames[4].save(ROOT / "docs" / "posts" / "img" / "workflow_poster.png")
     for p in (webp, gif):
         print(p.relative_to(ROOT), round(p.stat().st_size / 1024), "KB")
