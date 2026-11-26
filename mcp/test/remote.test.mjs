@@ -139,7 +139,7 @@ test('remote server', async (t) => {
     const r1 = data.results.rounds.find((r) => r.round_id === 1);
     assert.ok(['beat', 'behind', 'level', 'scored'].includes(r1.verdict) && r1.says.length > 10);
     assert.deepEqual(data.results.predictions.map((p) => [p.market_id, p.outcome, p.status, p.your_chance_pct, p.points]), [['902', 2, 'waiting', null, null], ['901', 1, 'beat', 80, 12]]);
-    assert.match(data.results.predictions[1].says, /^Market 901, outcome 1: You beat the market by 12 points/);
+    assert.match(data.results.predictions[1].says, /^Market 901 \(outcome 1\): You were closer than the market by 12 points/);
     assert.match(data.results.summary, /2 open forecasts/);
     const op = await call(client, 'get_my_status', { address: OP });
     assert.equal(op.data.leaderboard, null);

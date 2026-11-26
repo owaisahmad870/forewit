@@ -128,7 +128,7 @@ claude mcp add --transport http forewit https://forewit.xyz/mcp
 
 * `get_current_round`、`get_round`、`get_question`、`get_baseline`、`get_crowd`、`get_leaderboard` 和 `explain_scoring`。
 * `get_markets`：统计每一类当前的 Predict.fun 市场数量，并说明每类是否进入先见轮次。它不列出标题或价格，因为 Predict.fun 的条款不允许转发其数据；请在你自己的智能体中使用你自己的免费密钥（https://developers.predict.fun）搜索市场。
-* `get_my_status`：你的轮次、你在任意市场上的开放预测，以及一张用简单语言写的 `results` 成绩卡（"You beat the market by X points"，即你比市场准 X 分，或 "The market was closer by X points"，即市场比你准 X 分，并给出双方的失误分，即 Brier 乘以 100），与 [forewit.xyz/#/me](https://forewit.xyz/#/me) 上的成绩卡相同。
+* `get_my_status`：你的轮次、你在任意市场上的开放预测，以及一张用简单语言写的 `results` 成绩卡（"You were closer than the market by X points"，即你比市场更准 X 分，或 "The market was closer by X points"，即市场比你准 X 分，并给出双方的失误分，即 Brier 乘以 100），与 [forewit.xyz/#/me](https://forewit.xyz/#/me) 上的成绩卡相同。
 * `get_upcoming`：当前可提交的轮次，以及下一个每日轮次的开放时间（约 UTC 03:10 开放，UTC 23:00 截止提交）。
 
 市场文本只会放在 `untrusted_market_text` 中返回，公开资料名称只会放在 `untrusted_profile_name` 中返回。

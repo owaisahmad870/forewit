@@ -197,8 +197,8 @@ const findRound = (ds, id) => {
 // The results card in plain words (same numbers as the site's My results page). Points and miss scores are 0 to 100.
 const p1 = (x) => (x === null ? null : Math.round(x * 1000) / 10);
 const SAYS = {
-  beat: (r) => `You beat the market by ${Math.abs(p1(r.skill))} points (your miss score ${p1(r.brier)}, the market's ${p1(r.marketBrier)}).`,
-  behind: (r) => `The market was closer by ${Math.abs(p1(r.skill))} points (your miss score ${p1(r.brier)}, the market's ${p1(r.marketBrier)}).`,
+  beat: (r) => `You were closer than the market by ${Math.abs(p1(r.skill))} points. Your miss: ${p1(r.brier)}. Market's miss: ${p1(r.marketBrier)}.`,
+  behind: (r) => `The market was closer by ${Math.abs(p1(r.skill))} points. Your miss: ${p1(r.brier)}. Market's miss: ${p1(r.marketBrier)}.`,
   level: () => 'Level with the market.',
   scored: () => 'Scored; this round had no market price to compare with.',
   forfeited: () => 'Missed: not revealed in time, counted as a loss.',
@@ -210,8 +210,8 @@ const SAYS = {
 const PSAYS = {
   waiting: () => 'Waiting for the market to settle; the chance stays sealed until the market ends.',
   revealed: () => 'Revealed; waiting for scoring.',
-  beat: (p) => `You beat the market by ${Math.abs(p1(p.skill))} points (your miss score ${p1(p.brier)}, the market's ${p1(p.marketBrier)}).`,
-  behind: (p) => `The market was closer by ${Math.abs(p1(p.skill))} points (your miss score ${p1(p.brier)}, the market's ${p1(p.marketBrier)}).`,
+  beat: (p) => `You were closer than the market by ${Math.abs(p1(p.skill))} points. Your miss: ${p1(p.brier)}. Market's miss: ${p1(p.marketBrier)}.`,
+  behind: (p) => `The market was closer by ${Math.abs(p1(p.skill))} points. Your miss: ${p1(p.brier)}. Market's miss: ${p1(p.marketBrier)}.`,
   level: () => 'Level with the market.',
   scored: () => 'Scored; there was no market price at the time of the forecast.',
   void: () => 'Void: not counted.',
@@ -222,7 +222,7 @@ export function resultsCard(snapshot, addr) {
   const scored = w.beat + w.behind;
   const predictions = w.predictions.map((p) => ({
     market_id: p.marketId, outcome: p.slot + 1, status: p.status, your_chance_pct: p.chance === null ? null : p1(p.chance),
-    says: `Market ${p.marketId}, outcome ${p.slot + 1}: ${PSAYS[p.status](p)}`, points: p1(p.skill), your_miss: p1(p.brier), market_miss: p1(p.marketBrier),
+    says: `Market ${p.marketId} (outcome ${p.slot + 1}): ${PSAYS[p.status](p)}`, points: p1(p.skill), your_miss: p1(p.brier), market_miss: p1(p.marketBrier),
   }));
   const open = predictions.length ? ` ${predictions.length} open forecasts, counted in the same record.` : '';
   const summary = !w.committed ? (predictions.length ? `No round played yet.${open}` + (w.avgSkill === null ? '' : ` Average ${p1(w.avgSkill) > 0 ? '+' : ''}${p1(w.avgSkill)} points per question against the market.`) + (w.rank ? ` Leaderboard rank ${w.rank}.` : '') : 'This wallet has not played a round yet.')

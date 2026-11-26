@@ -25,7 +25,7 @@ describe('my results with open forecasts', () => {
   it('a v2 only wallet sees its open forecasts, not the empty message', () => {
     const html = page({ open: { forecasts: [of(1)], committers: [A] } });
     expect(html).toContain(en.me.predTitle);
-    expect(html).toContain('Market 501, outcome 1');
+    expect(html).toContain('Market 501 (outcome 1)');
     expect(html).toContain(en.me.sealed);
     expect(html).not.toContain(en.me.none);
   });
@@ -33,8 +33,8 @@ describe('my results with open forecasts', () => {
     const scored = of(2, { revealedBps: 8000, scored: { brier: '4000000', baselineBrier: '16000000', skill: '12000000', baselineUsed: true, forfeited: false }, finalized: { slot0Outcome: 'Yes', split: false, at: 1795100000 } });
     const html = page({ rounds: [round], open: { forecasts: [scored], committers: [A] } });
     expect(html).toContain('Round 1');
-    expect(html).toContain('Market 502, outcome 1');
-    expect(html).toContain('your forecast 80%');
-    expect(html).toContain('You beat the market by 12.0 points');
+    expect(html).toContain('Market 502 (outcome 1)');
+    expect(html).toContain('you said 80%');
+    expect(html).toContain('You were closer than the market by 12.0 points');
   });
 });
