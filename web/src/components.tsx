@@ -57,7 +57,7 @@ export function OutcomeBadge({ outcome }: { outcome: Question['outcome'] }) {
 // one row per question: figures in rows, never tiles (Hallmark critique); the close date hides on phones to keep rows calm
 export function QuestionTable({ questions, crowdSealed, showResult }: { questions: Question[]; crowdSealed: boolean; showResult: boolean }) {
   const { t, lang } = useT();
-  const th = 'px-2 py-2 text-left text-xs font-medium tracking-wide text-muted uppercase sm:px-3';
+  const th = 'px-2 py-2 text-left text-xs font-medium tracking-wide whitespace-nowrap text-muted uppercase sm:px-3';
   const num = 'px-2 py-3 text-right tabular-nums whitespace-nowrap sm:px-3';
   return (
     <div className="-mx-1 overflow-x-auto">
@@ -423,7 +423,7 @@ export function ColHelp({ text }: { text: string }) {
     <span className="relative inline-flex align-middle" onMouseEnter={show} onMouseLeave={hide}>
       <button ref={ref} type="button" aria-label={text} aria-expanded={!!at} onClick={() => (at ? hide() : show())} onFocus={show} onBlur={hide}
         className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-line text-[10px] leading-none font-semibold text-muted normal-case hover:border-accent hover:text-ink">?</button>
-      {at && <span role="tooltip" style={{ top: at.top, left: at.left }} className="fixed z-50 w-64 rounded-md border border-line bg-surface-2 p-2.5 text-left text-xs leading-relaxed font-normal tracking-normal text-ink normal-case shadow-lg">{text}</span>}
+      {at && <span role="tooltip" style={{ top: at.top, left: at.left }} className="fixed z-50 w-64 rounded-lg border border-line bg-surface px-3 py-2.5 text-left text-[0.8rem] leading-snug font-normal tracking-normal whitespace-normal text-ink normal-case shadow-xl">{text}</span>}
     </span>
   );
 }

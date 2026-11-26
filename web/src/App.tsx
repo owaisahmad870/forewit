@@ -125,22 +125,6 @@ function Sidebar({ route, theme, setTheme }: { route: string[]; theme: string; s
   );
 }
 
-function RiskBanner() {
-  const { t } = useT();
-  const [seen, setSeen] = useState(() => store.get('riskSeen') === '1');
-  if (seen) return null;
-  return (
-    <div role="region" aria-label={t('docs.pages.risk.title')} className="border-b border-accent bg-surface-2">
-      <div className="flex max-w-5xl flex-col gap-3 px-4 py-3 sm:px-8 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm">
-          <p lang="en" className="font-semibold">{t('risk')}</p>
-          {t('riskLocal') && <p className="mt-1">{t('riskLocal')}</p>}
-        </div>
-        <button type="button" className="min-h-11 shrink-0 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-ink" onClick={() => { store.set('riskSeen', '1'); setSeen(true); }}>{t('ui.dismiss')}</button>
-      </div>
-    </div>
-  );
-}
 
 function Footer({ data }: { data: Dataset | null }) {
   const { t, lang } = useT();
@@ -231,8 +215,7 @@ export function App() {
       <div className="min-[60rem]:flex">
         <Sidebar route={route} theme={theme} setTheme={setTheme} />
         <div className="min-w-0 flex-1">
-          <RiskBanner />
-          <main id="main" tabIndex={-1} className={`min-h-svh px-4 py-6 sm:px-8 ${route[0] === 'docs' || route[0] === 'start' || route[0] === 'play' ? 'max-w-7xl' : 'max-w-5xl'}`}>
+          <main id="main" tabIndex={-1} className={`min-h-svh px-4 py-6 outline-none sm:px-8 ${route[0] === 'docs' || route[0] === 'start' || route[0] === 'play' ? 'max-w-7xl' : 'max-w-5xl'}`}>
             <Page route={route} data={data} error={error} />
           </main>
           <Footer data={data} />
