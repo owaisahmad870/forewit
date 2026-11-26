@@ -21,6 +21,7 @@
     "x": "Forewit 的 X 账号（在新标签页打开）"
   },
   "ui": {
+    "footerNav": "站点链接",
     "source": "源代码",
     "breadcrumbs": "导航路径",
     "docsMenu": "文档目录",

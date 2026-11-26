@@ -21,6 +21,7 @@
     "x": "Forewit on X (opens in a new tab)"
   },
   "ui": {
+    "footerNav": "Site links",
     "source": "Source code",
     "breadcrumbs": "Breadcrumbs",
     "docsMenu": "Docs menu",
