@@ -420,8 +420,7 @@
   },
   "banner": {
     "commit": "Today's picks are open. They close in",
-    "reveal": "Reveal due for picks #{n}. If you committed without auto reveal, reveal before {t} or it counts as a forfeit.",
-    "revealIn": "Reveal closes in",
+    "reveal": "Reveal due for picks #{n}, only if you committed without auto reveal. Closes in",
     "how": "How to reveal"
   },
   "help": {
