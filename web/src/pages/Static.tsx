@@ -69,9 +69,12 @@ export function Profile() {
 
 export function Crowd({ data }: { data: Dataset }) {
   const { t, raw } = useT();
+  // every round whose commits closed: scored ones show both Briers, the rest say they wait for onchain outcomes
+  const now = Date.now();
   const rows = data.rounds
+    .filter((r) => r.commitDeadline.getTime() <= now)
     .map((r) => ({ id: r.id, ...crowdVsMarket([r]) }))
-    .filter((r): r is { id: number; crowd: number; market: number; n: number } => r.n > 0);
+    .sort((a, b) => b.id - a.id);
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">{t('crowd.title')}</h1>
@@ -96,9 +99,11 @@ export function Crowd({ data }: { data: Dataset }) {
               {rows.map((r) => (
                 <tr key={r.id} className="border-t border-line">
                   <td className="px-3 py-1"><a href={`#/round/${r.id}`} className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('round.title', { n: r.id })}</a></td>
-                  <td className="px-3 py-3 text-right">{r.n}</td>
-                  <td className={`px-3 py-3 text-right ${r.crowd < r.market ? 'font-semibold' : ''}`}>{fmtBrier(r.crowd)}</td>
-                  <td className={`px-3 py-3 text-right ${r.market < r.crowd ? 'font-semibold' : ''}`}>{fmtBrier(r.market)}</td>
+                  {r.crowd === null || r.market === null ? <td colSpan={3} className="px-3 py-3 text-right text-muted">{t('crowd.waiting')}</td> : <>
+                    <td className="px-3 py-3 text-right">{r.n}</td>
+                    <td className={`px-3 py-3 text-right ${r.crowd < r.market ? 'font-semibold' : ''}`}>{fmtBrier(r.crowd)}</td>
+                    <td className={`px-3 py-3 text-right ${r.market < r.crowd ? 'font-semibold' : ''}`}>{fmtBrier(r.market)}</td>
+                  </>}
                 </tr>
               ))}
             </tbody>

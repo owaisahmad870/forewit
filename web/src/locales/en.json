@@ -159,7 +159,8 @@
     "n": "Questions",
     "crowdBrier": "Crowd Brier",
     "marketBrier": "Market Brier",
-    "none": "No scored rounds yet."
+    "none": "No scored rounds yet.",
+    "waiting": "Waiting for results: scored once its questions settle onchain"
   },
   "profile": {
     "title": "Profiles",

@@ -159,7 +159,8 @@
     "n": "问题数",
     "crowdBrier": "群体 Brier",
     "marketBrier": "市场 Brier",
-    "none": "暂无已评分的轮次。"
+    "none": "暂无已评分的轮次。",
+    "waiting": "等待结果：问题在链上结算后计分"
   },
   "profile": {
     "title": "个人资料",
