@@ -1,8 +1,8 @@
 {
   "network": 56,
   "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
-  "builtAt": "2026-11-26T16:53:00.300Z",
-  "headBlock": "135881856",
+  "builtAt": "2026-11-26T22:25:26.186Z",
+  "headBlock": "135926182",
   "metrics": {
     "distinctCommitters": 1,
     "rounds": 3,
@@ -150,6 +150,9 @@
       "scored": {},
       "forfeited": {},
       "outcomes": {
+        "0": "Yes",
+        "1": "Yes",
+        "2": "Yes",
         "3": "No"
       },
       "baseline": "478542035422420700",
@@ -288,9 +291,9 @@
     }
   ],
   "start": {
-    "headBlock": "135881933",
+    "headBlock": "135926248",
     "contract": "0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A",
-    "count": 5,
+    "count": 6,
     "players": [
       {
         "player": "0x67d16b3e18668ec0239fbd6f97012bb3fa8858d6",
@@ -321,6 +324,12 @@
         "number": 5,
         "at": 1795694297,
         "tx": "0xeda738bf108652cd2cf57a2ce65564420a0540f13aac15062f0cf49c9cbd945d"
+      },
+      {
+        "player": "0xe233d9dd149af9a246897e74d8f8262a78cd8e93",
+        "number": 6,
+        "at": 1795713788,
+        "tx": "0x17936c6691a70f598db299034b79dcd9b506aad2aed8fe2b8aff8953044e9edc"
       }
     ]
   },

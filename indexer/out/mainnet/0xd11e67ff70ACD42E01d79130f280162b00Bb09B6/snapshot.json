@@ -1,8 +1,8 @@
 {
   "network": 56,
   "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
-  "builtAt": "2026-11-26T16:53:00.300Z",
-  "headBlock": "135881856",
+  "builtAt": "2026-11-26T22:25:26.186Z",
+  "headBlock": "135926182",
   "metrics": {
     "distinctCommitters": 1,
     "rounds": 3,
@@ -144,6 +144,9 @@
       "scored": {},
       "forfeited": {},
       "outcomes": {
+        "0": "Yes",
+        "1": "Yes",
+        "2": "Yes",
         "3": "No"
       },
       "baseline": "478542035422420700",
