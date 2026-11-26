@@ -342,7 +342,7 @@
     "adminNote": "Every role grant or revoke, pause and admin seat change on ForecastLedger since deploy, read from the chain. The first entries are the deploy itself. Anything after them is a team action you can check on BscScan.",
     "adminBlock": "block {n}",
     "started": "Started (free tap, not a forecast)",
-    "anyContract": "Agent ID wallets that used any Forewit contract (the hackathon 30 holder count)",
+    "anyContract": "Agent ID wallets that used any Forewit contract",
     "startNote": "Starts are often sent by automated agents that try new Agent ID contracts. Only forecasts build a track record."
   },
   "start": {

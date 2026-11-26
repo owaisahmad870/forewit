@@ -343,7 +343,7 @@
     "adminNote": "自部署以来 ForecastLedger 上的每一次角色授予或撤销、暂停以及管理员席位变更，均读取自链上。最前面的几条是部署本身。之后的任何条目都是团队操作，可在 BscScan 上核对。",
     "adminBlock": "区块 {n}",
     "started": "已开始（免费操作，不是预测）",
-    "anyContract": "使用过任一先见合约的 Agent ID 钱包（黑客松 30 个持有者的统计口径）",
+    "anyContract": "使用过任一先见合约的 Agent ID 钱包",
     "startNote": "开始操作常由自动尝试新 Agent ID 合约的智能体发送。只有预测才会建立记录。"
   },
   "start": {
