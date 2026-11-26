@@ -170,6 +170,8 @@
     }
   },
   "leaderboard": {
+    "yourBrier": "Brier",
+    "marketBrier": "Market Brier",
     "aboutTitle": "About these numbers",
     "title": "Leaderboard",
     "intro": "Only forecasters who opted in are listed. Everyone else counts only in the totals. Rank uses skill against the market price, shrunk toward zero for small samples.",

@@ -170,6 +170,8 @@
     }
   },
   "leaderboard": {
+    "yourBrier": "Brier",
+    "marketBrier": "市场 Brier",
     "aboutTitle": "关于这些数字",
     "title": "排行榜",
     "intro": "只列出选择公开的预测者，其他人只计入总数。排名依据相对市场价格的技能分，样本较少时向零收缩。",

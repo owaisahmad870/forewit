@@ -244,6 +244,8 @@ export interface Row {
   questions: number;
   baselineQuestions: number;
   meanBrier: number | null; // 0 to 1
+  baseBrier: number | null; // own Brier on the questions that had a market price, 0 to 1
+  marketBrier: number | null; // the market's Brier on those same questions, 0 to 1
   shrunkSkill: number; // 0 to 1 Brier units, sumSkill / (baselineQuestions + K)
   participation: number | null;
   calibrationError: number | null;
@@ -254,10 +256,10 @@ export interface Row {
 // Leaderboard per docs/SCORING.md, merged with v2 open forecasts per docs/OPEN_FORECASTS.md "Record": one record per
 // wallet. Every forecaster is computed (for aggregate counts); only opt in rows are shown.
 export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number; publicCount: number; all: Row[] } {
-  const acc = new Map<string, { committed: number; revealed: number; rounds: number; open: number; days: Set<string>; q: number; bq: number; brier: bigint; skill: bigint; postSkill: bigint; cal: { p: number; yes: boolean }[] }>();
+  const acc = new Map<string, { committed: number; revealed: number; rounds: number; open: number; days: Set<string>; q: number; bq: number; brier: bigint; bBrier: bigint; skill: bigint; postSkill: bigint; cal: { p: number; yes: boolean }[] }>();
   const get = (a: string) => {
     const k = a.toLowerCase();
-    if (!acc.has(k)) acc.set(k, { committed: 0, revealed: 0, rounds: 0, open: 0, days: new Set(), q: 0, bq: 0, brier: 0n, skill: 0n, postSkill: 0n, cal: [] });
+    if (!acc.has(k)) acc.set(k, { committed: 0, revealed: 0, rounds: 0, open: 0, days: new Set(), q: 0, bq: 0, brier: 0n, bBrier: 0n, skill: 0n, postSkill: 0n, cal: [] });
     return acc.get(k)!;
   };
   const builtAt = Date.parse(snap.builtAt) / 1000;
@@ -273,7 +275,7 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
       x.days.add(`r${r.roundId}`); // v1 keeps its 5 rounds rule: two rounds on one date still count twice
       x.q += Number(s.questions);
       x.brier += BigInt(s.brier);
-      if (r.baseline) { x.bq += Number(s.questions); x.skill += BigInt(s.skill); }
+      if (r.baseline) { x.bq += Number(s.questions); x.skill += BigInt(s.skill); x.bBrier += BigInt(s.brier); }
       if (r.baseline && r.commitTiming?.[a.toLowerCase()]?.afterBaseline) x.postSkill += BigInt(s.skill); // committed after seeing the baseline
     }
     for (const [a, packed] of Object.entries(r.forecasts ?? {})) {
@@ -291,7 +293,7 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
     x.q++;
     x.brier += BigInt(s.brier);
     x.days.add(dayOf(f.finalized!.at));
-    if (s.baselineUsed) { x.bq++; x.skill += BigInt(s.skill); }
+    if (s.baselineUsed) { x.bq++; x.skill += BigInt(s.skill); x.bBrier += BigInt(s.brier); }
     if (f.revealedBps !== null) x.cal.push({ p: f.revealedBps, yes: (f.finalized!.slot0Outcome === 'Yes') === (f.slot === 0) });
   }
   const profiles = Object.fromEntries(Object.entries(snap.profiles ?? {}).map(([a, p]) => [a.toLowerCase(), p]));
@@ -311,6 +313,8 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
       questions: x.q,
       baselineQuestions: x.bq,
       meanBrier: x.q ? Number(x.brier) / x.q / BRIER_MAX : null,
+      baseBrier: x.bq ? Number(x.bBrier) / x.bq / BRIER_MAX : null,
+      marketBrier: x.bq ? Number(x.bBrier + x.skill) / x.bq / BRIER_MAX : null,
       shrunkSkill: Number(x.skill) / (x.bq + K) / BRIER_MAX,
       participation: x.committed ? x.revealed / x.committed : null,
       calibrationError: calibrationError(x.cal),

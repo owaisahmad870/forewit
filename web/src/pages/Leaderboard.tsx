@@ -1,11 +1,11 @@
 import { Card, Explain, NextLinks, SampleBadge, ScoresWhen } from '../components';
 import { useT } from '../i18n';
 import { leaderboard, MIN_BASELINE_QUESTIONS, MIN_ROUNDS, type Dataset, type Row } from '../lib/data';
-import { fmtSkill } from '../lib/format';
+import { fmtBrier, fmtSkill } from '../lib/format';
 
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
-// lean by design: rank, who, edge over the market and sample size; Brier, calibration and participation live on each profile
+// lean by design: rank, who, edge over the market, both Brier scores on the same market priced questions, and sample size; calibration and participation live on each profile
 function Table({ rows, ranked }: { rows: Row[]; ranked: boolean }) {
   const { t } = useT();
   const th = 'px-3 py-2 text-left text-xs font-medium tracking-wide text-muted uppercase whitespace-nowrap';
@@ -18,6 +18,8 @@ function Table({ rows, ranked }: { rows: Row[]; ranked: boolean }) {
             {ranked && <th scope="col" className={`${th} w-12`}>{t('leaderboard.rank')}</th>}
             <th scope="col" className={th}>{t('leaderboard.forecaster')}</th>
             <th scope="col" className={`${th} text-right`}>{t('leaderboard.skill')}</th>
+            <th scope="col" className={`${th} hidden text-right md:table-cell`} title={t('ui.lowerBetter')}>{t('leaderboard.yourBrier')}</th>
+            <th scope="col" className={`${th} hidden text-right md:table-cell`} title={t('ui.lowerBetter')}>{t('leaderboard.marketBrier')}</th>
             <th scope="col" className={`${th} text-right`}>{t('leaderboard.questions')}</th>
             <th scope="col" className={`${th} hidden text-right sm:table-cell`}>{t('leaderboard.rounds')}</th>
           </tr>
@@ -30,6 +32,8 @@ function Table({ rows, ranked }: { rows: Row[]; ranked: boolean }) {
                 <a href={`#/profile/${r.addr}`} className="font-semibold text-accent underline-offset-4 hover:underline">{r.name ?? short(r.addr)}{r.postBaselineFlag && <span title={t('leaderboard.postBaselineFlag')} aria-label={t('leaderboard.postBaselineFlag')}> †</span>}</a>
               </th>
               <td className={`${num} font-semibold ${r.shrunkSkill > 0 ? 'text-pos' : r.shrunkSkill < 0 ? 'text-neg' : ''}`}>{fmtSkill(r.shrunkSkill)}</td>
+              <td className={`${num} hidden md:table-cell`}>{fmtBrier(r.baseBrier)}</td>
+              <td className={`${num} hidden text-muted md:table-cell`}>{fmtBrier(r.marketBrier)}</td>
               <td className={num}>{r.baselineQuestions}</td>
               <td className={`${num} hidden sm:table-cell`}>{r.rounds}</td>
             </tr>
@@ -61,7 +65,7 @@ export function Leaderboard({ data }: { data: Dataset }) {
         <p className="text-ink">{t('leaderboard.totals', { n: lb.forecasters, p: lb.publicCount })}</p>
         <p className="max-w-[68ch]">{t('leaderboard.intro')}</p>
         <p className="max-w-[68ch]">{t('leaderboard.formula')}</p>
-        <Explain terms={['skill', 'questionsCol', 'ranked', 'dagger']} />
+        <Explain terms={['skill', 'brier', 'questionsCol', 'ranked', 'dagger']} />
       </section>
       <NextLinks to={['start', 'scoring', 'rounds']} />
     </div>
