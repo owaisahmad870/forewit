@@ -1,4 +1,5 @@
-import { Blocks, Card, Explain, NextLinks, OnThisPage, ScoresWhen, slugId } from '../components';
+import { Blocks, Card, Explain, NextLinks, ScoresWhen, slugId } from '../components';
+import { DOC_NAV, DocSection, DocShell } from '../DocShell';
 import { useT } from '../i18n';
 import { crowdVsMarket, type Dataset } from '../lib/data';
 import { fmtBrier } from '../lib/format';
@@ -9,24 +10,27 @@ export const DOC_SLUGS = ['how', 'scoring', 'owner', 'risk', 'faq'] as const;
 // old slugs keep working: security merged into owner; selection stays reachable from the round page
 const ALIAS: Record<string, string> = { security: 'owner' };
 
+const firstLine = (blocks: Block[] | undefined) => (blocks?.find((b) => typeof b === 'string') as string | undefined) ?? '';
+
 export function DocsIndex() {
-  const { t } = useT();
+  const { t, raw } = useT();
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">{t('docs.title')}</h1>
-      <p className="text-muted">{t('docs.intro')}</p>
-      <ul className="grid gap-2 sm:grid-cols-2">
-        {DOC_SLUGS.map((s) => (
-          <li key={s}><a href={`#/docs/${s}`} className="flex min-h-11 items-center rounded-xl border border-line bg-surface p-4 font-semibold hover:border-accent">{t(`docs.pages.${s}.title`)}</a></li>
+    <DocShell current="index" title={t('docs.title')} lead={t('docs.intro')} toc={[]} footer={false}>
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {DOC_NAV.map(([k, href, label]) => (
+          <li key={k}>
+            <a href={href} className="flex h-full flex-col rounded-lg border border-line bg-surface p-4 hover:border-accent">
+              <span className="font-semibold text-accent">{t(label)}</span>
+              <span className="mt-1 line-clamp-2 text-sm text-muted">{k === 'start' ? t('start.intro') : firstLine(raw<Block[] | undefined>(`docs.pages.${k}.blocks`))}</span>
+            </a>
+          </li>
         ))}
       </ul>
-      <section aria-labelledby="glossary" className="space-y-2 pt-2">
-        <h2 id="glossary" className="text-lg font-semibold">{t('help.glossary')}</h2>
-        <p className="text-sm text-muted">{t('help.glossaryIntro')}</p>
+      <DocSection id="glossary" title={t('help.glossary')}>
+        <p className="mb-3 text-sm text-muted">{t('help.glossaryIntro')}</p>
         <Explain open terms={['agentId', 'forecast', 'commit', 'reveal', 'forfeit', 'market', 'baseline', 'brier', 'skill', 'crowd', 'void']} />
-      </section>
-      <NextLinks to={['start', 'rounds']} />
-    </div>
+      </DocSection>
+    </DocShell>
   );
 }
 
@@ -38,21 +42,18 @@ export function DocPage({ slug: asked }: { slug: string }) {
   // guided path: previous and next follow DOC_SLUGS, the order of the docs index
   const i = (DOC_SLUGS as readonly string[]).indexOf(slug);
   const prev = DOC_SLUGS[i - 1], next = DOC_SLUGS[i + 1];
-  const navLink = 'flex min-h-11 flex-1 items-center rounded-xl border border-line bg-surface p-4 hover:border-accent';
+  const navLink = 'flex min-h-11 flex-1 flex-col justify-center rounded-lg border border-line p-4 hover:border-accent';
+  const toc = blocks.flatMap((b) => (typeof b === 'object' && 'h' in b ? [{ id: slugId(b.h), label: b.h }] : []));
   return (
-    <article className="space-y-4">
-      <a href="#/docs" className="inline-flex min-h-11 items-center text-sm text-accent">{t('docs.title')}</a>
-      <h1 className="text-2xl font-semibold">{t(`docs.pages.${slug}.title`)}</h1>
-      <OnThisPage items={blocks.flatMap((b) => (typeof b === 'object' && 'h' in b ? [{ id: slugId(b.h), label: b.h }] : []))} />
+    <DocShell current={slug} title={t(`docs.pages.${slug}.title`)} toc={toc}>
       <Blocks blocks={blocks} />
       {i >= 0 && (
-        <nav aria-label={t('help.docNav')} className="flex flex-col gap-2 pt-4 sm:flex-row">
-          {prev && <a href={`#/docs/${prev}`} rel="prev" className={navLink}>{t('help.prev', { t: t(`docs.pages.${prev}.title`) })}</a>}
-          {next && <a href={`#/docs/${next}`} rel="next" className={`${navLink} sm:justify-end sm:text-right`}>{t('help.next', { t: t(`docs.pages.${next}.title`) })}</a>}
+        <nav aria-label={t('help.docNav')} className="mt-10 flex flex-col gap-3 sm:flex-row">
+          {prev && <a href={`#/docs/${prev}`} rel="prev" className={navLink}><span className="text-xs text-muted">{t('ui.previous')}</span><span className="font-semibold text-accent">{t(`docs.pages.${prev}.title`)}</span></a>}
+          {next && <a href={`#/docs/${next}`} rel="next" className={`${navLink} sm:items-end sm:text-right`}><span className="text-xs text-muted">{t('ui.next')}</span><span className="font-semibold text-accent">{t(`docs.pages.${next}.title`)}</span></a>}
         </nav>
       )}
-      <NextLinks to={['start', 'docs']} />
-    </article>
+    </DocShell>
   );
 }
 

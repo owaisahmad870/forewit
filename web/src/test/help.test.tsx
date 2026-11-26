@@ -7,12 +7,12 @@ describe('docs guided path', () => {
   it('links previous and next in index order', () => {
     const out = renderToStaticMarkup(<DocPage slug="scoring" />);
     expect(out).toContain('href="#/docs/how" rel="prev"');
-    expect(out).toContain('Previous: How it works');
-    expect(out).toContain('Next: Safety and owner permissions');
+    expect(out).toMatch(/rel="prev"[^>]*>.*Previous.*How it works/);
+    expect(out).toMatch(/rel="next"[^>]*>.*Next.*Safety and owner permissions/);
   });
   it('first and last pages have one direction only', () => {
-    expect(renderToStaticMarkup(<DocPage slug="how" />)).not.toContain('Previous:');
-    expect(renderToStaticMarkup(<DocPage slug="faq" />)).not.toContain('Next:');
+    expect(renderToStaticMarkup(<DocPage slug="how" />)).not.toContain('rel="prev"');
+    expect(renderToStaticMarkup(<DocPage slug="faq" />)).not.toContain('rel="next"');
   });
   it('the glossary has no missing locale keys', () => {
     const out = renderToStaticMarkup(<DocsIndex />);

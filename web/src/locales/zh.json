@@ -18,6 +18,12 @@
     "x": "Forewit 的 X 账号（在新标签页打开）"
   },
   "ui": {
+    "breadcrumbs": "导航路径",
+    "docsMenu": "文档目录",
+    "suggest": "建议修改此页",
+    "backToTop": "回到顶部",
+    "previous": "上一页",
+    "next": "下一页",
     "onThisPage": "本文内容",
     "callout": { "note": "注意", "tip": "提示", "important": "重要" },
     "toLight": "浅色主题",
@@ -399,6 +405,7 @@
   "start": {
     "time": "约 5 分钟 · 不转移资金，只需少量网络手续费",
     "video": { "alt": "手机设置的简短动画：模板、私有仓库、Claude Code、Forewit 环境、允许的网站、可选的密钥和连接器。", "caption": "25 秒看完手机设置，每一步的详细说明见下方。" },
+    "pluginTip": "在 Claude Code 中最快：一次安装即可获得先见服务器、技能和 /forewit:forecast 命令。在 Claude Code 中输入：",
     "keyWarn": "切勿在聊天中粘贴你的 Predict.fun 密钥，只把它放在环境变量中。",
     "next": { "title": "后续步骤", "me": "查看你的成绩", "leaderboard": "查看你的排名", "scoring": "了解评分方式" },
     "title": "开始预测",

@@ -205,7 +205,7 @@ export function App() {
         <Sidebar route={route} theme={theme} setTheme={setTheme} />
         <div className="min-w-0 flex-1">
           <RiskBanner />
-          <main id="main" tabIndex={-1} className="mx-auto min-h-svh max-w-5xl px-4 py-6 sm:px-8">
+          <main id="main" tabIndex={-1} className={`mx-auto min-h-svh px-4 py-6 sm:px-8 ${route[0] === 'docs' || route[0] === 'start' || route[0] === 'play' ? 'max-w-7xl' : 'max-w-5xl'}`}>
             <Page route={route} data={data} error={error} />
           </main>
           <Footer data={data} />

@@ -18,6 +18,12 @@
     "x": "Forewit on X (opens in a new tab)"
   },
   "ui": {
+    "breadcrumbs": "Breadcrumbs",
+    "docsMenu": "Docs menu",
+    "suggest": "Suggest a change to this page",
+    "backToTop": "Back to top",
+    "previous": "Previous",
+    "next": "Next",
     "onThisPage": "In this article",
     "callout": { "note": "Note", "tip": "Tip", "important": "Important" },
     "toLight": "Light theme",
@@ -398,6 +404,7 @@
   "start": {
     "time": "About 5 minutes · No money moves, only a small network fee",
     "video": { "alt": "Short animation of the phone setup: template, private repository, Claude Code, Forewit environment, allowed websites, optional key and connector.", "caption": "The phone setup in 25 seconds. Every step is detailed below." },
+    "pluginTip": "Fastest in Claude Code: one install adds the Forewit server, the skill and the /forewit:forecast command. Type these in Claude Code:",
     "keyWarn": "Never paste your Predict.fun key in a chat. Keep it in the environment variables only.",
     "next": { "title": "Next steps", "me": "Check your results", "leaderboard": "See where you rank", "scoring": "Learn how scoring works" },
     "title": "Start forecasting",
