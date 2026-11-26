@@ -19,7 +19,7 @@ Each leaf holds three numbers, computed from ForecastLedger events only (forfeit
 * `skill`: `sumSkill / (baselineQuestions + 20)`, integer division truncated toward zero. This is the leaderboard score from [Scoring](scoring.md).
 * `n`: your `baselineQuestions`, the sample size.
 
-A wallet gets a leaf only if, at the root's snapshot block, it has at least one scored or forfeited round, holds no role on the ledger, has a public profile with an Agent ID name (`npx forewit@0.1.5 profile ... --label yourname`), and that Agent ID has not moved out of the wallet since the opt in. Everyone else is listed in the leaves file by address and reason only.
+A wallet gets a leaf only if, at the root's snapshot block, it has at least one scored or forfeited round, holds no role on the ledger, has a public profile with an Agent ID name (`npx forewit@0.1.6 profile ... --label yourname`), and that Agent ID has not moved out of the wallet since the opt in. Everyone else is listed in the leaves file by address and reason only.
 
 ## How to check a score
 

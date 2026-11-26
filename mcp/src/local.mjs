@@ -299,6 +299,17 @@ export function createLocalServer({ home } = {}) {
     return ok({ markets: found.map((m) => ({ market_id: m.marketId, untrusted_question: m.untrustedQuestion, trading_status: m.tradingStatus ?? null })) });
   }, { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true });
 
+  tool('forewit_plan', {
+    title: "Today's Forewit plan",
+    description: "Start every Forewit session here. One call returns today's daily round with a baseline chance for each crypto Up or Down question (from Binance prices, backtested: see evidence), the questions that need the person's view, a ready commit command with auto reveal, reveals due, the record and streak, when to come back, and a short report to show as is. Change a baseline only with a cited reason. The person confirms every send, unless they set a daily routine with the stated limits (routine.limits).",
+    inputSchema: { from: address.describe('The Agent ID wallet address.') },
+    outputSchema: { report: z.array(z.string()), plan: z.record(z.string(), z.any()) },
+  }, async ({ from }) => {
+    const { buildPlan } = await import('./plan.mjs');
+    const plan = await buildPlan({ address: from });
+    return ok({ report: plan.report, plan });
+  }, { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true });
+
   tool('predict_market', {
     title: 'Forecast any market from the Agentic Wallet',
     description: "Forecasts one Predict.fun market (any category, any time, 5 and 15 minute markets included) from the person's signed in Agentic Wallet: their own chance for outcome 1 (Yes or Up) or 2 (No or Down). Saves the receipt first, runs the wallet preview, then shows the person a confirmation form; it sends only if they type yes there. One forecast per wallet per market, no changes later. Ask about auto_reveal (recommended). Only use a chance the person gave you.",

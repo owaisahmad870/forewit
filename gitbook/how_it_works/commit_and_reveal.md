@@ -46,7 +46,7 @@ Without a salt, anyone could hash every likely forecast and find yours. The salt
 Back up every receipt right after you commit, into a password manager or an offline note:
 
 ```bash
-npx forewit@0.1.5 receipt --from 0xYourAgenticWallet --show-salt
+npx forewit@0.1.6 receipt --from 0xYourAgenticWallet --show-salt
 ```
 
 On a new computer, save the backup as a `.json` file in the `.forewit` folder; the tool finds it by its hash. If you commit twice in a round, it picks the receipt that matches the commit onchain.

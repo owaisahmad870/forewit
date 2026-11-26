@@ -384,6 +384,8 @@
       ],
       "examplesTitle": "Things you can ask",
       "examples": [
+        "Plan my Forewit day",
+        "Do my Forewit picks every day for me",
         "Forecast a market: bitcoin 15 minute",
         "Forecast this market: <paste the question from predict.fun>",
         "I say 70% Yes on: <paste the question from predict.fun>",

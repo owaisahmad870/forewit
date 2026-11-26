@@ -385,6 +385,8 @@
       ],
       "examplesTitle": "你可以这样问",
       "examples": [
+        "规划我今天的 Forewit",
+        "每天帮我完成 Forewit 精选",
         "预测一个市场：比特币 15 分钟",
         "预测这个市场：<粘贴 predict.fun 上的问题>",
         "我认为 Yes 的概率是 70%：<粘贴 predict.fun 上的问题>",

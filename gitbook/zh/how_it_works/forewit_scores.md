@@ -19,7 +19,7 @@ ForewitScores 是一块公开的告示板。每轮结算后，keeper 会钉上�
 * `skill`：`sumSkill / (baselineQuestions + 20)`，向零截断的整数除法。这就是 [评分](scoring.md) 中的排行榜分数。
 * `n`：你的 `baselineQuestions`，即样本量。
 
-只有在根的快照区块时满足以下条件的钱包才会获得叶子：至少有一轮已评分或弃权，在账本上不持有任何角色，公开资料为公开且带有 Agent ID 名称（`npx forewit@0.1.5 profile ... --label yourname`），并且该 Agent ID 自公开以来没有移出钱包。其他人只以地址和原因列在叶子文件中。
+只有在根的快照区块时满足以下条件的钱包才会获得叶子：至少有一轮已评分或弃权，在账本上不持有任何角色，公开资料为公开且带有 Agent ID 名称（`npx forewit@0.1.6 profile ... --label yourname`），并且该 Agent ID 自公开以来没有移出钱包。其他人只以地址和原因列在叶子文件中。
 
 ## 如何核验分数
 

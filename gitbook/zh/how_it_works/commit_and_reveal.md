@@ -46,7 +46,7 @@ keccak256(abi.encode(COMMIT_TYPEHASH, block.chainid, address(this), roundId, for
 每次提交后立即备份回执，存到密码管理器或离线笔记中：
 
 ```bash
-npx forewit@0.1.5 receipt --from 0xYourAgenticWallet --show-salt
+npx forewit@0.1.6 receipt --from 0xYourAgenticWallet --show-salt
 ```
 
 换了电脑时，把备份以 `.json` 文件保存到 `.forewit` 文件夹中，工具会按哈希找到它。如果同一轮提交了两次，工具会选用与链上提交一致的那份回执。

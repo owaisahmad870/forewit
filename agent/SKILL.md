@@ -16,23 +16,26 @@ Every transaction Forewit prepares has value 0. It never asks for funds and pays
 All local work runs through the Forewit CLI from npm, pinned (Node 22 or newer). Below, `forewit` means:
 
 ```bash
-npx -y forewit@0.1.5 <command>
+npx -y forewit@0.1.6 <command>
 ```
 
-Commands: `round`, `forecast`, `commit`, `reveal`, `status`, `receipt`, `profile`, `agent`, `schedule`, `results`, `upcoming`, `start`. Inside the Forewit repository, `node agent/forewit.mjs <command>` is the same CLI (except `results` and `upcoming`, which come with the npm package).
+Commands: `plan`, `round`, `forecast`, `commit`, `reveal`, `status`, `receipt`, `profile`, `agent`, `schedule`, `results`, `upcoming`, `start`. Inside the Forewit repository, `node agent/forewit.mjs <command>` is the same CLI (except `plan`, `results` and `upcoming`, which come with the npm package).
 
 By default the CLI never signs or sends anything: it prints the exact `baw` commands, which you run only as described below. With `--execute` (commit and reveal, BSC mainnet only) it runs the preview itself and sends only after the wallet owner types yes in an interactive terminal.
 
 ## Play Forewit (the short path)
 
-When the user says "Play Forewit":
+When the user says "Play Forewit" (or any daily Forewit request), start with one call:
 
 1. Run the preflight below (signed in, Agent ID, Developer Mode, address). If not signed in, sign in with the Binance Agentic Wallet skill; never handle the pairing code yourself.
-2. `forewit upcoming` shows the open round and its deadline. Then `forewit round --round-file https://forewit.xyz/data/rounds/<round>.json` shows each question; show them with their market price.
-3. Ask the user for one chance per question, 1 to 99. The numbers are theirs.
-4. Ask once: "Let Forewit reveal it for you after the deadline, so there is no second step? (recommended)". If yes, add `--auto-reveal` to the commit.
-5. Commit with the flow for each round below (dry run, the printed preview, the user's explicit yes, execute).
-6. Tell them: with auto reveal there is nothing more to do; results appear when the questions settle. `forewit results --from <wallet>` shows them in plain words (beat the market or not, by how many points), and the same card is at https://forewit.xyz/#/me.
+2. `forewit plan --from <wallet>` (MCP: `forewit_plan`). Show its `report` lines as they are: short, numbers only. Add nothing long.
+3. Chances, one per question:
+   * Crypto Up or Down: the plan's `suggestPct` is the baseline (Binance price since the window start against typical volatility; evidence in `today.evidence`). Keep it unless you or the user has a concrete reason; then say the reason in one line with its source. A hunch is not a reason.
+   * `needsView` questions: ask the user, or look up one or two current sources (for weather: a forecast for that city and day) and propose a number with the source. The user decides.
+   * The best time is the plan's `next.at` (30 min before the deadline): the crypto baseline knows most then.
+4. The plan's `command` already has `--auto-reveal`. Replace each `<your %>` with the agreed number. Then the flow for each round below (dry run, the printed preview, the user's explicit yes, execute).
+5. Offer the daily routine once, with the plan's `routine.offer` text. On a clear yes, schedule a daily run at `next.at` (Claude Code: a scheduled task or routine; a cron job elsewhere): `forewit plan`, the same chance rules, the commit, then the report. The yes covers only `routine.limits` (one value 0 commit a day to the daily round until 9 Dec); everything else still asks. If the wallet asks for approval in the Binance App during a run, tell the user once; never resend.
+6. Results: nothing more to do with auto reveal. `forewit results --from <wallet>` or https://forewit.xyz/#/me.
 
 ## Forecast any market, any time (open forecasts)
 

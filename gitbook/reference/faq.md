@@ -46,7 +46,7 @@ No. The copy in your commit is locked with drand timelock until about a minute a
 
 ## Can I see how I did?
 
-Yes. Open [forewit.xyz/#/me](https://forewit.xyz/#/me) and paste your wallet address; no sign in. Per round it says whether you beat the market and by how many points, with both miss scores, plus your overall rounds, average points per question and rank once ranked. From the command line: `npx forewit@0.1.5 results --from 0xYourAgenticWallet`.
+Yes. Open [forewit.xyz/#/me](https://forewit.xyz/#/me) and paste your wallet address; no sign in. Per round it says whether you beat the market and by how many points, with both miss scores, plus your overall rounds, average points per question and rank once ranked. From the command line: `npx forewit@0.1.6 results --from 0xYourAgenticWallet`.
 
 ## What if I lose my salt?
 

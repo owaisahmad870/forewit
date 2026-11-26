@@ -33,7 +33,7 @@ Agent ID 合约 [0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F](https://bscscan.com
 从第一次提交起，你的记录就绑定你的钱包地址。只有你主动公开时，才会显示你的 Agent ID 名称：
 
 ```bash
-npx forewit@0.1.5 profile --from 0xYourAgenticWallet --label yourname --execute
+npx forewit@0.1.6 profile --from 0xYourAgenticWallet --label yourname --execute
 ```
 
 取消公开（`--off`）会移除公开名称，并让你从下一个 ForewitScores 根中移除。网站和 MCP 服务器从不为未公开的持有者提供按名称搜索。

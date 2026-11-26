@@ -1,0 +1,9 @@
+Baseline backtest: BTCUSDT, ETHUSDT, BNBUSDT, last 365 days to 2026-11-26, Binance spot candles, rule: Up if noon ET close beats the previous noon ET close.
+Volatility scale picked on half A (older 182 days, hours 6 and 12): 0.8. Numbers below are on half B (newer days) unless marked all.
+
+*  0.5 h after start: all scale 1 Brier 0.2508 (n 1092, SE 0.0005, calib err 3.9 pts) | half B scale 1 0.2511 calib 4.5 | half B scale 0.8 0.2514 calib 4.8 (n 549)
+*    3 h after start: all scale 1 Brier 0.2288 (n 1092, SE 0.0035, calib err 4.6 pts) | half B scale 1 0.2319 calib 5.9 | half B scale 0.8 0.2314 calib 5.8 (n 549)
+*    6 h after start: all scale 1 Brier 0.2142 (n 1092, SE 0.0041, calib err 4.4 pts) | half B scale 1 0.2152 calib 4.5 | half B scale 0.8 0.2144 calib 3.3 (n 549)
+*   12 h after start: all scale 1 Brier 0.1824 (n 1092, SE 0.0054, calib err 4.7 pts) | half B scale 1 0.1875 calib 7.7 | half B scale 0.8 0.1871 calib 6.2 (n 549)
+*   18 h after start: all scale 1 Brier 0.1446 (n 1092, SE 0.0061, calib err 5.4 pts) | half B scale 1 0.1596 calib 5.7 | half B scale 0.8 0.1616 calib 8.2 (n 549)
+*   23 h after start: all scale 1 Brier 0.0580 (n 1089, SE 0.0049, calib err 2.7 pts) | half B scale 1 0.0598 calib 3.4 | half B scale 0.8 0.0585 calib 3.0 (n 549)
