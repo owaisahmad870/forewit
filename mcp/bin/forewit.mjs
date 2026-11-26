@@ -20,6 +20,7 @@ if (cmd === 'mcp' && sub === 'remote') {
     if (process.argv.includes('--json')) console.log(JSON.stringify(plan, null, 1));
     else {
       for (const l of plan.report) console.log(l);
+      if (plan.start) console.log(`Start (free, once, no token): ${plan.start.preview}`);
       if (plan.today && !plan.today.alreadyCommitted) {
         for (const q of plan.today.questions) console.log(`  ${q.index}. ${q.untrustedTitle}: ${q.suggestPct === null ? 'your view' : q.suggestPct + '%'} (${q.why})`);
         console.log(`Commit: ${plan.today.command}`);

@@ -1,6 +1,6 @@
 # Forewit MCP servers
 
-BSC mainnet by default: daily rounds on ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6 and open forecasts on any binary Predict.fun market, any time, on OpenForecasts 0xa034D7B62d04c8c4ac57a8C62047015C00DD6404; testnet with network testnet. Published from GitHub Actions with npm provenance.
+BSC mainnet by default: daily rounds on ForecastLedger 0xd11e67ff70ACD42E01d79130f280162b00Bb09B6 and open forecasts on any binary Predict.fun market, any time, on OpenForecasts 0xa034D7B62d04c8c4ac57a8C62047015C00DD6404; a free once per wallet start on ForewitStart 0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A; testnet with network testnet. Published from GitHub Actions with npm provenance.
 
 Two Model Context Protocol servers for Forewit, the commit and reveal forecasting ledger for Agent ID holders on BNB Smart Chain. One npm package, `forewit`, with one bin:
 

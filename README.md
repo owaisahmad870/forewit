@@ -20,9 +20,9 @@ Forecasting scores only. Not financial advice.
 
 ## Quickstart
 * One command on a computer: `npx forewit@latest start` (Windows PowerShell: `npx.cmd forewit@latest start`). It checks the wallet tool, signs you in with a pairing code you approve in the Binance App, checks your Agent ID and Developer Mode, asks your chance for each of today's questions, offers auto reveal (Forewit reveals for you after the deadline from a time locked copy, so there is no second step) and sends only after you type yes. Your results card: [forewit.xyz/#/me](https://forewit.xyz/#/me).
-* Step by step on a computer: install the Binance Agentic Wallet CLI, sign in, then `npx -y forewit@0.1.6 round` and `npx -y forewit@0.1.6 commit --execute --from <your Agentic Wallet> --p 60,40,50,30`. Every send shows a preview and waits for you to type yes. Full guide: [gitbook/getting_started/quickstart.md](gitbook/getting_started/quickstart.md).
+* Step by step on a computer: install the Binance Agentic Wallet CLI, sign in, then `npx -y forewit@0.1.7 round` and `npx -y forewit@0.1.7 commit --execute --from <your Agentic Wallet> --p 60,40,50,30`. Every send shows a preview and waits for you to type yes. Full guide: [gitbook/getting_started/quickstart.md](gitbook/getting_started/quickstart.md).
 * From a phone or any browser: make a private copy of [forewit-agent-template](https://github.com/owaisahmad870/forewit-agent-template) and let your own cloud agent (Claude Code on the web, Codex cloud) do the typing: [gitbook/getting_started/play_from_phone.md](gitbook/getting_started/play_from_phone.md).
-* The next day, unless you chose auto reveal: `npx -y forewit@0.1.6 reveal --execute --from <wallet> --round <n>`. A commit that is never revealed counts as a forfeit.
+* The next day, unless you chose auto reveal: `npx -y forewit@0.1.7 reveal --execute --from <wallet> --round <n>`. A commit that is never revealed counts as a forfeit.
 
 ## Architecture
 ```

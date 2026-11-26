@@ -54,6 +54,11 @@ These wallets are "operators". They are never ranked and never get a ForewitScor
 * Nobody, the admin included, can edit commits, reveals, outcomes (they come only from the Conditional Tokens payouts) or scores, and the contract holds no assets. Constants (the 120 second windows, the 3 day reveal window, the 1 to 99 percent reveal range, the Conditional Tokens allowlist and the Agent ID contract) have no setter.
 * A price at 0 or 100 percent never counts on the site, so a stolen keeper key cannot mint skill that way.
 
+## ForewitStart (free start, 0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A)
+* No owner, no admin, no roles, no upgrade, no pause: nobody can change or stop it after deploy (26 Nov 2026, block 135826721, verified on BscScan and Sourcify).
+* `start()` and `mint()` are the same free call (value 0): once per wallet, Agent ID holders only. It records the start time and a player number. No token is created, even if a wallet labels the call "Mint", and it holds no funds.
+* A start is not a forecast and carries no score; the site counts starts apart from forecasts.
+
 ## Planned
 
 After the hackathon, move the admin to a multisig or renounce roles that are not essential. This will be announced before it happens.
