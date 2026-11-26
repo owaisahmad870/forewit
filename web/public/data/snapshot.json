@@ -1,8 +1,8 @@
 {
   "network": 56,
   "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
-  "builtAt": "2026-11-26T11:22:03.811Z",
-  "headBlock": "135837808",
+  "builtAt": "2026-11-26T16:53:00.300Z",
+  "headBlock": "135881856",
   "metrics": {
     "distinctCommitters": 1,
     "rounds": 3,
@@ -149,7 +149,9 @@
       },
       "scored": {},
       "forfeited": {},
-      "outcomes": {},
+      "outcomes": {
+        "3": "No"
+      },
       "baseline": "478542035422420700",
       "commitDeadline": "1795647600",
       "revealDeadline": "1795734000",
@@ -283,6 +285,52 @@
       "role": "PAUSER",
       "account": "0xf3b4728b30f0f380d77de9d025e33680f66591bd",
       "by": "0x6732027e7f908e274bf4360ce19cc182f82d008c"
+    }
+  ],
+  "start": {
+    "headBlock": "135881933",
+    "contract": "0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A",
+    "count": 5,
+    "players": [
+      {
+        "player": "0x67d16b3e18668ec0239fbd6f97012bb3fa8858d6",
+        "number": 1,
+        "at": 1795688418,
+        "tx": "0x4aa388bd0ac2f3893665e0873bd6c0a5f6f196a33c2a70f507786cef7b043c4f"
+      },
+      {
+        "player": "0x7d42ffafdb1357854c81b6f83abc9edee98ed6ca",
+        "number": 2,
+        "at": 1795688799,
+        "tx": "0x111a097b7c380779c7072dad95cb3a35f79d8690365f103aaa2d1ba1da3e1b6a"
+      },
+      {
+        "player": "0x5564845971a5dd11f480c3329b349286016492ab",
+        "number": 3,
+        "at": 1795689180,
+        "tx": "0xec2f529abc44b6aa61790c0b2957fc1be6e82c22d800570e39bd74598b31033d"
+      },
+      {
+        "player": "0xdbe747d877f81661ead1ca440d636a99bbce837f",
+        "number": 4,
+        "at": 1795692709,
+        "tx": "0xc9543ef2f28ad76180e9ec51d00f16fa673f962d38a5754fb55271297dd3e9f4"
+      },
+      {
+        "player": "0x4db416baf0127adca78e7571038b763868ff282c",
+        "number": 5,
+        "at": 1795694297,
+        "tx": "0xeda738bf108652cd2cf57a2ce65564420a0540f13aac15062f0cf49c9cbd945d"
+      }
+    ]
+  },
+  "scoresRoots": [
+    {
+      "epoch": "1",
+      "roundId": "1",
+      "root": "0xde4ad690c929e7fbdd748e0a1cd2bf35e0b86484c383fb4d0dcdc999496d23b8",
+      "leafCount": 1,
+      "tx": null
     }
   ]
 }
