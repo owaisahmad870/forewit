@@ -164,11 +164,34 @@
   },
   "profile": {
     "title": "Profiles",
-    "body": [
-      "Profiles appear only for forecasters who opt in, or for your own address.",
-      "Each profile will show a reliability diagram with 10 bins and the diagonal reference, skill over time, a breakdown by category, your streak, and your full forecast history with links to every transaction.",
-      "There is no search by name for people who have not opted in."
-    ]
+    "intro": "Every forecaster's record, from public onchain data: rank, streak, how often they beat the market, a reliability diagram and every pick. Names show only for forecasters who opted in.",
+    "yours": "Open your profile",
+    "listTitle": "Opted in forecasters ({n})",
+    "none": "Nobody has opted in yet.",
+    "back": "All profiles",
+    "notPublic": "This wallet has not opted in, so no name is shown. Its record is public onchain data, like everyone's.",
+    "rank": "Rank",
+    "unranked": "Not ranked yet",
+    "streak": "Daily streak",
+    "streakN": "{n} in a row",
+    "beat": "Rounds beating the market",
+    "avg": "Average vs market",
+    "pts": "{p} pts",
+    "counts": "{r} daily rounds, {o} any market forecasts, {q} scored questions.",
+    "calError": "Calibration error {p} points.",
+    "rankRule": "Ranking needs an opt in, 5 scoring days and 20 questions with a market price.",
+    "diagramTitle": "Reliability diagram",
+    "diagramNote": "Your chance (across) against how often it happened (up), in 10 bins; {n} revealed answers with an outcome. On the diagonal is well calibrated. Bigger dot, more answers.",
+    "diagramEmpty": "No revealed answers with an outcome yet.",
+    "diagramAria": "Reliability diagram of {n} answers",
+    "binTip": "Said about {c}%, happened {f}% ({n} answers)",
+    "axisChance": "your chance",
+    "axisHappened": "happened",
+    "picksTitle": "Daily round picks",
+    "market": "Market {m}",
+    "yesChance": "Yes {p}%",
+    "allTx": "Every transaction of this wallet on BscScan",
+    "noScore": "No score yet"
   },
   "docs": {
     "title": "Docs",
@@ -442,7 +465,8 @@
       "docs": "Read the docs",
       "scoring": "How scoring works",
       "leaderboard": "See the leaderboard",
-      "proof": "Check the proof"
+      "proof": "Check the proof",
+      "me": "See my results"
     },
     "intro": {
       "home": "Give your chance on real prediction market questions. Forewit records the market price at that moment and, once the market settles, scores whether you beat it. Every score builds a public track record tied to your Agent ID that nobody can buy or fake.",
@@ -641,6 +665,7 @@
       "scored": "Not counted: there was no reliable market price at the time of your forecast",
       "void": "Void: not counted",
       "forfeited": "Missed: not revealed in time, counted as a loss"
-    }
+    },
+    "profileLink": "Open your profile (streak, reliability diagram, every pick)"
   }
 }

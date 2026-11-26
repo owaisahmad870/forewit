@@ -247,6 +247,7 @@ export interface Row {
   shrunkSkill: number; // 0 to 1 Brier units, sumSkill / (baselineQuestions + K)
   participation: number | null;
   calibrationError: number | null;
+  cal: { p: number; yes: boolean }[]; // revealed chances (bps for the side that happened or not) with outcomes: the reliability diagram
   ranked: boolean;
 }
 
@@ -313,6 +314,7 @@ export function leaderboard(snap: Snapshot): { rows: Row[]; forecasters: number;
       shrunkSkill: Number(x.skill) / (x.bq + K) / BRIER_MAX,
       participation: x.committed ? x.revealed / x.committed : null,
       calibrationError: calibrationError(x.cal),
+      cal: x.cal,
       ranked: isPublic && !ops.has(addr) && x.days.size >= MIN_ROUNDS && x.bq >= MIN_BASELINE_QUESTIONS,
       // pre registered 23 Nov 2026: once the first 5 rounds show an average window move above 0.5 points, flag positive skill earned by post baseline commits
       postBaselineFlag: !!snap.metrics.windowMove?.active && x.postSkill > 0n,
@@ -424,4 +426,41 @@ export async function loadData(base = import.meta.env.BASE_URL): Promise<Dataset
     Promise.all(manifest.rounds.map((p) => get<RoundFile>(p).catch(() => null))),
   ]);
   return { manifest, snapshot, rounds: joinRounds(snapshot, files.filter((f): f is RoundFile => f !== null)) };
+}
+
+// Reliability diagram: 10 bins of the revealed chance; each bin's mean chance against how often it happened (0 to 1).
+export function reliability(pairs: { p: number; yes: boolean }[]) {
+  const b = Array.from({ length: 10 }, (_, i) => ({ bin: i, n: 0, p: 0, y: 0 }));
+  for (const { p, yes } of pairs) { const x = b[Math.min(9, Math.floor(p / 1000))]; x.n++; x.p += p / 10000; x.y += yes ? 1 : 0; }
+  return b.filter((x) => x.n).map((x) => ({ bin: x.bin, n: x.n, chance: x.p / x.n, freq: x.y / x.n }));
+}
+
+// Daily rounds in a row with a commit, newest closed round first (same rule as forewit plan's streak).
+export function streak(rounds: Round[], snap: Snapshot, addr: string, now: number): number {
+  const a = addr.toLowerCase();
+  const committed = new Set(snap.rounds.filter((r) => r.committers.some((c) => c.toLowerCase() === a)).map((r) => Number(r.roundId)));
+  let n = 0;
+  for (const r of rounds.filter((x) => x.kind === 'daily' && x.commitDeadline.getTime() <= now).sort((x, y) => y.id - x.id)) {
+    if (!committed.has(r.id)) break;
+    n++;
+  }
+  return n;
+}
+
+// One wallet's daily round picks, question by question: your revealed chance for Yes (null while sealed) and the outcome.
+export interface ProfilePick { roundId: number; index: number; title: Question['title']; marketId: string; chance: number | null; outcome: Outcome }
+export function profilePicks(data: Dataset, addr: string): ProfilePick[] {
+  const a = addr.toLowerCase();
+  const out: ProfilePick[] = [];
+  for (const sr of data.snapshot.rounds) {
+    if (!sr.committers.some((c) => c.toLowerCase() === a)) continue;
+    const r = data.rounds.find((x) => x.id === Number(sr.roundId));
+    const packed = Object.entries(sr.forecasts ?? {}).find(([k]) => k.toLowerCase() === a)?.[1];
+    const mine = packed ? unpack(packed, sr.questions.length) : null;
+    sr.questions.forEach((q, i) => out.push({
+      roundId: Number(sr.roundId), index: i, title: r?.questions[i]?.title ?? null, marketId: q.marketId,
+      chance: mine ? mine[i] / 10000 : null, outcome: sr.outcomes[String(i)] ?? 'Unresolved',
+    }));
+  }
+  return out.sort((x, y) => y.roundId - x.roundId || x.index - y.index);
 }

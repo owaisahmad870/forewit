@@ -148,7 +148,7 @@ export function Explain({ terms, summary = 'help.what', open }: { terms: string[
   );
 }
 
-const GO: Record<string, string> = { start: '#/start', rounds: '#/rounds', docs: '#/docs', scoring: '#/docs/scoring', leaderboard: '#/leaderboard', proof: '#/proof' };
+const GO: Record<string, string> = { start: '#/start', rounds: '#/rounds', docs: '#/docs', scoring: '#/docs/scoring', leaderboard: '#/leaderboard', proof: '#/proof', me: '#/me' };
 export function NextLinks({ to }: { to: string[] }) {
   const { t } = useT();
   return (

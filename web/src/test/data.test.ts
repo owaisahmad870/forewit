@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { bins10, calibrationError, crowdVsMarket, bannerRounds, joinRounds, leaderboard, liveRound, phase, unpack, walletResults, type OpenForecast, type RoundFile, type Snapshot, type SnapRound } from '../lib/data';
+import { bins10, profilePicks, reliability, streak, calibrationError, crowdVsMarket, bannerRounds, joinRounds, leaderboard, liveRound, phase, unpack, walletResults, type OpenForecast, type RoundFile, type Snapshot, type SnapRound } from '../lib/data';
 
 const json = <T,>(p: string): T => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const pack = (bps: number[]) => bps.reduce((a, p, i) => a | (BigInt(p) << BigInt(16 * i)), 0n).toString();
@@ -245,5 +245,30 @@ describe('merged record with v2 open forecasts (docs/OPEN_FORECASTS.md Record)',
     expect(w.predictions.find((p) => p.marketId === '105')).toMatchObject({ chance: null, open: true });
     expect(w.predictions.find((p) => p.marketId === '101')!.open).toBe(false);
     expect(w.avgSkill).toBeCloseTo((-84e6 - 28e6) / 2 / 1e8);
+  });
+});
+
+describe('profile helpers', () => {
+  it('reliability bins chance against how often it happened', () => {
+    expect(reliability([{ p: 8000, yes: true }, { p: 8500, yes: false }, { p: 2000, yes: false }])).toEqual([
+      { bin: 2, n: 1, chance: 0.2, freq: 0 },
+      { bin: 8, n: 2, chance: 0.825, freq: 0.5 },
+    ]);
+  });
+  it('streak counts closed daily rounds in a row and picks read the revealed chance per question', () => {
+    const s = snap([
+      goldRound(1, { '0xa': { questions: '3', brier: '1', skill: '1' } }, { forecasts: { '0xa': pack(GOLD_F) } }),
+      goldRound(2, {}, { committers: ['0xA'] }),
+      goldRound(3, {}, { committers: [] }),
+    ]);
+    const rounds = joinRounds(s, []);
+    const after3 = (1795000000 + 3 * 86400 + 1) * 1000;
+    expect(streak(rounds, s, '0xa', after3)).toBe(0); // round 3 missed
+    expect(streak(rounds, s, '0xa', after3 - 86400 * 1000)).toBe(2); // rounds 2 and 1
+    const data = { manifest: { snapshot: '', rounds: [] }, snapshot: s, rounds };
+    const picks = profilePicks(data, '0xA');
+    expect(picks.filter((p) => p.roundId === 1).map((p) => p.chance)).toEqual([0.8, 0.3, 0.9, 0.65]);
+    expect(picks.find((p) => p.roundId === 2)?.chance).toBeNull();
+    expect(leaderboard(s).all.find((r) => r.addr === '0xa')?.cal).toHaveLength(3); // the Void question has no outcome
   });
 });

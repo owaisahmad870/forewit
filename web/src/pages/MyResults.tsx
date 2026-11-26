@@ -4,10 +4,10 @@ import { useT } from '../i18n';
 import { upcoming, walletResults, type Dataset, type WalletPrediction, type WalletRound } from '../lib/data';
 
 const KEY = 'forewit.wallet';
-const isAddr = (a: string) => /^0x[0-9a-fA-F]{40}$/.test(a);
-const saved = () => { try { return localStorage.getItem(KEY) ?? ''; } catch { return ''; } };
+export const isAddr = (a: string) => /^0x[0-9a-fA-F]{40}$/.test(a);
+export const saved = () => { try { return localStorage.getItem(KEY) ?? ''; } catch { return ''; } };
 // skill is in Brier units (0 to 1); shown as points out of 100 so a layman reads "+8.3 points"
-const pts = (x: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x * 100).toFixed(1)}`;
+export const pts = (x: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x * 100).toFixed(1)}`;
 const TONE: Record<WalletRound['verdict'], string> = { beat: 'text-pos', behind: 'text-neg', forfeited: 'text-neg', missed: 'text-neg', level: '', scored: '', waiting: 'text-muted', reveal: 'text-accent' };
 
 const PTONE: Record<WalletPrediction['status'], string> = { beat: 'text-pos', behind: 'text-neg', forfeited: 'text-neg', level: '', scored: '', void: 'text-muted', waiting: 'text-muted', revealed: 'text-muted' };
@@ -31,7 +31,7 @@ export function useLive(ids: string[]): Live {
   return prices;
 }
 
-function Predictions({ list }: { list: WalletPrediction[] }) {
+export function Predictions({ list }: { list: WalletPrediction[] }) {
   const { t } = useT();
   const live = useLive(list.filter((p) => p.open).map((p) => p.marketId));
   return (
@@ -120,6 +120,7 @@ export function MyResults({ data }: { data: Dataset }) {
           )}
           {scored > 0 && <p className="mt-3 text-sm text-muted">{t('me.miss')}</p>}
           <p className="mt-3 text-sm text-muted">{t('me.noMoney')}</p>
+          <p><a href={`#/profile/${w.addr}`} className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('me.profileLink')}</a></p>
         </Card>
       )}
       {w && w.predictions.length > 0 && <Predictions list={w.predictions} />}

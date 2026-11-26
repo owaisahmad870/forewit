@@ -7,7 +7,8 @@ import { Home } from './pages/Home';
 import { RoundPage, Rounds } from './pages/Round';
 import { MyResults } from './pages/MyResults';
 import { Leaderboard } from './pages/Leaderboard';
-import { Crowd, DocPage, DocsIndex, Profile } from './pages/Static';
+import { Crowd, DocPage, DocsIndex } from './pages/Static';
+import { ProfilePage, Profiles } from './pages/Profile';
 import { Proof } from './pages/Proof';
 import { Start } from './pages/Start';
 import { RoundBanner } from './components';
@@ -150,7 +151,6 @@ function Page({ route, data, error }: { route: string[]; data: Dataset | null; e
   if (head === 'play') return <Start />; // old How to play page: Start covers it
   if (head === 'start') return <Start />;
   if (head === 'docs') return arg ? <DocPage slug={arg} /> : <DocsIndex />;
-  if (head === 'profile') return <Profile />;
   if (error) return <p className="text-muted">{t('ui.loadError')}</p>;
   if (!data) return <p className="text-muted">{t('ui.loading')}</p>;
   // the home page already shows the live commit countdown, so its banner shows reveal reminders only
@@ -166,6 +166,7 @@ function DataPage({ head, arg, data }: { head?: string; arg?: string; data: Data
   if (head === 'me') return <MyResults data={data} />;
   if (head === 'crowd') return <Crowd data={data} />;
   if (head === 'proof') return <Proof data={data} />;
+  if (head === 'profile') return arg ? <ProfilePage data={data} addr={arg} /> : <Profiles data={data} />;
   return <p className="text-muted">{t('ui.notFound')} <a href="#/" className="text-accent underline">{t('ui.backHome')}</a></p>;
 }
 

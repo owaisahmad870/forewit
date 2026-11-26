@@ -55,18 +55,6 @@ export function DocPage({ slug: asked }: { slug: string }) {
   );
 }
 
-export function Profile() {
-  const { t, raw } = useT();
-  return (
-    <article className="space-y-4">
-      <h1 className="text-2xl font-semibold">{t('profile.title')}</h1>
-      <Blocks blocks={raw<string[]>('profile.body')} />
-      <p className="max-w-[68ch]">{t('help.intro.profile')}</p>
-      <NextLinks to={['leaderboard', 'start']} />
-    </article>
-  );
-}
-
 export function Crowd({ data }: { data: Dataset }) {
   const { t, raw } = useT();
   // every round whose commits closed: scored ones show both Briers, the rest say they wait for onchain outcomes
