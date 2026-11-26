@@ -29,9 +29,9 @@ const banner = (w, h, wordW, tag, sub, deco) => page(w, h, `<svg width="${w}" he
 <div style="font-size:${Math.round(h * 0.04)}px;color:${MUTED}">${sub}</div></div>`);
 
 const jobs = {
-  x_header: [1500, 500, banner(1500, 500, 520, 'A forecasting track record nobody can fake or buy.', 'One Agent ID, one record, scored against the market  ·  forewit.xyz', stairs(1240, 440, 22, 7))],
-  og: [1200, 630, banner(1200, 630, 560, 'A forecasting track record nobody can fake or buy.', 'One Agent ID, one record, scored against the market  ·  forewit.xyz', stairs(960, 570, 22, 7))],
-  x_avatar: [800, 800, page(800, 800, `<div style="position:absolute;inset:0">${svg('forewit_icon_dark').replace('<svg ', '<svg width="800" height="800" ').replace(/rx="\d+"/, 'rx="0"')}</div>`)],
+  x_header: [1500, 500, banner(1500, 500, 520, 'Your edge, on the record.', 'Sealed forecasts, benchmarked against the market price  ·  forewit.xyz', stairs(1240, 440, 22, 7))],
+  og: [1200, 630, banner(1200, 630, 560, 'Your edge, on the record.', 'Sealed forecasts, benchmarked against the market price  ·  forewit.xyz', stairs(960, 570, 22, 7))],
+  x_avatar: [800, 800, page(800, 800, `<div style="position:absolute;inset:0">${svg('forewit_avatar_dark').replace('<svg ', '<svg width="800" height="800" ').replace(/rx="\d+"/, 'rx="0"')}</div>`)],
   icon_dark: [1024, 1024, page(1024, 1024, svg('forewit_icon_dark').replace('<svg ', '<svg width="1024" height="1024" '), 'transparent')],
   icon_light: [1024, 1024, page(1024, 1024, svg('forewit_icon_light').replace('<svg ', '<svg width="1024" height="1024" '), 'transparent')],
   wordmark_dark: [2400, 656, page(2400, 656, svg('forewit_wordmark_dark').replace('<svg ', '<svg width="2400" '), 'transparent')],
