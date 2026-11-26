@@ -1,6 +1,6 @@
 {
   "name": "forewit",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Forecast with Forewit in Claude Code: the Forewit MCP server, the Forewit skill and a /forewit:forecast command in one install. Sealed forecasts on live prediction markets, benchmarked against the market price and settled onchain.",
   "author": {
     "name": "Forewit",

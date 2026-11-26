@@ -7,7 +7,7 @@
       "name": "forewit",
       "source": "./plugin",
       "description": "Forecast with Forewit in Claude Code: the Forewit MCP server, the Forewit skill and a /forewit:forecast command in one install.",
-      "version": "0.1.9",
+      "version": "0.1.10",
       "homepage": "https://forewit.xyz/#/start",
       "repository": "https://github.com/owaisahmad870/forewit",
       "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "forewit",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Forewit MCP server and CLI: sealed forecasts benchmarked against the market price, one verified track record per Agent ID on BNB Smart Chain. Prepares calldata, never signs.",
   "license": "MIT",
   "type": "module",
