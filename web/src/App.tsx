@@ -147,7 +147,7 @@ function Footer({ data }: { data: Dataset | null }) {
   const link = 'inline-flex min-h-9 items-center text-accent hover:underline underline-offset-4';
   return (
     <footer className="mt-10 border-t border-line">
-      <div className="grid gap-8 px-4 py-8 text-sm sm:px-8 md:grid-cols-[minmax(0,1fr)_16rem]">
+      <div className="grid gap-8 px-4 py-8 text-sm sm:px-8 md:grid-cols-[minmax(0,1fr)_28rem]">
         <div className="max-w-[72ch] space-y-3">
           <p lang="en" className="font-semibold">{t('risk')}</p>
           {t('riskLocal') && <p>{t('riskLocal')}</p>}
@@ -159,7 +159,7 @@ function Footer({ data }: { data: Dataset | null }) {
             </div>
           )}
         </div>
-        <nav aria-label={t('ui.footerNav')} className="grid grid-cols-2 content-start gap-x-6 md:grid-cols-1">
+        <nav aria-label={t('ui.footerNav')} className="grid grid-cols-2 content-start gap-x-6">
           <a href="#/docs/risk" className={link}>{t('docs.pages.risk.title')}</a>
           <a href="#/docs/owner" className={link}>{t('docs.pages.owner.title')}</a>
           <a href="#/docs/privacy" className={link}>{t('docs.pages.privacy.title')}</a>
