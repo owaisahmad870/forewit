@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useT } from './i18n';
-import { CLAUDE_CODE_URL, CONNECTOR_URL, INSTALL_SNIPPETS, TEMPLATE_NEW_URL } from './commands';
+import { CLAUDE_CODE_URL, INSTALL_SNIPPETS, TEMPLATE_NEW_URL } from './commands';
 import { bannerRounds, bins10, phase, type Question, type Round } from './lib/data';
 import { fmtCountdown, fmtDay, fmtLocal, fmtPct, fmtUtc } from './lib/format';
 
@@ -334,10 +334,24 @@ export function RoundBanner({ rounds, showCommit = true }: { rounds: Round[]; sh
   );
 }
 
-// "Forecast in Claude": every way in, with the links and commands bundled, from the top right of Today's picks
+// "Forecast in Claude": one menu with every way in. Pick a method, copy one line, or jump straight to Claude Code.
+const CLAUDE_METHODS = [
+  { key: 'plugin', text: '/plugin marketplace add owaisahmad870/forewit\n/plugin install forewit@forewit' },
+  { key: 'connector', text: 'https://forewit.xyz/mcp' },
+  { key: 'cli', text: 'npx forewit@latest start' },
+] as const;
+const ico = { viewBox: '0 0 16 16', width: 16, height: 16, 'aria-hidden': true, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+const TERMINAL = <svg {...ico}><rect x="1.5" y="2.5" width="13" height="11" rx="2" /><path d="M4.5 6l2 2-2 2M8.5 10.5h3" /></svg>;
+const PHONE = <svg {...ico}><rect x="4" y="1.5" width="8" height="13" rx="1.5" /><path d="M7 12.5h2" /></svg>;
+const COPYDOC = <svg {...ico}><rect x="5" y="5" width="9" height="9" rx="1.5" /><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" /></svg>;
+const BOOK = <svg {...ico}><path d="M2 3h4a2 2 0 0 1 2 2v8.5A1.5 1.5 0 0 0 6.5 12H2zM14 3h-4a2 2 0 0 0-2 2v8.5A1.5 1.5 0 0 1 9.5 12H14z" /></svg>;
+const CHECK = <svg {...ico}><path d="M3 8.5l3 3 7-7" /></svg>;
+
 export function PlayInClaude() {
   const { t } = useT();
   const [open, setOpen] = useState(false);
+  const [method, setMethod] = useState<(typeof CLAUDE_METHODS)[number]['key']>('plugin');
+  const [copied, setCopied] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -347,34 +361,43 @@ export function PlayInClaude() {
     document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
   }, [open]);
-  const btn = 'flex min-h-11 items-center justify-between gap-2 rounded-md border border-line px-3 text-sm font-semibold hover:border-[var(--claude)]';
+  const text = CLAUDE_METHODS.find((m) => m.key === method)!.text;
+  const copy = () => navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }, () => {});
+  const row = 'flex min-h-11 items-center gap-3 rounded-md px-3 text-sm hover:bg-surface-2';
   return (
     <div ref={ref} className="relative">
-      <button type="button" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen((x) => !x)} className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-[var(--claude)]/60 bg-[var(--claude)]/10 px-2.5 text-sm font-semibold text-[var(--claude-ink)] hover:bg-[var(--claude)]/20" title={t('claude.title')}>
-        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" className="text-[var(--claude)]"><rect x="1" y="2" width="14" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" /><path d="M4 6l2.5 2L4 10M8 10.5h4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        <span>{t('claude.button')}</span>
+      <button type="button" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen((x) => !x)} className="inline-flex min-h-9 items-center gap-2 rounded-md bg-[var(--claude)] px-3 text-sm font-semibold text-white hover:brightness-110">
+        {TERMINAL}<span>{t('claude.button')}</span>
+        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" className={`transition-transform ${open ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
       {open && (
-        <div role="dialog" aria-label={t('claude.title')} className="fixed inset-x-4 top-16 z-30 max-h-[80vh] space-y-4 overflow-y-auto rounded-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem] border border-line bg-surface p-4 text-left shadow-lg">
-          <section>
-            <h3 className="text-sm font-semibold">{t('claude.phone')}</h3>
-            <p className="mt-0.5 text-xs text-muted">{t('claude.phoneNote')}</p>
-            <div className="mt-2 grid gap-2">
-              <a href={TEMPLATE_NEW_URL} target="_blank" rel="noopener noreferrer" className={btn}><span>1. {t('claude.template')}</span><span aria-hidden="true">↗</span></a>
-              <a href={CLAUDE_CODE_URL} target="_blank" rel="noopener noreferrer" className={btn}><span>2. {t('claude.open')}</span><span aria-hidden="true">↗</span></a>
-              <a href="#/start" onClick={() => setOpen(false)} className="text-xs text-[var(--claude-ink)] underline underline-offset-4">{t('claude.guide')}</a>
+        <div role="dialog" aria-label={t('claude.title')} className="fixed inset-x-4 top-16 z-30 max-h-[80vh] overflow-y-auto rounded-lg border border-line bg-surface text-left shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[24rem]">
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <p className="flex items-center gap-2 font-semibold">{TERMINAL}{t('claude.setup')}</p>
+              <a href="#/start" onClick={() => setOpen(false)} aria-label={t('claude.guide')} title={t('claude.guide')} className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-ink">
+                <svg {...ico}><circle cx="8" cy="8" r="6.5" /><path d="M6.3 6.2a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1M8 11.3v.1" /></svg>
+              </a>
             </div>
-          </section>
-          <section>
-            <h3 className="text-sm font-semibold">{t('claude.desktop')}</h3>
-            <p className="mt-0.5 text-xs text-muted">{t('claude.desktopNote')}</p>
-            <CopyBlock text={INSTALL_SNIPPETS.plugin} />
-          </section>
-          <section>
-            <h3 className="text-sm font-semibold">{t('claude.chat')}</h3>
-            <p className="mt-0.5 text-xs text-muted">{t('claude.chatNote')}</p>
-            <CopyBlock text={CONNECTOR_URL} />
-          </section>
+            <div role="tablist" aria-label={t('claude.setup')} className="mt-3 inline-flex rounded-md border border-line p-0.5">
+              {CLAUDE_METHODS.map((m) => (
+                <button key={m.key} type="button" role="tab" aria-selected={method === m.key} onClick={() => { setMethod(m.key); setCopied(false); }}
+                  className={`min-h-8 rounded px-3 text-sm ${method === m.key ? 'bg-surface-2 font-semibold text-ink' : 'text-muted hover:text-ink'}`}>
+                  {t(`claude.m.${m.key}`)}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 flex items-stretch gap-2">
+              <pre className="min-w-0 flex-1 overflow-x-auto rounded-md border border-line bg-bg px-3 py-2 font-mono text-[0.8rem] leading-relaxed">{text}</pre>
+              <button type="button" onClick={copy} aria-label={copied ? t('ui.copied') : t('ui.copy')} title={copied ? t('ui.copied') : t('ui.copy')} className="flex w-10 shrink-0 items-center justify-center rounded-md border border-line text-muted hover:border-[var(--claude)] hover:text-ink">{copied ? CHECK : COPYDOC}</button>
+            </div>
+            <p className="mt-2 text-xs text-muted">{t(`claude.hint.${method}`)}</p>
+          </div>
+          <div className="border-t border-line p-2">
+            <a href={CLAUDE_CODE_URL} target="_blank" rel="noopener noreferrer" className={row}>{PHONE}<span>{t('claude.open')}</span></a>
+            <a href={TEMPLATE_NEW_URL} target="_blank" rel="noopener noreferrer" className={row}>{COPYDOC}<span>{t('claude.template')}</span></a>
+            <a href="#/start" onClick={() => setOpen(false)} className={row}>{BOOK}<span>{t('claude.guide')}</span></a>
+          </div>
         </div>
       )}
     </div>

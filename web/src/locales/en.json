@@ -66,16 +66,22 @@
   "claude": {
     "button": "Forecast in Claude",
     "title": "Forecast with Forewit in Claude",
-    "phone": "Phone or browser",
-    "phoneNote": "Claude Code on the web or in the Claude app. One time setup, about five minutes.",
     "template": "Copy the Forewit template",
-    "open": "Open Claude Code",
-    "guide": "Full guide with screenshots",
-    "desktop": "Claude Code desktop or terminal",
-    "desktopNote": "Type these in Claude Code. One install adds the server, the skills and /forewit:forecast.",
-    "chat": "Any Claude chat",
-    "chatNote": "Settings, Connectors, Add custom connector, then paste this address. Read only."
+    "open": "Open Claude Code on your phone or browser",
+    "guide": "Full setup guide",
+    "setup": "Set up Forewit",
+    "m": {
+      "plugin": "Plugin",
+      "connector": "Connector",
+      "cli": "CLI"
+    },
+    "hint": {
+      "plugin": "Type both lines in Claude Code (desktop, terminal or IDE).",
+      "connector": "In Claude: Settings, Connectors, Add custom connector. Read only.",
+      "cli": "On any computer with Node 22 or newer. Windows: npx.cmd"
+    }
   },
+
   "table": {
     "caption": "Today's questions with the market price and the crowd forecast",
     "question": "Question",

@@ -64,7 +64,7 @@ export function Home({ data }: { data: Dataset }) {
           <>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-semibold">{t('home.liveRound')}</h2>
-              <span className="flex flex-wrap items-center gap-2"><SampleBadge show={data.manifest.sample} /><Badge tone={ph === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${ph}`)}</Badge><PlayInClaude /></span>
+              <span className="flex flex-wrap items-center gap-2"><SampleBadge show={data.manifest.sample} />{ph !== 'commit' && <Badge tone="neutral">{t(`phase.${ph}`)}</Badge>}<PlayInClaude /></span>
             </div>
             {(ph === 'commit' || ph === 'reveal') && (
               <p className="mt-3">

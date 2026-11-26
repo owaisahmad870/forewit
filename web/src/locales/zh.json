@@ -66,16 +66,22 @@
   "claude": {
     "button": "在 Claude 中预测",
     "title": "在 Claude 中使用先见",
-    "phone": "手机或浏览器",
-    "phoneNote": "网页版或 Claude App 中的 Claude Code。一次设置，约五分钟。",
     "template": "复制先见模板",
-    "open": "打开 Claude Code",
-    "guide": "带截图的完整指南",
-    "desktop": "Claude Code 桌面版或终端",
-    "desktopNote": "在 Claude Code 中输入以下内容。一次安装即可获得服务器、技能和 /forewit:forecast。",
-    "chat": "任意 Claude 对话",
-    "chatNote": "设置、连接器、添加自定义连接器，然后粘贴此地址。只读。"
+    "open": "在手机或浏览器中打开 Claude Code",
+    "guide": "完整设置指南",
+    "setup": "设置先见",
+    "m": {
+      "plugin": "插件",
+      "connector": "连接器",
+      "cli": "命令行"
+    },
+    "hint": {
+      "plugin": "在 Claude Code（桌面版、终端或 IDE）中输入这两行。",
+      "connector": "在 Claude 中：设置、连接器、添加自定义连接器。只读。",
+      "cli": "在任何装有 Node 22 或更新版本的电脑上运行。Windows：npx.cmd"
+    }
   },
+
   "table": {
     "caption": "今日问题，含市场价格与群体预测",
     "question": "问题",
