@@ -38,6 +38,12 @@ const NAV = [
   ['proof', 'nav.proof'],
 ] as const;
 
+const X_URL = 'https://x.com/Forewitai';
+const icon = { width: 18, height: 18, viewBox: '0 0 24 24', 'aria-hidden': true } as const;
+const SUN = <svg {...icon} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>;
+const MOON = <svg {...icon} fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></svg>;
+const X_ICON = <svg {...icon} fill="currentColor"><path d="M17.8 3h3.1l-6.8 7.7 8 10.3h-6.2l-4.9-6.3L5.4 21H2.3l7.2-8.3L1.8 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.6z" /></svg>;
+
 const MARK = (
   /* Same mark as public/favicon.svg: a forecast on the 0 to 1 probability scale. */
   <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16h24M4 12.5v7M28 12.5v7" className="stroke-muted" strokeWidth="2" strokeLinecap="round" fill="none" /><path d="M13 9.5l6.5 6.5-6.5 6.5-6.5-6.5z" className="fill-accent" /></svg>
@@ -63,8 +69,11 @@ function Sidebar({ route, theme, setTheme }: { route: string[]; theme: string; s
   const toggles = (
     <div className="flex flex-wrap gap-2">
       <button type="button" className={btn} lang={lang === 'en' ? 'zh' : 'en'} title={t('ui.otherLangName')} onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}>{t('ui.otherLang')}</button>
-      <button type="button" className={btn} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? t('ui.toLight') : t('ui.toDark')}</button>
+      <button type="button" className={`${btn} flex w-10 items-center justify-center px-0`} aria-label={theme === 'dark' ? t('ui.toLight') : t('ui.toDark')} title={theme === 'dark' ? t('ui.toLight') : t('ui.toDark')} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? SUN : MOON}</button>
     </div>
+  );
+  const social = (
+    <a href={X_URL} target="_blank" rel="noopener noreferrer" className="flex min-h-10 items-center gap-2 rounded-lg px-3 text-[0.95rem] text-muted hover:bg-surface hover:text-ink">{X_ICON}<span>@Forewitai</span><span className="sr-only">{t('nav.x')}</span></a>
   );
   const brand = (
     <a href="#/" className="flex min-h-11 items-center gap-2 font-semibold">
@@ -77,14 +86,14 @@ function Sidebar({ route, theme, setTheme }: { route: string[]; theme: string; s
     <>
       <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col gap-6 overflow-y-auto border-r border-line bg-bg px-3 py-4 min-[60rem]:flex">
         <div className="px-2">{brand}</div>
-        <nav aria-label={t('nav.main')} className="flex-1">{links}</nav>
+        <nav aria-label={t('nav.main')} className="flex-1">{links}<div className="mt-2 border-t border-line pt-2">{social}</div></nav>
         <div className="px-2">{toggles}</div>
       </aside>
       <header className="border-b border-line min-[60rem]:hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-2">{brand}{toggles}</div>
         <details ref={menu} className="border-t border-line">
           <summary className="flex min-h-11 cursor-pointer items-center px-4 text-sm">{t('nav.menu')}</summary>
-          <nav aria-label={t('nav.main')} className="px-2 pb-2">{links}</nav>
+          <nav aria-label={t('nav.main')} className="px-2 pb-2">{links}<div className="mt-2 border-t border-line pt-2">{social}</div></nav>
         </details>
       </header>
     </>

@@ -14,7 +14,8 @@
     "main": "Main",
     "start": "Start",
     "proof": "Proof",
-    "me": "My results"
+    "me": "My results",
+    "x": "Forewit on X (opens in a new tab)"
   },
   "ui": {
     "toLight": "Light theme",
