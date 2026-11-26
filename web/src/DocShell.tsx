@@ -51,7 +51,7 @@ export function DocShell({ current, title, lead, meta, toc, children, footer = t
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_13rem]">
       <article className="min-w-0">
-        <nav aria-label={t('ui.breadcrumbs')} className="mb-4 text-sm text-muted">
+        <nav aria-label={t('ui.breadcrumbs')} className="sticky top-0 z-20 -mx-4 mb-4 border-b border-line bg-bg/95 px-4 py-3 text-sm text-muted backdrop-blur sm:-mx-8 sm:px-8">
           <ol className="flex flex-wrap items-center gap-x-2">
             <li><a href="#/" className="hover:text-ink hover:underline">{t('nav.home')}</a></li>
             <li aria-hidden="true">/</li>
@@ -73,7 +73,7 @@ export function DocShell({ current, title, lead, meta, toc, children, footer = t
           </footer>
         )}
       </article>
-      {toc.length > 1 && <aside className="hidden lg:block"><div className="sticky top-6"><Toc items={toc} active={active} /></div></aside>}
+      {toc.length > 1 && <aside className="hidden lg:block"><div className="sticky top-16"><Toc items={toc} active={active} /></div></aside>}
     </div>
   );
 }
@@ -94,7 +94,7 @@ export function Steps({ children }: { children: ReactNode[] }) {
 
 export function DocSection({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <section id={id} aria-labelledby={`${id}-t`} className="scroll-mt-6 pt-10 first:pt-0">
+    <section id={id} aria-labelledby={`${id}-t`} className="scroll-mt-16 pt-10 first:pt-0">
       <h2 id={`${id}-t`} className="mb-4 text-xl font-semibold tracking-tight">{title}</h2>
       {children}
     </section>

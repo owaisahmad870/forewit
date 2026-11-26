@@ -236,7 +236,7 @@ export function Blocks({ blocks }: { blocks: Block[] }) {
     <div className="space-y-4 leading-relaxed">
       {blocks.map((b, i) =>
         typeof b === 'string' ? <p key={i}>{b}</p>
-        : 'h' in b ? <h2 key={i} id={slugId(b.h)} className="scroll-mt-6 pt-6 text-xl font-semibold tracking-tight">{b.h}</h2>
+        : 'h' in b ? <h2 key={i} id={slugId(b.h)} className="scroll-mt-16 pt-6 text-xl font-semibold tracking-tight">{b.h}</h2>
         : 'strong' in b ? <Callout key={i} kind="note"><p className="font-semibold">{b.strong}</p></Callout>
         : 'note' in b ? <Callout key={i} kind="note"><p>{b.note}</p></Callout>
         : 'tip' in b ? <Callout key={i} kind="tip"><p>{b.tip}</p></Callout>
