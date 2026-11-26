@@ -21,6 +21,7 @@
     "x": "Forewit on X (opens in a new tab)"
   },
   "ui": {
+    "source": "Source code",
     "breadcrumbs": "Breadcrumbs",
     "docsMenu": "Docs menu",
     "suggest": "Suggest a change to this page",
@@ -248,6 +249,79 @@
     "title": "Docs",
     "intro": "How Forewit works, how it scores, and what its owner can and cannot do.",
     "pages": {
+      "privacy": {
+        "title": "Privacy",
+        "blocks": [
+          {
+            "strong": "Short version: no accounts, no cookies, no analytics or trackers. Your forecasts are public onchain by design."
+          },
+          {
+            "h": "Public by design"
+          },
+          "Everything you send to the Forewit contracts is public on BNB Smart Chain and stays there: your wallet address, your sealed commits, your revealed forecasts, your scores and, if you opt in, your profile name. Nobody, Forewit included, can delete onchain data. Turning your profile off removes your name from the site from then on.",
+          {
+            "h": "What stays in your browser"
+          },
+          "The site remembers your language, your theme and the wallet address you type on My results. They are saved only in your browser, never sent to us, and you can clear them at any time in your browser settings.",
+          {
+            "h": "Hosting and services"
+          },
+          {
+            "list": [
+              "Cloudflare hosts the site, the live price feed and the read only connector at forewit.xyz/mcp. Like any host, it processes request data such as IP addresses to deliver and protect the service, under its own privacy policy.",
+              "The connector code at forewit.xyz/mcp keeps no record of your requests.",
+              "Live prices are fetched by our server from Predict.fun with our own key. Your IP address is not passed on."
+            ]
+          },
+          {
+            "h": "Tools on your device"
+          },
+          "The command line, the skill and the local MCP server run on your device or in your own Claude environment. Your receipts and salts are saved there or in your own private repository. Forewit never sees your wallet keys or your Predict.fun key. With auto reveal, an encrypted copy of your forecast travels inside your own transaction and can only be opened after the deadline.",
+          {
+            "h": "Services you choose"
+          },
+          "Binance, Claude, GitHub and Predict.fun have their own privacy policies, which apply when you use them.",
+          {
+            "h": "Contact and changes"
+          },
+          "Questions: open an issue on GitHub (owaisahmad870/forewit) or write to @forewitai on X. Changes to this page are dated and kept in the public repository. Last updated 26 Nov 2026."
+        ]
+      },
+      "terms": {
+        "title": "Terms of use",
+        "blocks": [
+          {
+            "strong": "Forewit scores forecasts. It is not a betting service, not an exchange and not financial advice."
+          },
+          {
+            "h": "What Forewit is"
+          },
+          "A public record of sealed forecasts, each benchmarked against the market price and scored onchain. Forewit takes no bets, holds no funds and pays no returns. Every transaction it prepares has value 0; you pay only the network fee.",
+          {
+            "h": "Your responsibilities"
+          },
+          {
+            "list": [
+              "You need your own Agent ID and wallet, and you approve every transaction yourself.",
+              "Onchain transactions cannot be reversed. Check each wallet preview before you approve it.",
+              "Prediction markets and crypto may be restricted where you live. You are responsible for following your local laws."
+            ]
+          },
+          {
+            "h": "Fair rules"
+          },
+          "Scoring, eligibility and selection rules never change after a round opens. Changes are versioned and announced before they apply.",
+          {
+            "h": "No warranty"
+          },
+          "Forewit is open source software under the MIT licence, provided as is, without warranty of any kind. Scores, prices and rankings may contain errors or delays, and the service may change or stop.",
+          {
+            "h": "Fair use"
+          },
+          "Do not try to overload or misuse the site, the live price feed or the connector.",
+          "Last updated 26 Nov 2026."
+        ]
+      },
       "how": {
         "title": "How it works",
         "blocks": [

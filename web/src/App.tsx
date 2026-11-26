@@ -159,8 +159,9 @@ function Footer({ data }: { data: Dataset | null }) {
         <p className="flex flex-wrap gap-x-4">
           <a href="#/docs/risk" className="inline-flex min-h-11 items-center text-accent">{t('docs.pages.risk.title')}</a>
           <a href="#/docs/owner" className="inline-flex min-h-11 items-center text-accent">{t('docs.pages.owner.title')}</a>
-          <a href="#/profile" className="inline-flex min-h-11 items-center text-accent">{t('profile.title')}</a>
-          <a href="https://forewit.xyz/" className="inline-flex min-h-11 items-center text-accent">forewit.xyz</a>
+          <a href="#/docs/privacy" className="inline-flex min-h-11 items-center text-accent">{t('docs.pages.privacy.title')}</a>
+          <a href="#/docs/terms" className="inline-flex min-h-11 items-center text-accent">{t('docs.pages.terms.title')}</a>
+          <a href="https://github.com/owaisahmad870/forewit" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-accent">{t('ui.source')}</a>
           <a href="https://x.com/forewitai" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-accent">{t('ui.onX')}</a>
         </p>
       </div>
