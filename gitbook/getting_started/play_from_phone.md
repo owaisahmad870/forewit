@@ -52,11 +52,15 @@ Setup then runs by itself at the start of every session. Check: the agent's netw
 ## Play
 1. Start a new session with your repository and the Forewit environment, and send one of these:
    * `Forecast a market: bitcoin 15 minute`
+   * `Forecast this market: <paste the question from predict.fun>`
+   * `I say 70% Yes on: <paste the question from predict.fun>`
    * `Forecast today's Forewit round`
    * `How did I do?`
    * `What can I forecast right now?`
    * `Explain how Forewit scores me`
    * `Show the Forewit leaderboard`
+
+   For a market you picked yourself, copy its question from predict.fun (or a few words of it) into the message, with your chance if you know it. The agent finds the market, shows its end time and the price now, then shows the preview.
 2. The agent shows a sign in link and a pairing code. Tap the link on the same phone, check the code in the Binance app and approve. The agent reports CONNECTED and your BSC address.
 3. Give your chance. The agent saves your receipt to your private repository and shows the wallet preview (a Forewit contract, value 0).
 4. Type yes. You get a transaction hash, or a request to approve in the Binance app.

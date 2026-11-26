@@ -52,11 +52,15 @@ description: 用手机或任意浏览器，通过云端 AI 智能体参与先见
 ## 开始预测
 1. 用你的仓库和 Forewit 环境开始新会话，发送以下任意一条：
    * `Forecast a market: bitcoin 15 minute`
+   * `Forecast this market: <paste the question from predict.fun>`
+   * `I say 70% Yes on: <paste the question from predict.fun>`
    * `Forecast today's Forewit round`
    * `How did I do?`
    * `What can I forecast right now?`
    * `Explain how Forewit scores me`
    * `Show the Forewit leaderboard`
+
+   若要预测你自己挑选的市场，把它在 predict.fun 上的问题（或其中几个词）复制进消息里；如果已经想好概率，也一并写上。智能体会找到该市场，显示截止时间和当前价格，然后展示预览。
 2. 智能体会给出一个登录链接和一个配对码。在同一部手机上点击链接，在币安 App 里核对配对码并批准。智能体显示 CONNECTED 以及你的 BSC 地址。
 3. 给出你的概率。智能体把回执保存到你的私有仓库，并展示钱包预览（先见合约，金额为 0）。
 4. 输入 yes。你会得到一个交易哈希，或者提示你在币安 App 里批准。

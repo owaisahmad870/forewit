@@ -379,12 +379,14 @@
         "打开 Network access，保持 Limited，每行粘贴一个以下网站，并保留 package managers 开启：",
         "预测任意市场：打开 Environment variables，按这一行填入你在 developers.predict.fun 免费获取的密钥。这个环境只有你使用。切勿把密钥发到聊天里。然后点 Add environment。",
         "可选：添加 Forewit 连接器，让 Claude 在任何对话中回答 Forewit 问题。在 claude.ai 打开 Plugins，点 Add，再点 Add custom connector，命名为 Forewit 并粘贴这个地址。它只读取，从不发送任何内容。",
-        "用你的仓库和 Forewit 环境开始新会话，然后发送下面任意一条消息。",
+        "用你的仓库和 Forewit 环境开始新会话，然后发送下面任意一条消息。若要预测你自己挑选的市场，把它在 predict.fun 上的问题（或其中几个词）复制进消息里；如果已经想好概率，也一并写上。智能体会找到该市场，显示截止时间和当前价格，然后展示预览。",
         "点登录链接，在币安 App 中核对代码并批准。给出你的概率，查看预览，输入 yes。自动揭示会完成其余步骤。"
       ],
       "examplesTitle": "你可以这样问",
       "examples": [
         "预测一个市场：比特币 15 分钟",
+        "预测这个市场：<粘贴 predict.fun 上的问题>",
+        "我认为 Yes 的概率是 70%：<粘贴 predict.fun 上的问题>",
         "预测今天的 Forewit 精选",
         "我的成绩如何？",
         "现在可以预测什么？",
