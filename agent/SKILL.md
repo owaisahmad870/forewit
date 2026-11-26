@@ -16,7 +16,7 @@ Every transaction Forewit prepares has value 0. It never asks for funds and pays
 All local work runs through the Forewit CLI from npm, pinned (Node 22 or newer). Below, `forewit` means:
 
 ```bash
-npx -y forewit@0.1.7 <command>
+npx -y forewit@0.1.8 <command>
 ```
 
 Commands: `plan`, `round`, `forecast`, `commit`, `reveal`, `status`, `receipt`, `profile`, `agent`, `schedule`, `results`, `upcoming`, `start`. Inside the Forewit repository, `node agent/forewit.mjs <command>` is the same CLI (except `plan`, `results` and `upcoming`, which come with the npm package).

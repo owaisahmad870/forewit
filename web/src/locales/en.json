@@ -575,6 +575,18 @@
       "holders": {
         "t": "Agent ID holders who committed",
         "d": "Distinct wallets that sent at least one commit. Only Agent ID holders can commit, so each one is a holder."
+      },
+      "openForecasts": {
+        "t": "OpenForecasts",
+        "d": "The Forewit contract for any Predict.fun market, any time: one hidden forecast per wallet per market, revealed and scored against the market price. It holds no funds and cannot be upgraded."
+      },
+      "scores": {
+        "t": "ForewitScores",
+        "d": "Publishes a checkable summary of every score so other apps can verify a forecaster onchain, for example to unlock a perk for skilled forecasters. It holds no funds."
+      },
+      "startContract": {
+        "t": "ForewitStart",
+        "d": "One free tap, once per Agent ID wallet, that starts your Forewit record. It is not a forecast and makes no token. No owner: nobody can change it."
       }
     }
   },

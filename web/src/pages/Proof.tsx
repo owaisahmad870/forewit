@@ -98,7 +98,7 @@ export function Proof({ data }: { data: Dataset }) {
           {snap.agentId && <Addr a={snap.agentId} label={t('proof.agentId')} />}
           {f.ctfs.map((c) => <Addr key={c} a={c} label={t('proof.ctf')} />)}
         </dl>
-        <Explain terms={['ledger', 'agentId', 'ctf']} summary="help.whatTerms" />
+        <Explain terms={['ledger', 'openForecasts', 'scores', 'startContract', 'agentId', 'ctf']} summary="help.whatTerms" />
       </Card>
 
       <Card>
