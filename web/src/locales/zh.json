@@ -324,7 +324,7 @@
     },
     "testnetNote": "测试网。主网合约尚未部署，以下是 BSC 测试网数据，预测者为测试账户。发布的数据切换到主网时，本页会随之切换。",
     "numbers": "关键数字",
-    "holders": "已提交的 Agent ID 持有者",
+    "holders": "预测者（提交过预测的 Agent ID 持有者）",
     "rounds": "已运行轮次",
     "resolved": "依据 CTF 结算的问题（作废 {void} 个）",
     "contracts": "合约",
@@ -342,7 +342,9 @@
     "adminTitle": "团队链上操作（{n}）",
     "adminNote": "自部署以来 ForecastLedger 上的每一次角色授予或撤销、暂停以及管理员席位变更，均读取自链上。最前面的几条是部署本身。之后的任何条目都是团队操作，可在 BscScan 上核对。",
     "adminBlock": "区块 {n}",
-    "started": "已免费开始的 Agent ID 持有者（不是预测）"
+    "started": "已开始（免费操作，不是预测）",
+    "anyContract": "使用过任一先见合约的 Agent ID 钱包（黑客松 30 个持有者的统计口径）",
+    "startNote": "开始操作常由自动尝试新 Agent ID 合约的智能体发送。只有预测才会建立记录。"
   },
   "start": {
     "title": "开始预测",

@@ -81,12 +81,14 @@ export function Proof({ data }: { data: Dataset }) {
 
       <section aria-labelledby="proof-numbers">
         <h2 id="proof-numbers" className="sr-only">{t('proof.numbers')}</h2>
-        <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {stat(f.holders.length, t('proof.holders'))}
           {snap.start && stat(snap.start.count, t('proof.started'))}
+          {snap.start && stat(new Set([...f.holders.map((h) => h.addr), ...snap.start.players.map((p) => p.player)]).size, t('proof.anyContract'))}
           {stat(f.rounds, t('proof.rounds'))}
           {stat(`${f.resolved} / ${f.questions}`, t('proof.resolved', { void: f.voided }))}
         </dl>
+        {snap.start && <p className="mt-2 max-w-[68ch] text-sm text-muted">{t('proof.startNote')}</p>}
         <div className="mt-2"><Explain terms={['holders', 'resolvedCount', 'void']} /></div>
       </section>
 

@@ -323,7 +323,7 @@
     },
     "testnetNote": "Testnet. The mainnet ledger is not deployed yet, so these are BSC testnet numbers with test forecasters. This page switches to mainnet when the published data does.",
     "numbers": "Key numbers",
-    "holders": "Agent ID holders who committed",
+    "holders": "Forecasters (Agent ID holders who committed a forecast)",
     "rounds": "Rounds run",
     "resolved": "Questions resolved against the CTF ({void} void)",
     "contracts": "Contracts",
@@ -341,7 +341,9 @@
     "adminTitle": "Team actions onchain ({n})",
     "adminNote": "Every role grant or revoke, pause and admin seat change on ForecastLedger since deploy, read from the chain. The first entries are the deploy itself. Anything after them is a team action you can check on BscScan.",
     "adminBlock": "block {n}",
-    "started": "Agent ID holders who started (free, not a forecast)"
+    "started": "Started (free tap, not a forecast)",
+    "anyContract": "Agent ID wallets that used any Forewit contract (the hackathon 30 holder count)",
+    "startNote": "Starts are often sent by automated agents that try new Agent ID contracts. Only forecasts build a track record."
   },
   "start": {
     "title": "Start forecasting",
