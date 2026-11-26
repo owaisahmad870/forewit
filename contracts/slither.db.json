@@ -1,0 +1,9 @@
+[
+ {
+  "id": "97c49129076a50e35079ca27d722993b009190e45a17346bf1e6f27f2f39da31",
+  "check": "incorrect-equality",
+  "impact": "Medium",
+  "confidence": "High",
+  "description": "ForewitStart._start() (src/ForewitStart.sol#44-52) uses a dangerous strict equality:\n\t- AGENT_ID.balanceOf(msg.sender) == 0 (src/ForewitStart.sol#46)\n"
+ }
+]
