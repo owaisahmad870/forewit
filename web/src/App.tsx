@@ -7,7 +7,7 @@ import { Home } from './pages/Home';
 import { RoundPage, Rounds } from './pages/Round';
 import { MyResults } from './pages/MyResults';
 import { Leaderboard } from './pages/Leaderboard';
-import { Crowd, DocPage, DocsIndex } from './pages/Static';
+import { Crowd, DOC_SLUGS, DocPage, DocsIndex } from './pages/Static';
 import { ProfilePage, Profiles } from './pages/Profile';
 import { Proof } from './pages/Proof';
 import { Start } from './pages/Start';
@@ -58,11 +58,33 @@ function Sidebar({ route, theme, setTheme }: { route: string[]; theme: string; s
   const menu = useRef<HTMLDetailsElement>(null);
   useEffect(() => { if (menu.current) menu.current.open = false; }, [route]);
   const current = route[0] === 'round' ? 'rounds' : route[0] ?? '';
+  // Docs opens as a dropdown in this same list (no second sidebar); it starts open on any docs page
+  const [docsOpen, setDocsOpen] = useState(current === 'docs');
+  useEffect(() => { if (current === 'docs') setDocsOpen(true); }, [current]);
+  const item = (on: boolean) => `flex min-h-10 items-center rounded-lg px-3 text-[0.95rem] ${on ? 'bg-surface-2 font-semibold text-ink shadow-[inset_2px_0_0_var(--accent)]' : 'text-muted hover:bg-surface hover:text-ink'}`;
   const links = (
     <ul className="space-y-0.5">
-      {NAV.map(([path, key]) => (
+      {NAV.map(([path, key]) => path !== 'docs' ? (
         <li key={path}>
-          <a href={`#/${path}`} aria-current={current === path ? 'page' : undefined} className={`flex min-h-10 items-center rounded-lg px-3 text-[0.95rem] ${current === path ? 'bg-surface-2 font-semibold text-ink shadow-[inset_2px_0_0_var(--accent)]' : 'text-muted hover:bg-surface hover:text-ink'}`}>{t(key)}</a>
+          <a href={`#/${path}`} aria-current={current === path ? 'page' : undefined} className={item(current === path)}>{t(key)}</a>
+        </li>
+      ) : (
+        <li key={path}>
+          <div className="flex items-center gap-0.5">
+            <a href="#/docs" aria-current={current === 'docs' && !route[1] ? 'page' : undefined} className={`${item(current === 'docs' && !route[1])} flex-1`}>{t(key)}</a>
+            <button type="button" aria-expanded={docsOpen} aria-controls="nav-docs" aria-label={t(docsOpen ? 'nav.collapse' : 'nav.expand')} onClick={() => setDocsOpen((x) => !x)} className="flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:bg-surface hover:text-ink">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" className={`transition-transform ${docsOpen ? 'rotate-180' : ''}`}><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          </div>
+          {docsOpen && (
+            <ul id="nav-docs" className="mt-0.5 ml-3 space-y-0.5 border-l border-line pl-2">
+              {DOC_SLUGS.map((slug) => (
+                <li key={slug}>
+                  <a href={`#/docs/${slug}`} aria-current={current === 'docs' && route[1] === slug ? 'page' : undefined} className={`flex min-h-9 items-center rounded-md px-3 text-sm ${current === 'docs' && route[1] === slug ? 'bg-surface-2 font-semibold text-ink' : 'text-muted hover:bg-surface hover:text-ink'}`}>{t(`docs.pages.${slug}.title`)}</a>
+                </li>
+              ))}
+            </ul>
+          )}
         </li>
       ))}
     </ul>

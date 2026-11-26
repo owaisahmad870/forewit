@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useT } from './i18n';
 
-// Docs layout: breadcrumbs, a section list on the left, the article, and a sticky "On this page" rail that follows the
+// Docs layout: breadcrumbs, the article, and a sticky "On this page" rail that follows the
 // reader. Hash routes carry the page, so the rail scrolls to headings instead of linking to them.
 export const DOC_NAV = [['start', '#/start', 'start.title'], ['how', '#/docs/how', 'docs.pages.how.title'], ['scoring', '#/docs/scoring', 'docs.pages.scoring.title'], ['owner', '#/docs/owner', 'docs.pages.owner.title'], ['risk', '#/docs/risk', 'docs.pages.risk.title'], ['faq', '#/docs/faq', 'docs.pages.faq.title']] as const;
 const ISSUE_URL = 'https://github.com/owaisahmad870/forewit/issues/new';
@@ -45,31 +45,11 @@ function Toc({ items, active }: { items: TocItem[]; active?: string }) {
   );
 }
 
-function SectionNav({ current }: { current: string }) {
-  const { t } = useT();
-  return (
-    <nav aria-label={t('docs.title')}>
-      <a href="#/docs" className="mb-2 block text-sm font-semibold">{t('docs.title')}</a>
-      <ul className="space-y-0.5 text-sm">
-        {DOC_NAV.map(([k, href, label]) => (
-          <li key={k}>
-            <a href={href} aria-current={current === k ? 'page' : undefined}
-              className={`flex min-h-9 items-center rounded-md border-l-2 px-3 ${current === k ? 'border-accent bg-surface-2 font-semibold text-ink' : 'border-transparent text-muted hover:bg-surface hover:text-ink'}`}>
-              {t(label)}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}
-
 export function DocShell({ current, title, lead, meta, toc, children, footer = true }: { current: string; title: string; lead?: ReactNode; meta?: ReactNode; toc: TocItem[]; children: ReactNode; footer?: boolean }) {
   const { t } = useT();
   const active = useActive(toc.map((x) => x.id));
   return (
-    <div className="grid gap-8 xl:grid-cols-[12rem_minmax(0,1fr)_13rem] lg:grid-cols-[minmax(0,1fr)_13rem]">
-      <aside className="hidden xl:block"><div className="sticky top-6"><SectionNav current={current} /></div></aside>
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_13rem]">
       <article className="min-w-0">
         <nav aria-label={t('ui.breadcrumbs')} className="mb-4 text-sm text-muted">
           <ol className="flex flex-wrap items-center gap-x-2">
@@ -79,10 +59,6 @@ export function DocShell({ current, title, lead, meta, toc, children, footer = t
             {current !== 'index' && <><li aria-hidden="true">/</li><li aria-current="page" className="text-ink">{title}</li></>}
           </ol>
         </nav>
-        <details className="mb-6 rounded-lg border border-line xl:hidden">
-          <summary className="flex min-h-11 cursor-pointer items-center px-3 text-sm font-semibold">{t('ui.docsMenu')}</summary>
-          <div className="border-t border-line p-3"><SectionNav current={current} /></div>
-        </details>
         <header className="max-w-[72ch] border-b border-line pb-6">
           <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
           {lead && <div className="mt-3 text-lg text-muted">{lead}</div>}
