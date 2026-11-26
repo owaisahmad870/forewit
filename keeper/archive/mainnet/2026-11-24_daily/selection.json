@@ -1,0 +1,82 @@
+{
+  "rule": "QUESTION_SELECTION v3.1",
+  "kind": "daily",
+  "commitDeadline": "2026-11-24T23:00:00.000Z",
+  "resolutionDays": 7,
+  "eligible": 4,
+  "chosen": [
+    {
+      "marketId": 4752900,
+      "conditionId": "0xf80d29e2a7387653e2fdeb5cd533440601d3b1187573c037ec29657fb9fa68a9",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "bitcoin-up-or-down-on-november-25-2026",
+      "endsAt": "2026-11-25T17:00:00.000Z",
+      "eventQuestion": "Bitcoin Up or Down on November 25?",
+      "label": "Bitcoin Up or Down on November 25?",
+      "marketQuestion": "Bitcoin Up or Down on November 25?",
+      "tags": [
+        "Crypto",
+        "BTC",
+        "Up/Down",
+        "Daily"
+      ],
+      "title": "Bitcoin Up or Down on November 25?",
+      "dailyCrypto": true,
+      "vol24h": 5.84
+    },
+    {
+      "marketId": 4752901,
+      "conditionId": "0xf07060dc08edd037a813426fa574acf0a915f42f60fceaf9a543b66c8889340a",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "ethereum-up-or-down-on-november-25-2026",
+      "endsAt": "2026-11-25T17:00:00.000Z",
+      "eventQuestion": "Ethereum Up or Down on November 25?",
+      "label": "Ethereum Up or Down on November 25?",
+      "marketQuestion": "Ethereum Up or Down on November 25?",
+      "tags": [
+        "Crypto",
+        "ETH",
+        "Up/Down",
+        "Daily"
+      ],
+      "title": "Ethereum Up or Down on November 25?",
+      "dailyCrypto": true,
+      "vol24h": 0
+    },
+    {
+      "marketId": 4752902,
+      "conditionId": "0xc8f737a292d8f9d834826b2442f7273e0ff00f9a5ef913de3c92d926fed0f301",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "bnb-up-or-down-on-november-25-2026",
+      "endsAt": "2026-11-25T17:00:00.000Z",
+      "eventQuestion": "BNB Up or Down on November 25?",
+      "label": "BNB Up or Down on November 25?",
+      "marketQuestion": "BNB Up or Down on November 25?",
+      "tags": [
+        "Crypto",
+        "Up/Down",
+        "Daily",
+        "BNB"
+      ],
+      "title": "BNB Up or Down on November 25?",
+      "dailyCrypto": true,
+      "vol24h": 0
+    },
+    {
+      "marketId": 4745063,
+      "conditionId": "0xe6d00e967b4d84f56817c46cc4cd8c899cc9a0b083eacc5410dedfd2ffc31e7d",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "highest-temperature-in-tokyo-on-november-25-2026",
+      "endsAt": "2026-11-25T12:00:00.000Z",
+      "eventQuestion": "Highest temperature in Tokyo on November 25?",
+      "label": "15°C",
+      "marketQuestion": "Will the highest temperature in Tokyo be 15°C on November 25?",
+      "tags": [
+        "Weather"
+      ],
+      "title": "15°C",
+      "dailyCrypto": false,
+      "vol24h": 160.43
+    }
+  ]
+}

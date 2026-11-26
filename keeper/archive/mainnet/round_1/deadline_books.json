@@ -1,0 +1,26 @@
+[
+  {
+    "marketId": "4752900",
+    "bps": 6300,
+    "source": "mid",
+    "takenAt": 1795561221665
+  },
+  {
+    "marketId": "4752901",
+    "bps": 6300,
+    "source": "mid",
+    "takenAt": 1795561221787
+  },
+  {
+    "marketId": "4752902",
+    "bps": 6900,
+    "source": "mid",
+    "takenAt": 1795561221910
+  },
+  {
+    "marketId": "4745063",
+    "bps": 1550,
+    "source": "mid",
+    "takenAt": 1795561222062
+  }
+]

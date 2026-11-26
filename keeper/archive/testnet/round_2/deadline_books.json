@@ -1,0 +1,20 @@
+[
+  {
+    "marketId": "437",
+    "bps": 3500,
+    "source": "mid",
+    "takenAt": 1795517465118
+  },
+  {
+    "marketId": "434",
+    "bps": 6350,
+    "source": "mid",
+    "takenAt": 1795517465144
+  },
+  {
+    "marketId": "433",
+    "bps": 3150,
+    "source": "mid",
+    "takenAt": 1795517465169
+  }
+]

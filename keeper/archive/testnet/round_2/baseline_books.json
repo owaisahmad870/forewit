@@ -1,0 +1,143 @@
+[
+  {
+    "marketId": "437",
+    "bps": 3500,
+    "source": "mid",
+    "takenAt": 1795517140470,
+    "updateTimestampMs": 1795514678549,
+    "raw": {
+      "asks": [
+        [
+          0.37,
+          503373.2633567665
+        ],
+        [
+          0.45,
+          7.5211
+        ],
+        [
+          0.84,
+          45.541
+        ]
+      ],
+      "bids": [
+        [
+          0.33,
+          121596.46260000001
+        ],
+        [
+          0.17,
+          6.0764
+        ],
+        [
+          0.1,
+          61.543
+        ],
+        [
+          0.08,
+          52.577
+        ],
+        [
+          0.03,
+          95537
+        ]
+      ],
+      "lastOrderSettled": {
+        "id": "317512",
+        "kind": "LIMIT",
+        "marketId": 437,
+        "outcome": "Yes",
+        "price": "0.33",
+        "side": "Bid"
+      },
+      "marketId": 437,
+      "updateTimestampMs": 1795514678549
+    }
+  },
+  {
+    "marketId": "434",
+    "bps": 6350,
+    "source": "mid",
+    "takenAt": 1795517140498,
+    "updateTimestampMs": 1795456482878,
+    "raw": {
+      "asks": [
+        [
+          0.92,
+          96.1645
+        ]
+      ],
+      "bids": [
+        [
+          0.35,
+          6.1631
+        ]
+      ],
+      "lastOrderSettled": {
+        "id": "843248",
+        "kind": "LIMIT",
+        "marketId": 434,
+        "outcome": "Yes",
+        "price": "0.45",
+        "side": "Bid"
+      },
+      "marketId": 434,
+      "updateTimestampMs": 1795456482878
+    }
+  },
+  {
+    "marketId": "433",
+    "bps": 3150,
+    "source": "mid",
+    "takenAt": 1795517140525,
+    "updateTimestampMs": 1795456506008,
+    "raw": {
+      "asks": [
+        [
+          0.42,
+          748646.9858952381
+        ],
+        [
+          0.52,
+          7.09595
+        ],
+        [
+          0.61,
+          25.334
+        ],
+        [
+          0.69,
+          4.334
+        ],
+        [
+          0.85,
+          10
+        ],
+        [
+          0.94,
+          59.0855
+        ],
+        [
+          0.98,
+          5
+        ]
+      ],
+      "bids": [
+        [
+          0.21,
+          100
+        ]
+      ],
+      "lastOrderSettled": {
+        "id": "843239",
+        "kind": "LIMIT",
+        "marketId": 433,
+        "outcome": "Yes",
+        "price": "0.40",
+        "side": "Bid"
+      },
+      "marketId": 433,
+      "updateTimestampMs": 1795456506008
+    }
+  }
+]

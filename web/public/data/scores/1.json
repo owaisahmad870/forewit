@@ -1,0 +1,22 @@
+{
+  "chainId": 56,
+  "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
+  "scores": "0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc",
+  "agentId": "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F",
+  "epoch": "1",
+  "roundId": "1",
+  "snapshotBlock": "135741241",
+  "method": "forewit scores v1: skill = sumSkill / (baselineQuestions + 20), truncated toward zero",
+  "root": "0xde4ad690c929e7fbdd748e0a1cd2bf35e0b86484c383fb4d0dcdc999496d23b8",
+  "leafCount": 1,
+  "leaves": [
+    {
+      "tokenId": "8714532155627087049726098321881204377524823650388691062448483179398876756705",
+      "forecaster": "0x4db416baf0127adca78e7571038b763868ff282c",
+      "skill": "1646875",
+      "n": "4",
+      "proof": []
+    }
+  ],
+  "excluded": []
+}

@@ -1,0 +1,92 @@
+{
+  "rule": "QUESTION_SELECTION v3.1",
+  "kind": "daily",
+  "commitDeadline": "2026-11-25T23:00:00.000Z",
+  "resolutionDays": 7,
+  "eligible": 4,
+  "chosen": [
+    {
+      "marketId": 4777584,
+      "conditionId": "0xf09762194db3e87baea974d08f2d0f885e57608a8581d31219f3c53ea4bb8a47",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "bitcoin-up-or-down-on-november-26-2026",
+      "endsAt": "2026-11-26T17:00:00.000Z",
+      "eventQuestion": "Bitcoin Up or Down on November 26?",
+      "label": "Bitcoin Up or Down on November 26?",
+      "marketQuestion": "Bitcoin Up or Down on November 26?",
+      "tags": [
+        "Crypto",
+        "BTC",
+        "Up/Down",
+        "Daily"
+      ],
+      "title": "Bitcoin Up or Down on November 26?",
+      "dailyCrypto": true,
+      "vol24h": 3.25
+    },
+    {
+      "marketId": 4777585,
+      "conditionId": "0x1924d43fae6d96561ea6aaaab547724a2219157221785635a358bfa9810c5a17",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "ethereum-up-or-down-on-november-26-2026",
+      "endsAt": "2026-11-26T17:00:00.000Z",
+      "eventQuestion": "Ethereum Up or Down on November 26?",
+      "label": "Ethereum Up or Down on November 26?",
+      "marketQuestion": "Ethereum Up or Down on November 26?",
+      "tags": [
+        "Crypto",
+        "ETH",
+        "Up/Down",
+        "Daily"
+      ],
+      "title": "Ethereum Up or Down on November 26?",
+      "dailyCrypto": true,
+      "vol24h": 0
+    },
+    {
+      "marketId": 4777586,
+      "conditionId": "0xe4c81992959bcf1f82d0894f6ee818c443d18e90de563d8910958c4be7e2ddfb",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "bnb-up-or-down-on-november-26-2026",
+      "endsAt": "2026-11-26T17:00:00.000Z",
+      "eventQuestion": "BNB Up or Down on November 26?",
+      "label": "BNB Up or Down on November 26?",
+      "marketQuestion": "BNB Up or Down on November 26?",
+      "tags": [
+        "Crypto",
+        "Up/Down",
+        "Daily",
+        "BNB"
+      ],
+      "title": "BNB Up or Down on November 26?",
+      "dailyCrypto": true,
+      "vol24h": 0
+    },
+    {
+      "marketId": 4766527,
+      "conditionId": "0x7d4c0fbcf3311bfeddc4f45b7eb7487ed93c83bd01e3023fec2c8e20159b7c8f",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "highest-temperature-in-shenzhen-on-november-26-2026",
+      "endsAt": "2026-11-26T12:00:00.000Z",
+      "eventQuestion": "Highest temperature in Shenzhen on November 26?",
+      "label": "22°C",
+      "marketQuestion": "Will the highest temperature in Shenzhen be 22°C on November 26?",
+      "tags": [
+        "Weather"
+      ],
+      "title": "22°C",
+      "dailyCrypto": false,
+      "vol24h": 110
+    }
+  ],
+  "funnel": {
+    "open": 16584,
+    "binary": 10766,
+    "notSports": 5459,
+    "liquid": 111,
+    "notPolitics": 78,
+    "inWindow": 4,
+    "events": 4,
+    "chosen": 4
+  }
+}

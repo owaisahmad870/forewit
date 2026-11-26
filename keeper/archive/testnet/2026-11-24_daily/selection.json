@@ -1,0 +1,8 @@
+{
+  "rule": "QUESTION_SELECTION v3.1",
+  "kind": "daily",
+  "commitDeadline": "2026-11-24T23:00:00.000Z",
+  "resolutionDays": 7,
+  "eligible": 0,
+  "chosen": []
+}

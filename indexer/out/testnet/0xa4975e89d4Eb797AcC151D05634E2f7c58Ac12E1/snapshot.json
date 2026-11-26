@@ -1,0 +1,156 @@
+{
+  "network": 97,
+  "ledger": "0xa4975e89d4Eb797AcC151D05634E2f7c58Ac12E1",
+  "builtAt": "2026-11-24T10:51:08.173Z",
+  "headBlock": "144583516",
+  "metrics": {
+    "distinctCommitters": 2,
+    "rounds": 2,
+    "perDay": {
+      "2026-11-23": {
+        "commits": 2,
+        "reveals": 1
+      }
+    }
+  },
+  "rounds": [
+    {
+      "roundId": "1",
+      "questions": [
+        {
+          "conditionId": "0x6bea497e7cf3c50376a0aefd2a6340fae2e51e0a0896753d128625f386e19941",
+          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
+          "yesSlot": 0,
+          "marketId": "437"
+        },
+        {
+          "conditionId": "0x821c670ed24d05cfb259a03c9d937f0c34016389eb71a78eafa990d72bc03985",
+          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
+          "yesSlot": 0,
+          "marketId": "434"
+        },
+        {
+          "conditionId": "0xa65c1bc8f7b571bd6d655df0df537d7a43e11de43f8341c07307c9c3867ae54b",
+          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
+          "yesSlot": 0,
+          "marketId": "433"
+        }
+      ],
+      "committers": [
+        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a",
+        "0xdcde642b2da60be15048f14ecb801578098b2e5f"
+      ],
+      "revealed": [
+        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a"
+      ],
+      "forecasts": {
+        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a": "38654902280000"
+      },
+      "scored": {
+        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a": {
+          "questions": "2",
+          "brier": "13000000",
+          "baseline": "82572500",
+          "skill": "69572500",
+          "baselineUsed": true,
+          "at": 1795465442
+        }
+      },
+      "forfeited": {
+        "0xdcde642b2da60be15048f14ecb801578098b2e5f": {
+          "questions": "2",
+          "brier": "200000000",
+          "baseline": "82572500",
+          "skill": "-117427500",
+          "baselineUsed": true,
+          "at": 1795465444
+        }
+      },
+      "outcomes": {
+        "0": "Yes",
+        "1": "No",
+        "2": "Void"
+      },
+      "baseline": "13529563139500",
+      "commitDeadline": "1795465068",
+      "revealDeadline": "1795465428",
+      "resolutionWait": "86400",
+      "createdBlock": "144466921",
+      "baselineAt": 1795464898,
+      "crowd": {
+        "method": "crowd v1: log odds pooling, equal weight below 3 resolved rounds, then 0.1 + skill/mean skill, no extremizing",
+        "bps": [
+          8000,
+          3000,
+          9000
+        ],
+        "simpleBps": [
+          8000,
+          3000,
+          9000
+        ]
+      },
+      "flags": [],
+      "commitTiming": {
+        "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a": {
+          "at": 1795464886,
+          "afterBaseline": false,
+          "gapSec": -12
+        },
+        "0xdcde642b2da60be15048f14ecb801578098b2e5f": {
+          "at": 1795464889,
+          "afterBaseline": false,
+          "gapSec": -9
+        }
+      },
+      "commitCount": 2,
+      "revealRate": 0.5
+    },
+    {
+      "roundId": "2",
+      "questions": [
+        {
+          "conditionId": "0x24d660c7ddb2628e7e7bab3982471a2c135850c952452ddfa7390b728f9389fd",
+          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
+          "yesSlot": 0,
+          "marketId": "437"
+        },
+        {
+          "conditionId": "0xf1e61507b6e92e1d21ce24012e8055edf66f667c0a55297e77028834adb51fd1",
+          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
+          "yesSlot": 0,
+          "marketId": "434"
+        },
+        {
+          "conditionId": "0x24e865940e3d4196b9eb2f72beb5f3eb77fb1f0d113050c0c92fcb1b904a3f54",
+          "ctf": "0x9A0283BB4E20789993C14eC6cE1DB7A984b49A54",
+          "yesSlot": 0,
+          "marketId": "433"
+        }
+      ],
+      "committers": [],
+      "revealed": [],
+      "forecasts": {},
+      "scored": {},
+      "forfeited": {},
+      "outcomes": {},
+      "baseline": "13529563139500",
+      "commitDeadline": "1795517440",
+      "revealDeadline": "1795517800",
+      "resolutionWait": "86400",
+      "createdBlock": "144580157",
+      "baselineAt": 1795517141,
+      "crowd": null,
+      "flags": [],
+      "commitTiming": {},
+      "commitCount": 0,
+      "revealRate": null
+    }
+  ],
+  "profiles": {},
+  "operators": [
+    "0x04ca5c9c38ac62d48fda6fe5328db4a0edee4b7a",
+    "0xdcde642b2da60be15048f14ecb801578098b2e5f"
+  ],
+  "identityChanged": {}
+}
