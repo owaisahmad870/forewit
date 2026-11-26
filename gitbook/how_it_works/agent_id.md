@@ -33,7 +33,7 @@ The Agent ID contract, [0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F](https://bscs
 Your record is tied to your wallet address from your first commit. Your Agent ID name is shown only if you opt in:
 
 ```bash
-npx forewit@0.1.8 profile --from 0xYourAgenticWallet --label yourname --execute
+npx forewit@0.1.9 profile --from 0xYourAgenticWallet --label yourname --execute
 ```
 
 Opting out (`--off`) removes the public name and drops you from the next ForewitScores root. The site and the MCP server never offer a search by name for holders who have not opted in.
