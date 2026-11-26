@@ -32,13 +32,13 @@ describe('start commands', () => {
     const shown = docs.flatMap((d) => d.split('\n')).filter((x) => /^baw(\.cmd)? /.test(x));
     for (const l of shown) expect(cli + bawLib, l).toContain(l.replace(/^baw\.cmd /, 'baw ').split(' --')[0]);
   });
-  it('renders the three paths, then the any market box, with no manual path', () => {
+  it('renders Claude Code first, then the computer and agent paths, then the any market box, with no manual path', () => {
     const out = renderToStaticMarkup(<Start />);
     const at = (x: string) => out.indexOf(x);
-    expect(at('npx forewit@latest start')).toBeGreaterThan(0);
+    expect(at('forewit-agent-template')).toBeGreaterThan(0);
+    expect(at('npx forewit@latest start')).toBeGreaterThan(at('forewit-agent-template'));
     expect(at('npx skills add owaisahmad870/forewit')).toBeGreaterThan(at('npx forewit@latest start'));
-    expect(at('forewit-agent-template')).toBeGreaterThan(at('npx skills add owaisahmad870/forewit'));
-    expect(at('npx forewit@latest predict')).toBeGreaterThan(at('forewit-agent-template'));
+    expect(at('npx forewit@latest predict')).toBeGreaterThan(at('npx skills add owaisahmad870/forewit'));
     expect(out).not.toContain('node agent/forewit.mjs');
   });
   it('every phone screenshot exists and the examples follow the steps', () => {

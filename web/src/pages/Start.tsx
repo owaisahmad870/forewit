@@ -30,16 +30,8 @@ export function Start() {
         <h2 id="need-h" className={h2}>{t('start.need.title')}</h2>
         <ul className="list-disc space-y-1 pl-5">{raw<string[]>('start.need.list').map((x, i) => <li key={i}>{x}</li>)}</ul>
       </section>
-      <section aria-labelledby="computer-h" className={card}>
-        <h2 id="computer-h" className={h2}>1. {t('start.computer.title')}</h2>
-        <ol className={ol}>{steps('computer').map((x, i) => <li key={i}>{x}{i === 1 && <><CopyBlock text={QUICK_COMMAND} /><span className="mt-2 block text-sm">{t('start.computer.windows')}</span><CopyBlock text={QUICK_COMMAND_WINDOWS} /></>}</li>)}</ol>
-      </section>
-      <section aria-labelledby="agent-h" className={card}>
-        <h2 id="agent-h" className={h2}>2. {t('start.agent.title')}</h2>
-        <ol className={ol}>{steps('agent').map((x, i) => <li key={i}>{x}{i < 2 && <CopyBlock text={SKILL_COMMANDS[i]} />}</li>)}</ol>
-      </section>
       <section aria-labelledby="phone-h" className={card}>
-        <h2 id="phone-h" className={h2}>3. {t('start.phone.title')}</h2>
+        <h2 id="phone-h" className={h2}>1. {t('start.phone.title')}</h2>
         <p className="mb-3">{t('start.phone.intro')}</p>
         <ol className={ol}>{steps('phone').map((x, i) => (
           <li key={i}>
@@ -50,6 +42,14 @@ export function Start() {
             {i === 7 && <ul className="mt-2 space-y-1">{raw<string[]>('start.phone.examples').map((e) => <li key={e}><CopyBlock text={e} /></li>)}</ul>}
           </li>
         ))}</ol>
+      </section>
+      <section aria-labelledby="computer-h" className={card}>
+        <h2 id="computer-h" className={h2}>2. {t('start.computer.title')}</h2>
+        <ol className={ol}>{steps('computer').map((x, i) => <li key={i}>{x}{i === 1 && <><CopyBlock text={QUICK_COMMAND} /><span className="mt-2 block text-sm">{t('start.computer.windows')}</span><CopyBlock text={QUICK_COMMAND_WINDOWS} /></>}</li>)}</ol>
+      </section>
+      <section aria-labelledby="agent-h" className={card}>
+        <h2 id="agent-h" className={h2}>3. {t('start.agent.title')}</h2>
+        <ol className={ol}>{steps('agent').map((x, i) => <li key={i}>{x}{i < 2 && <CopyBlock text={SKILL_COMMANDS[i]} />}</li>)}</ol>
       </section>
       <section aria-labelledby="any-h" className="max-w-[68ch] rounded-lg border border-accent bg-surface p-4">
         <h2 id="any-h" className={h2}>{t('start.any.title')}</h2>
