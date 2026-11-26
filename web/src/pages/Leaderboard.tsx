@@ -1,4 +1,4 @@
-import { Card, Explain, NextLinks, SampleBadge, ScoresWhen } from '../components';
+import { Card, ColHelp, Explain, NextLinks, SampleBadge, ScoresWhen } from '../components';
 import { useT } from '../i18n';
 import { leaderboard, MIN_BASELINE_QUESTIONS, MIN_ROUNDS, type Dataset, type Row } from '../lib/data';
 import { fmtBrier, fmtSkill } from '../lib/format';
@@ -15,14 +15,14 @@ function Table({ rows, ranked }: { rows: Row[]; ranked: boolean }) {
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b border-line">
-            {ranked && <th scope="col" className={`${th} w-12`}>{t('leaderboard.rank')}</th>}
-            <th scope="col" className={th}>{t('leaderboard.forecaster')}</th>
-            <th scope="col" className={`${th} text-right`}>{t('leaderboard.skill')}</th>
-            <th scope="col" className={`${th} hidden text-right md:table-cell`} title={t('ui.lowerBetter')}>{t('leaderboard.yourBrier')}</th>
-            <th scope="col" className={`${th} hidden text-right md:table-cell`} title={t('ui.lowerBetter')}>{t('leaderboard.marketBrier')}</th>
-            <th scope="col" className={`${th} hidden text-right md:table-cell`} title={t('leaderboard.crowdBrierTip')}>{t('leaderboard.crowdBrier')}</th>
-            <th scope="col" className={`${th} text-right`}>{t('leaderboard.questions')}</th>
-            <th scope="col" className={`${th} hidden text-right sm:table-cell`}>{t('leaderboard.rounds')}</th>
+            {ranked && <th scope="col" className={`${th} w-12`}>{t('leaderboard.rank')}<ColHelp text={t('tips.lb.rank')} /></th>}
+            <th scope="col" className={th}>{t('leaderboard.forecaster')}<ColHelp text={t('tips.lb.forecaster')} /></th>
+            <th scope="col" className={`${th} text-right`}>{t('leaderboard.skill')}<ColHelp text={t('tips.lb.skill')} /></th>
+            <th scope="col" className={`${th} hidden text-right md:table-cell`}>{t('leaderboard.yourBrier')}<ColHelp text={t('tips.lb.yourBrier')} /></th>
+            <th scope="col" className={`${th} hidden text-right md:table-cell`}>{t('leaderboard.marketBrier')}<ColHelp text={t('tips.lb.marketBrier')} /></th>
+            <th scope="col" className={`${th} hidden text-right md:table-cell`}>{t('leaderboard.crowdBrier')}<ColHelp text={t('tips.lb.crowdBrier')} /></th>
+            <th scope="col" className={`${th} text-right`}>{t('leaderboard.questions')}<ColHelp text={t('tips.lb.questions')} /></th>
+            <th scope="col" className={`${th} hidden text-right sm:table-cell`}>{t('leaderboard.rounds')}<ColHelp text={t('tips.lb.rounds')} /></th>
           </tr>
         </thead>
         <tbody>

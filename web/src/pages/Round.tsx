@@ -1,4 +1,4 @@
-import { Badge, Card, DateLine, Explain, Histogram, NextLinks, QuestionTable, QuestionTitle, useNow } from '../components';
+import { Badge, Card, ColHelp, DateLine, Explain, Histogram, NextLinks, QuestionTable, QuestionTitle, useNow } from '../components';
 import { useT } from '../i18n';
 import { phase, type Dataset, type Round } from '../lib/data';
 import { fmtShare, fmtUtc } from '../lib/format';
@@ -17,11 +17,11 @@ export function Rounds({ data }: { data: Dataset }) {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-line">
-                <th scope="col" className={th}>{t('round.col.round')}</th>
-                <th scope="col" className={`${th} hidden sm:table-cell`}>{t('round.col.closes')}</th>
-                <th scope="col" className={`${th} text-right`}>{t('round.col.questions')}</th>
-                <th scope="col" className={`${th} text-right`}>{t('round.commits')}</th>
-                <th scope="col" className={`${th} text-right`}>{t('round.col.status')}</th>
+                <th scope="col" className={th}>{t('round.col.round')}<ColHelp text={t('tips.r.round')} /></th>
+                <th scope="col" className={`${th} hidden sm:table-cell`}>{t('round.col.closes')}<ColHelp text={t('tips.r.closes')} /></th>
+                <th scope="col" className={`${th} text-right`}>{t('round.col.questions')}<ColHelp text={t('tips.r.questions')} /></th>
+                <th scope="col" className={`${th} text-right`}>{t('round.commits')}<ColHelp text={t('tips.r.commits')} /></th>
+                <th scope="col" className={`${th} text-right`}>{t('round.col.status')}<ColHelp text={t('tips.r.status')} /></th>
               </tr>
             </thead>
             <tbody>

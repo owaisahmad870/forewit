@@ -66,11 +66,11 @@ export function QuestionTable({ questions, crowdSealed, showResult }: { question
         <thead>
           <tr className="border-b border-line">
             <th scope="col" className={`${th} hidden w-8 sm:table-cell`}>#</th>
-            <th scope="col" className={th}>{t('table.question')}</th>
-            <th scope="col" className={`${th} hidden sm:table-cell`}>{t('table.closes')}</th>
-            <th scope="col" className={`${th} text-right`}>{t('table.market')}</th>
-            <th scope="col" className={`${th} text-right`}>{t('table.crowd')}</th>
-            {showResult && <th scope="col" className={`${th} text-right`}>{t('table.result')}</th>}
+            <th scope="col" className={th}>{t('table.question')}<ColHelp text={t('tips.q.question')} /></th>
+            <th scope="col" className={`${th} hidden sm:table-cell`}>{t('table.closes')}<ColHelp text={t('tips.q.closes')} /></th>
+            <th scope="col" className={`${th} text-right`}>{t('table.market')}<ColHelp text={t('tips.q.market')} /></th>
+            <th scope="col" className={`${th} text-right`}>{t('table.crowd')}<ColHelp text={t('tips.q.crowd')} /></th>
+            {showResult && <th scope="col" className={`${th} text-right`}>{t('table.result')}<ColHelp text={t('tips.q.result')} /></th>}
           </tr>
         </thead>
         <tbody>
@@ -401,5 +401,29 @@ export function PlayInClaude() {
         </div>
       )}
     </div>
+  );
+}
+
+// "?" next to a column name: hover, focus or tap shows a short explanation. The tip is fixed to the viewport so a
+// scrolling table container never clips it.
+export function ColHelp({ text }: { text: string }) {
+  const [at, setAt] = useState<{ top: number; left: number } | null>(null);
+  const ref = useRef<HTMLButtonElement>(null);
+  const show = () => {
+    const r = ref.current?.getBoundingClientRect();
+    if (r) setAt({ top: r.bottom + 6, left: Math.max(8, Math.min(r.left + r.width / 2 - 128, window.innerWidth - 264)) });
+  };
+  const hide = () => setAt(null);
+  useEffect(() => {
+    if (!at) return;
+    window.addEventListener('scroll', hide, true);
+    return () => window.removeEventListener('scroll', hide, true);
+  }, [at]);
+  return (
+    <span className="relative inline-flex align-middle" onMouseEnter={show} onMouseLeave={hide}>
+      <button ref={ref} type="button" aria-label={text} aria-expanded={!!at} onClick={() => (at ? hide() : show())} onFocus={show} onBlur={hide}
+        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-line text-[10px] leading-none font-semibold text-muted normal-case hover:border-accent hover:text-ink">?</button>
+      {at && <span role="tooltip" style={{ top: at.top, left: at.left }} className="fixed z-50 w-64 rounded-md border border-line bg-surface-2 p-2.5 text-left text-xs leading-relaxed font-normal tracking-normal text-ink normal-case shadow-lg">{text}</span>}
+    </span>
   );
 }

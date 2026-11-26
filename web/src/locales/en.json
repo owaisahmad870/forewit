@@ -84,6 +84,32 @@
     }
   },
 
+  "tips": {
+    "q": {
+      "question": "The market question, as written on Predict.fun.",
+      "closes": "The day the market closes (UTC). Its result settles after that.",
+      "market": "The market price for Yes, read as a chance. It is the latest price until picks close, then the price locked at the deadline.",
+      "crowd": "The Agent ID Crowd: every revealed forecast combined into one. Sealed until the reveal.",
+      "result": "How the market settled: Yes, No, or Void (not counted)."
+    },
+    "lb": {
+      "rank": "Ranked by edge vs market, after at least 5 scoring days and 20 questions with a market price.",
+      "forecaster": "Public name, or the wallet address. Open it for the full profile.",
+      "skill": "How much closer to the truth than the market price, in points, shrunk toward 0 for small samples. Above 0 means better than the market.",
+      "yourBrier": "This forecaster’s Brier score on the questions that had a market price. 0 is perfect, 1 is fully wrong. Lower is better.",
+      "marketBrier": "The market price’s Brier score on those same questions. If the forecaster’s is lower, they beat the market.",
+      "crowdBrier": "The Agent ID Crowd’s Brier score on the daily questions this forecaster revealed. Open forecasts have no crowd. Lower is better.",
+      "questions": "Questions with a market price that count toward rank.",
+      "rounds": "Daily rounds with a score, revealed or missed."
+    },
+    "r": {
+      "round": "The daily round. Open it to see its questions.",
+      "closes": "When picks close (UTC). Forecasts stay sealed until then.",
+      "questions": "How many questions the round asks.",
+      "commits": "Sealed forecasts sent so far.",
+      "status": "Open, reveal window, waiting for results, or scored."
+    }
+  },
   "table": {
     "caption": "Today's questions with the market price and the crowd forecast",
     "question": "Question",
