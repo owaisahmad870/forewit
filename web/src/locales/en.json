@@ -54,6 +54,19 @@
     "Void": "Void",
     "Unresolved": "Unresolved"
   },
+  "claude": {
+    "button": "Forecast in Claude",
+    "title": "Forecast with Forewit in Claude",
+    "phone": "Phone or browser",
+    "phoneNote": "Claude Code on the web or in the Claude app. One time setup, about five minutes.",
+    "template": "Copy the Forewit template",
+    "open": "Open Claude Code",
+    "guide": "Full guide with screenshots",
+    "desktop": "Claude Code desktop or terminal",
+    "desktopNote": "Type these in Claude Code. One install adds the server, the skills and /forewit:forecast.",
+    "chat": "Any Claude chat",
+    "chatNote": "Settings, Connectors, Add custom connector, then paste this address. Read only."
+  },
   "table": {
     "caption": "Today's questions with the market price and the crowd forecast",
     "question": "Question",
@@ -411,7 +424,7 @@
       "steps": [
         "Add the Binance Agentic Wallet skill and its wallet tool:",
         "Add Forewit:",
-        "Say \"Play Forewit\". Your agent shows the questions, asks for your odds and sends only after your yes."
+        "Say \"Forecast with Forewit\". Your agent shows the questions, asks for your odds and sends only after your yes."
       ]
     },
     "phone": {

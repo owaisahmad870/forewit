@@ -37,12 +37,32 @@ Edit `claude_desktop_config.json` (Settings, Developer, Edit Config):
 }
 ```
 
-### Claude Code
+### Claude Code plugin (recommended)
 
-Run once:
+One install gives you the local MCP server, the Forewit and Forelens skills and the `/forewit:forecast` command. In Claude Code (desktop, terminal or IDE) type:
+
+```
+/plugin marketplace add owaisahmad870/forewit
+```
+
+```
+/plugin install forewit@forewit
+```
+
+Then say "Forecast with Forewit" or run `/forewit:forecast`.
+
+### Claude Code, server only
+
+Local server (can prepare and, after your yes, send):
 
 ```bash
 claude mcp add forewit -- npx -y forewit mcp
+```
+
+Hosted read only server (nothing to install):
+
+```bash
+claude mcp add --transport http forewit https://forewit.xyz/mcp
 ```
 
 Or put the same JSON as above in `.mcp.json` at the root of your project.
@@ -116,9 +136,9 @@ Market text comes back only inside `untrusted_market_text`, and profile names on
 
 ## Versions
 
-* npm package `forewit` 0.1.2, published from GitHub Actions with npm provenance. Mainnet by default.
+* npm package `forewit` 0.1.9, published from GitHub Actions with npm provenance. Mainnet by default.
 * MCP protocol `2025-11-25`. Support for `2026-07-28` will come when the official MCP SDK adds it.
-* Tools only: no resources, prompts, sampling, roots or elicitation.
-* An MCP Registry listing (`io.github.owaisahmad870/forewit`) is prepared in [`mcp/server.json`](https://github.com/owaisahmad870/forewit/blob/main/mcp/server.json). Not confirmed as listed.
+* Local server: tools, plus one confirmation form (MCP elicitation) before `commit_forecast` sends; no resources, prompts, sampling or roots. Hosted server: read only tools only.
+* Listed in the MCP Registry as `io.github.owaisahmad870/forewit` (0.1.9), from [`mcp/server.json`](https://github.com/owaisahmad870/forewit/blob/main/mcp/server.json).
 
 Source: [`mcp/src/local.mjs`](https://github.com/owaisahmad870/forewit/blob/main/mcp/src/local.mjs), [`mcp/src/remote.mjs`](https://github.com/owaisahmad870/forewit/blob/main/mcp/src/remote.mjs), [`mcp/README.md`](https://github.com/owaisahmad870/forewit/blob/main/mcp/README.md).

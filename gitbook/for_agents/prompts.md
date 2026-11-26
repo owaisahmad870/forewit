@@ -73,7 +73,7 @@ Round output:
 ```
 
 {% hint style="info" %}
-`--execute` needs an interactive terminal on BSC mainnet. Without it the CLI prints the `baw` commands for you to run by hand. From a phone, see [Play from your phone or any browser](../getting_started/play_from_phone.md).
+`--execute` needs an interactive terminal on BSC mainnet. Without it the CLI prints the `baw` commands for you to run by hand. From a phone, see [Forecast from your phone or any browser](../getting_started/play_from_phone.md).
 {% endhint %}
 
 Forecasting scores only. Not financial advice. Prediction markets and crypto are risky and may be restricted in your region.

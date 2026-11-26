@@ -1,6 +1,6 @@
 # Forewit agent toolkit
 
-Play Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID.
+Join Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID.
 
 > Forecasting scores only. Not financial advice. Forewit does not take bets, hold funds or pay returns. Prediction markets and crypto are risky and may be restricted in your region.
 

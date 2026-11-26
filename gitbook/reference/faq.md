@@ -20,9 +20,9 @@ Only BSC gas. A commit plus a reveal is about 190,000 gas, roughly 0.00001 BNB a
 
 Yes. The ledger refuses a commit from a wallet without one. That is what makes every record one per person and impossible to buy.
 
-## Can I play from my phone?
+## Can I forecast from my phone?
 
-Yes, with a cloud AI agent in your browser: see [Play from your phone or any browser](../getting_started/play_from_phone.md).
+Yes, with a cloud AI agent in your browser: see [Forecast from your phone or any browser](../getting_started/play_from_phone.md).
 
 ## What do I need?
 

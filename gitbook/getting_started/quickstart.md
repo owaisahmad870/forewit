@@ -32,12 +32,12 @@ Forecasting scores only. Not financial advice.
    ```bash
    npx skills add owaisahmad870/forewit --skill forewit
    ```
-3. Tell your agent: "Play Forewit".
+3. Tell your agent: "Forecast with Forewit".
 4. Read the wallet preview it shows you, and type `yes` only if it looks right.
 
 ## Path 3: your phone
 
-Use a cloud AI agent in your browser: see [Play from your phone or any browser](play_from_phone.md).
+Use a cloud AI agent in your browser: see [Forecast from your phone or any browser](play_from_phone.md).
 
 ## Any market, any time
 

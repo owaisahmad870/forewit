@@ -1,6 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useT } from './i18n';
-import { INSTALL_SNIPPETS } from './commands';
+import { CLAUDE_CODE_URL, CONNECTOR_URL, INSTALL_SNIPPETS, TEMPLATE_NEW_URL } from './commands';
 import { bannerRounds, bins10, phase, type Question, type Round } from './lib/data';
 import { fmtCountdown, fmtDay, fmtLocal, fmtPct, fmtUtc } from './lib/format';
 
@@ -331,5 +331,52 @@ export function RoundBanner({ rounds, showCommit = true }: { rounds: Round[]; sh
         </div>
       )}
     </>
+  );
+}
+
+// "Forecast in Claude": every way in, with the links and commands bundled, from the top right of Today's picks
+export function PlayInClaude() {
+  const { t } = useT();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+  }, [open]);
+  const btn = 'flex min-h-11 items-center justify-between gap-2 rounded-md border border-line px-3 text-sm font-semibold hover:border-[var(--claude)]';
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen((x) => !x)} className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-[var(--claude)]/60 bg-[var(--claude)]/10 px-2.5 text-sm font-semibold text-[var(--claude-ink)] hover:bg-[var(--claude)]/20" title={t('claude.title')}>
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" className="text-[var(--claude)]"><rect x="1" y="2" width="14" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" /><path d="M4 6l2.5 2L4 10M8 10.5h4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <span>{t('claude.button')}</span>
+      </button>
+      {open && (
+        <div role="dialog" aria-label={t('claude.title')} className="fixed inset-x-4 top-16 z-30 max-h-[80vh] space-y-4 overflow-y-auto rounded-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[22rem] border border-line border-t-2 border-t-[var(--claude)] bg-surface p-4 text-left shadow-lg">
+          <section>
+            <h3 className="text-sm font-semibold">{t('claude.phone')}</h3>
+            <p className="mt-0.5 text-xs text-muted">{t('claude.phoneNote')}</p>
+            <div className="mt-2 grid gap-2">
+              <a href={TEMPLATE_NEW_URL} target="_blank" rel="noopener noreferrer" className={btn}><span>1. {t('claude.template')}</span><span aria-hidden="true">↗</span></a>
+              <a href={CLAUDE_CODE_URL} target="_blank" rel="noopener noreferrer" className={btn}><span>2. {t('claude.open')}</span><span aria-hidden="true">↗</span></a>
+              <a href="#/start" onClick={() => setOpen(false)} className="text-xs text-[var(--claude-ink)] underline underline-offset-4">{t('claude.guide')}</a>
+            </div>
+          </section>
+          <section>
+            <h3 className="text-sm font-semibold">{t('claude.desktop')}</h3>
+            <p className="mt-0.5 text-xs text-muted">{t('claude.desktopNote')}</p>
+            <CopyBlock text={INSTALL_SNIPPETS.plugin} />
+          </section>
+          <section>
+            <h3 className="text-sm font-semibold">{t('claude.chat')}</h3>
+            <p className="mt-0.5 text-xs text-muted">{t('claude.chatNote')}</p>
+            <CopyBlock text={CONNECTOR_URL} />
+          </section>
+        </div>
+      )}
+    </div>
   );
 }

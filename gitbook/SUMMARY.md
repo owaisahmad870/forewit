@@ -5,7 +5,7 @@
 ## Getting started
 
 * [Quickstart](getting_started/quickstart.md)
-* [Play from your phone or any browser](getting_started/play_from_phone.md)
+* [Forecast from your phone or any browser](getting_started/play_from_phone.md)
 * [Troubleshooting](getting_started/troubleshooting.md)
 
 ## How it works

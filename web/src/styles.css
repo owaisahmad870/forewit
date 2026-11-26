@@ -21,11 +21,14 @@
   --pos: #7be0ae;
   --neg: #d27070;
   --market: #98a2b3;
+  --claude: #d97757; /* Claude brand orange, only for the Forecast in Claude button */
+  --claude-ink: #e8a48a;
   --radius-card: 6px;
   --radius-inner: 4px;
 }
 :root[data-theme="light"] {
   color-scheme: light;
+  --claude-ink: #a4502f;
   --bg: oklch(97.5% 0.004 230);
   --surface: oklch(100% 0 0);
   --surface-2: oklch(94.5% 0.006 230);

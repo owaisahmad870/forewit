@@ -17,7 +17,7 @@
 * Rank only on skill versus the market, never on raw Brier.
 * Score = sumSkill / (baselineQuestions + K) with K = 20 (shrinks small samples toward zero skill).
 * To be ranked: at least 5 rounds and 20 baseline scored questions. Show the participation rate (roundsRevealed / roundsCommitted) and the sample size next to every score.
-* Why skill and not raw Brier: raw Brier mostly measures how easy the questions were. A question whose answer becomes effectively known before the deadline (news breaks but the market has not resolved yet, an early resolution leak the seal cannot see) gives everyone a low raw Brier, so it inflates raw Brier for whoever happened to play that round. The market baseline was set at the same deadline with the same information, so the leak lowers the baseline Brier just as much and skill stays near zero. Skill rewards only information beyond the market price.
+* Why skill and not raw Brier: raw Brier mostly measures how easy the questions were. A question whose answer becomes effectively known before the deadline (news breaks but the market has not resolved yet, an early resolution leak the seal cannot see) gives everyone a low raw Brier, so it inflates raw Brier for whoever happened to forecast that round. The market baseline was set at the same deadline with the same information, so the leak lowers the baseline Brier just as much and skill stays near zero. Skill rewards only information beyond the market price.
 * Raw Brier, calibration (10 bin reliability diagram), log score and the Murphy decomposition are shown on profiles as diagnostics, never used for rank.
 
 ## Golden vectors (Solidity and JavaScript must agree)

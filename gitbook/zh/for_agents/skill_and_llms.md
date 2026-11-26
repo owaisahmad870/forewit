@@ -15,7 +15,7 @@ description: SKILL.md 教 Claude Code 掌握先见 Forewit 的使用流程；llm
 npx skills add owaisahmad870/forewit --skill forewit
 ```
 
-然后说 "Play Forewit"。当请求与技能描述匹配时，技能就会加载。它还需要币安 Agentic Wallet 技能：见 [快速上手，路径 2](../getting_started/quickstart.md)。
+然后说 "Forecast with Forewit"。当请求与技能描述匹配时，技能就会加载。它还需要币安 Agentic Wallet 技能：见 [快速上手，路径 2](../getting_started/quickstart.md)。
 
 对于其他智能体，把原始文件 `https://raw.githubusercontent.com/owaisahmad870/forewit/main/agent/llms.txt` 交给它，并告诉它按照 SKILL.md 执行完整流程。
 

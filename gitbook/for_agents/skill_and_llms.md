@@ -15,7 +15,7 @@ Two plain text files teach an AI agent how to use Forewit safely. Both tell the 
 npx skills add owaisahmad870/forewit --skill forewit
 ```
 
-Then say "Play Forewit". The skill loads when your request matches its description. It needs the Binance Agentic Wallet skill too: see [Quickstart, Path 2](../getting_started/quickstart.md#path-2-your-ai-agent).
+Then say "Forecast with Forewit". The skill loads when your request matches its description. It needs the Binance Agentic Wallet skill too: see [Quickstart, Path 2](../getting_started/quickstart.md#path-2-your-ai-agent).
 
 For any other agent, give it the raw file `https://raw.githubusercontent.com/owaisahmad870/forewit/main/agent/llms.txt` and tell it to follow SKILL.md for the full flow.
 

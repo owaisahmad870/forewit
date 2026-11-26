@@ -37,12 +37,32 @@ flowchart LR
 }
 ```
 
-### Claude Code
+### Claude Code 插件（推荐）
 
-运行一次：
+一次安装即可获得本地 MCP 服务器、Forewit 与 Forelens 技能，以及 `/forewit:forecast` 命令。在 Claude Code（桌面版、终端或 IDE）中输入：
+
+```
+/plugin marketplace add owaisahmad870/forewit
+```
+
+```
+/plugin install forewit@forewit
+```
+
+然后说 "Forecast with Forewit" 或运行 `/forewit:forecast`。
+
+### Claude Code，仅服务器
+
+本地服务器（可准备交易，并在你确认 yes 后发送）：
 
 ```bash
 claude mcp add forewit -- npx -y forewit mcp
+```
+
+托管的只读服务器（无需安装）：
+
+```bash
+claude mcp add --transport http forewit https://forewit.xyz/mcp
 ```
 
 或者把上面同样的 JSON 写入项目根目录的 `.mcp.json`。
@@ -115,9 +135,9 @@ claude mcp add forewit -- npx -y forewit mcp
 
 ## 版本
 
-* npm 包 `forewit` 0.1.2，由 GitHub Actions 发布并带有 npm provenance。默认使用主网。
+* npm 包 `forewit` 0.1.9，由 GitHub Actions 发布并带有 npm provenance。默认使用主网。
 * MCP 协议 `2025-11-25`。等官方 MCP SDK 支持 `2026-07-28` 后再跟进。
-* 只提供工具：没有 resources、prompts、sampling、roots 或 elicitation。
-* MCP Registry 条目（`io.github.owaisahmad870/forewit`）已在 [`mcp/server.json`](https://github.com/owaisahmad870/forewit/blob/main/mcp/server.json) 中准备好，尚未确认已上架。
+* 本地服务器：提供工具，并在 `commit_forecast` 发送前显示一个确认表单（MCP elicitation）；没有 resources、prompts、sampling 或 roots。托管服务器：只有只读工具。
+* 已在 MCP Registry 上架，名称 `io.github.owaisahmad870/forewit`（0.1.9），来源 [`mcp/server.json`](https://github.com/owaisahmad870/forewit/blob/main/mcp/server.json)。
 
 来源：[`mcp/src/local.mjs`](https://github.com/owaisahmad870/forewit/blob/main/mcp/src/local.mjs)，[`mcp/src/remote.mjs`](https://github.com/owaisahmad870/forewit/blob/main/mcp/src/remote.mjs)，[`mcp/README.md`](https://github.com/owaisahmad870/forewit/blob/main/mcp/README.md)。

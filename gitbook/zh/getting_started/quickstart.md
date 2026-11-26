@@ -32,7 +32,7 @@ description: 用电脑、你的 AI 智能体或手机，完成你在先见 Forew
    ```bash
    npx skills add owaisahmad870/forewit --skill forewit
    ```
-3. 对你的智能体说："Play Forewit"。
+3. 对你的智能体说："Forecast with Forewit"。
 4. 查看它展示的钱包预览，确认无误后才输入 `yes`。
 
 ## 路径 3：你的手机

@@ -1,0 +1,17 @@
+{
+  "name": "forewit",
+  "owner": { "name": "Forewit", "url": "https://forewit.xyz" },
+  "metadata": { "description": "Forewit for Claude Code: sealed forecasts on live prediction markets, benchmarked against the market price, one verified track record per Agent ID." },
+  "plugins": [
+    {
+      "name": "forewit",
+      "source": "./plugin",
+      "description": "Forecast with Forewit in Claude Code: the Forewit MCP server, the Forewit and Forelens skills and a /forewit:forecast command in one install.",
+      "version": "0.1.9",
+      "homepage": "https://forewit.xyz/#/start",
+      "repository": "https://github.com/owaisahmad870/forewit",
+      "license": "MIT",
+      "category": "productivity"
+    }
+  ]
+}

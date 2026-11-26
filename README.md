@@ -6,7 +6,7 @@ Your edge, on the record. Set your odds on live prediction markets; Forewit seal
 
 * Site: [forewit.xyz](https://forewit.xyz) (start here: [forewit.xyz/#/start](https://forewit.xyz/#/start), live proof: [forewit.xyz/#/proof](https://forewit.xyz/#/proof))
 * Docs: [gitbook/](gitbook/README.md) (GitBook source, English and [中文](gitbook/zh/README.md))
-* Use it from an agent: `npx -y forewit mcp` (MCP server) or `claude mcp add forewit -- npx -y forewit mcp` in Claude Code; see [For AI agents](gitbook/for_agents/mcp_server.md)
+* Use it from an agent: `npx -y forewit mcp` (MCP server) or in Claude Code `/plugin marketplace add owaisahmad870/forewit` then `/plugin install forewit@forewit` (server, skills and `/forewit:forecast` in one install); see [For AI agents](gitbook/for_agents/mcp_server.md)
 * npm: [forewit](https://www.npmjs.com/package/forewit) (published from GitHub Actions with provenance); MCP Registry: `io.github.owaisahmad870/forewit`
 
 Forecasting scores only. Not financial advice.

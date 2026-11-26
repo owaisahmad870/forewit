@@ -1,4 +1,4 @@
-import { Card, Badge, Explain, NextLinks, QuestionTable, SampleBadge, ScoresWhen, useNow } from '../components';
+import { Card, Badge, Explain, NextLinks, PlayInClaude, QuestionTable, SampleBadge, ScoresWhen, useNow } from '../components';
 import { useT } from '../i18n';
 import { crowdVsMarket, liveRound, phase, type Dataset } from '../lib/data';
 import { fmtBrier, fmtCountdown, fmtUtc } from '../lib/format';
@@ -64,7 +64,7 @@ export function Home({ data }: { data: Dataset }) {
           <>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-semibold">{t('home.liveRound')}</h2>
-              <span className="flex gap-2"><SampleBadge show={data.manifest.sample} /><Badge tone={ph === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${ph}`)}</Badge></span>
+              <span className="flex flex-wrap items-center gap-2"><SampleBadge show={data.manifest.sample} /><Badge tone={ph === 'commit' ? 'accent' : 'neutral'}>{t(`phase.${ph}`)}</Badge><PlayInClaude /></span>
             </div>
             {(ph === 'commit' || ph === 'reveal') && (
               <p className="mt-3">

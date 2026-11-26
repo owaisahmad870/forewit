@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "forewit": {
+      "command": "npx",
+      "args": ["-y", "forewit@0.1.9", "mcp"]
+    }
+  }
+}

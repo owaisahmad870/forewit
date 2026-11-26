@@ -1,8 +1,8 @@
 ---
-description: Play Forewit from a phone or any browser with a cloud AI agent; your keys stay in the Binance app and your salts in your own private repository.
+description: Forecast with Forewit from a phone or any browser with a cloud AI agent; your keys stay in the Binance app and your salts in your own private repository.
 ---
 
-# Play from your phone or any browser
+# Forecast from your phone or any browser
 
 A cloud AI agent in your browser (Claude Code on the web, or Codex cloud) reads the round, prepares your forecast, shows you the wallet preview and sends only after you type yes. No computer needed.
 
@@ -50,7 +50,7 @@ These are real screenshots.
 
 Setup then runs by itself at the start of every session. Check: the agent's network checks return 2xx or 3xx instead of 403.
 
-## Play
+## Forecast
 1. Start a new session with your repository and the Forewit environment, and send one of these:
    * `Forecast a market: bitcoin 15 minute`
    * `Forecast this market: <paste the question from predict.fun>`

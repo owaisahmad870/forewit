@@ -1,11 +1,11 @@
 ---
 name: forewit
-description: Play Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID. Use when the user says "Play Forewit" or wants to see the current Forewit round, make or commit a forecast, turn on auto reveal, reveal after the deadline, see their results (did they beat the market), see upcoming rounds, set up a daily schedule, check their Forewit status, or back up a reveal receipt (salt).
+description: Join Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID. Use when the user says "Forecast with Forewit" or wants to see the current Forewit round, make or commit a forecast, turn on auto reveal, reveal after the deadline, see their results (did they beat the market), see upcoming rounds, set up a daily schedule, check their Forewit status, or back up a reveal receipt (salt).
 ---
 
 # Forewit
 
-Play Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID.
+Join Forewit daily forecast rounds with your Binance Agentic Wallet and Agent ID.
 
 Forewit is a commit reveal forecasting ledger on BNB Smart Chain. Each round asks a few Predict.fun market questions. A forecaster commits a hidden hash of their probabilities before the commit deadline, reveals them after it, and is scored with the Brier score against the market. Your record is tied to your non transferable Agent ID.
 
@@ -30,9 +30,9 @@ By default the CLI never signs or sends anything: it prints the exact `baw` comm
 4. Errors: what failed and the fix, in one or two lines.
 5. End with one line: "Next: <one concrete step>".
 
-## Play Forewit (the short path)
+## Forecast with Forewit (the short path)
 
-When the user says "Play Forewit" (or any daily Forewit request), start with one call:
+When the user says "Forecast with Forewit" (or any daily Forewit request), start with one call:
 
 1. Run the preflight below (signed in, Agent ID, Developer Mode, address). If not signed in, sign in with the Binance Agentic Wallet skill; never handle the pairing code yourself.
 2. `forewit plan --from <wallet>` (MCP: `forewit_plan`). Show its `report` lines as they are: short, numbers only. Add nothing long.

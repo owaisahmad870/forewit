@@ -54,6 +54,19 @@
     "Void": "作废",
     "Unresolved": "未结算"
   },
+  "claude": {
+    "button": "在 Claude 中预测",
+    "title": "在 Claude 中使用先见",
+    "phone": "手机或浏览器",
+    "phoneNote": "网页版或 Claude App 中的 Claude Code。一次设置，约五分钟。",
+    "template": "复制先见模板",
+    "open": "打开 Claude Code",
+    "guide": "带截图的完整指南",
+    "desktop": "Claude Code 桌面版或终端",
+    "desktopNote": "在 Claude Code 中输入以下内容。一次安装即可获得服务器、技能和 /forewit:forecast。",
+    "chat": "任意 Claude 对话",
+    "chatNote": "设置、连接器、添加自定义连接器，然后粘贴此地址。只读。"
+  },
   "table": {
     "caption": "今日问题，含市场价格与群体预测",
     "question": "问题",
@@ -412,7 +425,7 @@
       "steps": [
         "添加币安 Agentic Wallet 技能及其钱包工具：",
         "添加先见：",
-        "说 \"Play Forewit\"。智能体会展示问题、询问你的概率，并且只在你回复 yes 后发送。"
+        "说 \"Forecast with Forewit\"。智能体会展示问题、询问你的概率，并且只在你回复 yes 后发送。"
       ]
     },
     "phone": {
