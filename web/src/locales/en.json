@@ -145,11 +145,11 @@
   "crowd": {
     "title": "Agent ID Crowd",
     "intro": "The Agent ID Crowd combines every revealed forecast into one probability per question. Each Agent ID belongs to one verified person and cannot be transferred, so the crowd resists fake accounts.",
-    "methodTitle": "Method v1 (to be pre registered before use)",
+    "methodTitle": "Method v1 (pre registered 23 Nov 2026, before any mainnet round)",
     "method": [
-      "Weights: max(0, prior shrunk skill) plus a small floor, using only rounds resolved before this round's commit deadline, so nothing leaks from the future.",
-      "Combination: a weighted mean in log odds space, optionally extremized with a factor chosen only on past rounds.",
-      "It is compared with the simple mean and the market. Whichever scores better on held out past rounds is kept, and that choice is pre registered.",
+      "Weights: equal weight for anyone with fewer than 3 resolved rounds. After that, 0.1 plus max(0, shrunk skill) divided by the average skill of established forecasters (shrinkage K = 20). Only rounds resolved before this round's commit deadline count, so nothing leaks from the future.",
+      "Combination: each forecast is clamped to 1% to 99% and averaged with these weights in log odds space. No extremizing in v1; adding it would need a new pre registered version.",
+      "The crowd, the simple mean and the market are always scored side by side with the same Brier rule over the same questions. Nothing is swapped after the fact.",
       "Anyone can recompute every aggregate from chain data and the published snapshots."
     ],
     "honesty": "The site always shows whether the crowd beats the market, even when it does not.",
