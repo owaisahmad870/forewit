@@ -170,6 +170,8 @@
     }
   },
   "leaderboard": {
+    "crowdBrier": "Crowd Brier",
+    "crowdBrierTip": "The Agent ID Crowd on the daily questions this forecaster revealed (lower is better). Open forecasts have no crowd.",
     "yourBrier": "Brier",
     "marketBrier": "Market Brier",
     "aboutTitle": "About these numbers",

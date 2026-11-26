@@ -20,6 +20,7 @@ function Table({ rows, ranked }: { rows: Row[]; ranked: boolean }) {
             <th scope="col" className={`${th} text-right`}>{t('leaderboard.skill')}</th>
             <th scope="col" className={`${th} hidden text-right md:table-cell`} title={t('ui.lowerBetter')}>{t('leaderboard.yourBrier')}</th>
             <th scope="col" className={`${th} hidden text-right md:table-cell`} title={t('ui.lowerBetter')}>{t('leaderboard.marketBrier')}</th>
+            <th scope="col" className={`${th} hidden text-right md:table-cell`} title={t('leaderboard.crowdBrierTip')}>{t('leaderboard.crowdBrier')}</th>
             <th scope="col" className={`${th} text-right`}>{t('leaderboard.questions')}</th>
             <th scope="col" className={`${th} hidden text-right sm:table-cell`}>{t('leaderboard.rounds')}</th>
           </tr>
@@ -34,6 +35,7 @@ function Table({ rows, ranked }: { rows: Row[]; ranked: boolean }) {
               <td className={`${num} font-semibold ${r.shrunkSkill > 0 ? 'text-pos' : r.shrunkSkill < 0 ? 'text-neg' : ''}`}>{fmtSkill(r.shrunkSkill)}</td>
               <td className={`${num} hidden md:table-cell`}>{fmtBrier(r.baseBrier)}</td>
               <td className={`${num} hidden text-muted md:table-cell`}>{fmtBrier(r.marketBrier)}</td>
+              <td className={`${num} hidden text-muted md:table-cell`}>{fmtBrier(r.crowdBrier)}</td>
               <td className={num}>{r.baselineQuestions}</td>
               <td className={`${num} hidden sm:table-cell`}>{r.rounds}</td>
             </tr>

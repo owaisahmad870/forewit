@@ -170,6 +170,8 @@
     }
   },
   "leaderboard": {
+    "crowdBrier": "群体 Brier",
+    "crowdBrierTip": "Agent ID 群体在该预测者揭示过的每日问题上的 Brier（越低越好）。开放预测没有群体。",
     "yourBrier": "Brier",
     "marketBrier": "市场 Brier",
     "aboutTitle": "关于这些数字",
