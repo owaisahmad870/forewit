@@ -6,7 +6,7 @@ import { fmtBrier } from '../lib/format';
 import { Headline } from './Home';
 
 type Block = Parameters<typeof Blocks>[0]['blocks'][number];
-export const DOC_SLUGS = ['how', 'scoring', 'owner', 'risk', 'faq'] as const;
+export const DOC_SLUGS = ['how', 'scoring', 'paper', 'owner', 'risk', 'faq'] as const;
 // old slugs keep working: security merged into owner; selection stays reachable from the round page
 const ALIAS: Record<string, string> = { security: 'owner' };
 

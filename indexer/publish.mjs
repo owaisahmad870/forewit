@@ -8,6 +8,9 @@ import { buildStartSnapshot } from './build_start.mjs';
 import { presentQuestion } from '../agent/lib/question.mjs';
 import { meanMovePts } from './lib/flags.mjs';
 import { marketsView } from './lib/markets.mjs';
+import { paperTrade, summarize, PAPER } from './lib/paper.mjs';
+
+const unpack = (packed, n) => Array.from({ length: n }, (_, i) => Number((BigInt(packed) >> BigInt(16 * i)) & 0xffffn));
 
 export async function publish({ network = 'testnet', ledger, fromBlock, abiPath, rpc, outDir = 'web/public/data' }) {
   // an older markets.json may still list titles and prices (Predict.fun terms): drop it unless it is counts only
@@ -20,6 +23,7 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
   const archive = `keeper/archive/${network}`;
   const files = [];
   const moves = [];
+  const paper = { rounds: {}, byWho: {} };
   for (const r of out.rounds) {
     const src = `${archive}/rounds/${r.roundId}.json`;
     if (!existsSync(src)) continue; // no public round file (for example harness rounds): the site hides its questions
@@ -32,6 +36,21 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
       file.questions.forEach((q, i) => { if (books[i]) q.marketPrice = books[i].bps / 10000; });
       file.marketPriceAt = new Date(Math.max(...books.map((b) => Number(b.takenAt)))).toISOString();
     }
+    if (existsSync(booksFile)) {
+      // paper trades from the full saved books; only results are published, never the books (Predict.fun terms)
+      try {
+        const books = JSON.parse(readFileSync(booksFile, 'utf8'));
+        const n = r.questions.length;
+        for (const [who, packed] of Object.entries(r.forecasts ?? {})) {
+          const bps = unpack(packed, n);
+          const trades = r.questions.map((q, i) => (q.yesSlot === 0 && books[i]?.raw ? paperTrade({ youBps: bps[i], book: books[i].raw, outcome: r.outcomes?.[i] ?? 'Unresolved' }) : null));
+          ((paper.rounds[r.roundId] ??= {})[who] = trades);
+          (paper.byWho[who] ??= []).push(...trades);
+        }
+      } catch (e) {
+        console.error(`paper trades skipped for round ${r.roundId}: ${e.message}`);
+      }
+    }
     const deadlineFile = `${archive}/round_${r.roundId}/deadline_books.json`;
     if (existsSync(booksFile) && existsSync(deadlineFile)) {
       const base = JSON.parse(readFileSync(booksFile, 'utf8')).map((b) => b.bps);
@@ -42,6 +61,7 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
     writeFileSync(`${outDir}/rounds/${r.roundId}.json`, JSON.stringify(file, null, 2));
     files.push(`rounds/${r.roundId}.json`);
   }
+  out.paper = { ...PAPER, rounds: paper.rounds, totals: Object.fromEntries(Object.entries(paper.byWho).map(([w, ts]) => [w, summarize(ts)])) };
   for (const f of readdirSync(`${outDir}/rounds`)) if (!files.includes(`rounds/${f}`)) rmSync(`${outDir}/rounds/${f}`); // drop stale or sample files
   // pre registered rule: average window move over the first 5 rounds; above 0.5 points the leaderboard flags post baseline skill
   const first5 = moves.filter((m) => m.pts !== null).sort((a, b) => Number(a.roundId) - Number(b.roundId)).slice(0, 5);

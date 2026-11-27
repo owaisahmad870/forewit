@@ -4,6 +4,7 @@ import { Card, NextLinks, QuestionTitle, useNow } from '../components';
 import { useT } from '../i18n';
 import { leaderboard, profilePicks, reliability, streak, walletResults, type Dataset } from '../lib/data';
 import { Predictions, isAddr, pts, saved } from './MyResults';
+import { PaperTrades } from './Paper';
 
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
@@ -101,6 +102,7 @@ export function ProfilePage({ data, addr }: { data: Dataset; addr: string }) {
         {!w.ranked && <p className="mt-1 text-sm text-muted">{t('profile.rankRule')}</p>}
       </Card>
       <Reliability pairs={row?.cal ?? []} />
+      <PaperTrades data={data} addr={a} />
       {picks.length > 0 && (
         <Card>
           <h2 className="text-lg font-semibold">{t('profile.picksTitle')}</h2>

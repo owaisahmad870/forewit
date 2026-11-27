@@ -30,7 +30,11 @@
     "previous": "Previous",
     "next": "Next",
     "onThisPage": "In this article",
-    "callout": { "note": "Note", "tip": "Tip", "important": "Important" },
+    "callout": {
+      "note": "Note",
+      "tip": "Tip",
+      "important": "Important"
+    },
     "toLight": "Light theme",
     "toDark": "Dark theme",
     "otherLang": "中文",
@@ -83,7 +87,6 @@
       "cli": "On any computer with Node 22 or newer. Windows: npx.cmd"
     }
   },
-
   "tips": {
     "q": {
       "question": "The market question, as written on Predict.fun.",
@@ -151,7 +154,12 @@
     "anyLink": "How to forecast any market"
   },
   "round": {
-    "col": {"round": "Round", "closes": "Picks close", "questions": "Questions", "status": "Status"},
+    "col": {
+      "round": "Round",
+      "closes": "Picks close",
+      "questions": "Questions",
+      "status": "Status"
+    },
     "title": "Picks #{n}",
     "all": "Daily picks",
     "kinds": {
@@ -275,7 +283,8 @@
       "scoring": "How the Brier score works, and how skill against the market sets your rank.",
       "owner": "What the owner can and cannot change, and how the contracts protect your record.",
       "risk": "Forecasting scores only. No bets, no funds held, no returns paid.",
-      "faq": "Short answers to the most common questions."
+      "faq": "Short answers to the most common questions.",
+      "paper": "What your forecasts would have done as real trades, with depth, fees and gas."
     },
     "title": "Docs",
     "intro": "How Forewit works, how it scores, and what its owner can and cannot do.",
@@ -490,6 +499,44 @@
           },
           "Because the market price is hard to beat. Skill shows whether you added information beyond it."
         ]
+      },
+      "paper": {
+        "title": "Paper trades",
+        "blocks": [
+          {
+            "strong": "Short version: every revealed daily forecast is replayed as a simulated Predict.fun trade against the real order book saved just before the deadline. No money moves."
+          },
+          {
+            "h": "The rules (paper v1)"
+          },
+          {
+            "list": [
+              "Entry: the full order book the keeper saved in the 5 minutes before the commit deadline, the same snapshot that sets the market price you are scored against.",
+              "Signal: buy Yes when your chance beats the best Yes price by 5 points or more; buy No when your No chance beats the best No price by 5 points or more. Otherwise no trade.",
+              "Size: 10 USDT per trade, walked through the book level by level, so the average price includes the spread and price impact. A thin book fills partly; under 1 USDT filled is no trade, matching the Predict.fun minimum order.",
+              "Fee: the Predict.fun taker fee, 200 bps × min(price, 1 minus price) × shares, taken in shares on a buy. 200 bps is the highest published rate; referral discounts are ignored.",
+              "Settle: the onchain outcome. A winning share pays 1 USDT, less 0.01 USDT for the redeem transaction. A void market returns the stake.",
+              "Uncertainty: the profile shows a 90% bootstrap range for the return. Below 20 settled trades it says the sample is too small to judge."
+            ]
+          },
+          {
+            "h": "What it does not capture"
+          },
+          {
+            "list": [
+              "The book is from just before the deadline, not from the moment you forecast.",
+              "Other traders could react to a real order; the simulation assumes the book stays put while you fill.",
+              "Open forecasts are not included yet: only the price at send time is saved for them, not the full book."
+            ]
+          },
+          {
+            "h": "Why it is separate from your score"
+          },
+          "Your rank and record stay the Brier score against the market. Paper trades are a second view of the same forecasts, never mixed into scoring. The rules above are fixed for every past round; any change ships as a new version and is announced first.",
+          {
+            "strong": "Prediction markets carry a risk of total loss. Paper results are simulated and are not a promise of returns."
+          }
+        ]
       }
     }
   },
@@ -526,10 +573,18 @@
   },
   "start": {
     "time": "About 5 minutes · No money moves, only a small network fee",
-    "video": { "alt": "Short animation of the phone setup: template, private repository, Claude Code, Forewit environment, allowed websites, optional key and connector.", "caption": "The phone setup in 25 seconds. Every step is detailed below." },
+    "video": {
+      "alt": "Short animation of the phone setup: template, private repository, Claude Code, Forewit environment, allowed websites, optional key and connector.",
+      "caption": "The phone setup in 25 seconds. Every step is detailed below."
+    },
     "pluginTip": "Fastest in Claude Code: one install adds the Forewit server, the skill and the /forewit:forecast command. Type these in Claude Code:",
     "keyWarn": "Never paste your Predict.fun key in a chat. Keep it in the environment variables only.",
-    "next": { "title": "Next steps", "me": "Check your results", "leaderboard": "See where you rank", "scoring": "Learn how scoring works" },
+    "next": {
+      "title": "Next steps",
+      "me": "Check your results",
+      "leaderboard": "See where you rank",
+      "scoring": "Learn how scoring works"
+    },
     "title": "Start forecasting",
     "intro": "Pick one of the three ways below. Each ends with the same sealed forecast on BNB Smart Chain.",
     "need": {
@@ -828,5 +883,37 @@
       "forfeited": "Missed: not revealed in time, counted as a loss"
     },
     "profileLink": "Open your profile (streak, reliability diagram, every pick)"
+  },
+  "paper": {
+    "title": "Paper trades (simulated)",
+    "lead": "What your revealed daily forecasts would have done as real Predict.fun trades: {s} USDT per question, bought only when your odds beat the best price by {e} points or more. Real order book depth, taker fee and gas included.",
+    "pnl": "Paper P&L",
+    "roi": "Return on stake",
+    "range": "90% range",
+    "trades": "Trades",
+    "tradesN": "{n} settled, {w} won, {o} open",
+    "tooFew": "Fewer than {n} settled trades: too few to judge. The range shows how much luck is still in this number.",
+    "col": {
+      "question": "Question",
+      "side": "Simulated buy",
+      "edge": "Edge",
+      "fill": "Avg price",
+      "fee": "Fee",
+      "pnl": "P&L (USDT)"
+    },
+    "tip": {
+      "side": "The side your odds favoured: Yes if you were above the market, No if below.",
+      "edge": "Your odds minus the best available price for that side, in points. Below the threshold there is no trade.",
+      "fill": "Average price paid after walking the saved order book level by level. Partial means the book ran out of shares.",
+      "fee": "Predict.fun taker fee: {b} bps × min(price, 1 minus price) × shares, taken in shares. The highest published rate, so a conservative estimate.",
+      "pnl": "Payout minus stake. A winning share pays 1 USDT, less about 0.01 USDT of gas to redeem."
+    },
+    "buy": "Buy {s}",
+    "edgeN": "{p} pts",
+    "partial": "(partial)",
+    "open": "Open",
+    "disclaimer": "Simulated from saved order books, not real trades. Past results are not a promise of returns.",
+    "method": "How paper trades work",
+    "rangeN": "{a} to {b}"
   }
 }

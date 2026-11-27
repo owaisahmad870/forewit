@@ -34,7 +34,13 @@ export interface Snapshot {
   profiles?: Record<string, { isPublic: boolean; name?: string }>;
   operators?: string[]; // round manager, admin and pauser wallets: never ranked (security review L1)
   open?: { forecasts: OpenForecast[]; committers: string[] }; // v2 open forecasts (indexer/build_open.mjs), absent until OpenForecasts is live
+  paper?: PaperData; // simulated trades (indexer/lib/paper.mjs), absent on older snapshots
 }
+
+// Paper trading v1: one entry per daily question (null when the question has no saved book); simulated, never real.
+export interface PaperTrade { side: 'Yes' | 'No' | null; reason?: 'no_edge' | 'too_thin'; edgePts?: number; spent?: number; avgPrice?: number; bestPrice?: number; shares?: number; feeUsdt?: number; partial?: boolean; payout?: number; pnl?: number }
+export interface PaperTotals { trades: number; open: number; staked: number; pnl: number; roi: number | null; wins: number; roiLow: number | null; roiHigh: number | null; enough: boolean }
+export interface PaperData { method: string; STAKE_USDT: number; MIN_EDGE: number; FEE_BPS: number; MIN_ORDER_USDT: number; REDEEM_GAS_USDT: number; MIN_TRADES_TO_JUDGE: number; rounds: Record<string, Record<string, (PaperTrade | null)[]>>; totals: Record<string, PaperTotals> }
 
 // One v2 open forecast (docs/OPEN_FORECASTS.md). bps values are the chance for `slot`; Brier units as v1 (BRIER_MAX).
 export interface OpenForecast {

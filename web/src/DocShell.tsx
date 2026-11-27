@@ -3,7 +3,7 @@ import { useT } from './i18n';
 
 // Docs layout: breadcrumbs, the article, and a sticky "On this page" rail that follows the
 // reader. Hash routes carry the page, so the rail scrolls to headings instead of linking to them.
-export const DOC_NAV = [['start', '#/start', 'start.title'], ['how', '#/docs/how', 'docs.pages.how.title'], ['scoring', '#/docs/scoring', 'docs.pages.scoring.title'], ['owner', '#/docs/owner', 'docs.pages.owner.title'], ['risk', '#/docs/risk', 'docs.pages.risk.title'], ['faq', '#/docs/faq', 'docs.pages.faq.title']] as const;
+export const DOC_NAV = [['start', '#/start', 'start.title'], ['how', '#/docs/how', 'docs.pages.how.title'], ['scoring', '#/docs/scoring', 'docs.pages.scoring.title'], ['paper', '#/docs/paper', 'docs.pages.paper.title'], ['owner', '#/docs/owner', 'docs.pages.owner.title'], ['risk', '#/docs/risk', 'docs.pages.risk.title'], ['faq', '#/docs/faq', 'docs.pages.faq.title']] as const;
 const ISSUE_URL = 'https://github.com/owaisahmad870/forewit/issues/new';
 
 export type TocItem = { id: string; label: string };
