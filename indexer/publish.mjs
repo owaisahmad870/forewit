@@ -71,6 +71,8 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
     writeFileSync(`${outDir}/rounds/${r.roundId}.json`, JSON.stringify(file, null, 2));
     files.push(`rounds/${r.roundId}.json`);
   }
+  const feeVals = await Promise.all([...feeCache.values()]);
+  console.log(`paper fees: ${feeVals.filter((v) => v != null).length} market rates from Predict.fun (${[...new Set(feeVals.filter((v) => v != null))].join(', ') || 'none'} bps), ${feeVals.filter((v) => v == null).length} fallback`);
   out.paper = { ...PAPER, rounds: paper.rounds, totals: Object.fromEntries(Object.entries(paper.byWho).map(([w, ts]) => [w, summarize(ts)])) };
   for (const f of readdirSync(`${outDir}/rounds`)) if (!files.includes(`rounds/${f}`)) rmSync(`${outDir}/rounds/${f}`); // drop stale or sample files
   // pre registered rule: average window move over the first 5 rounds; above 0.5 points the leaderboard flags post baseline skill
