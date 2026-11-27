@@ -515,7 +515,7 @@
               "Signal: buy Yes when your chance beats the best Yes price by 5 points or more; buy No when your No chance beats the best No price by 5 points or more. Otherwise no trade.",
               "Size: 10 USDT per trade, walked through the book level by level, so the average price includes the spread and price impact. It never pays more than your chance minus 5 points for a share, so a thin book fills partly; under 1 USDT filled is no trade, matching the Predict.fun minimum order.",
               "Fee: the Predict.fun taker fee, 200 bps × min(price, 1 minus price) × shares, taken in shares on a buy. 200 bps is the rate in Predict.fun's own fee example and the top of their published 0.018% to 2% range; each market's own rate is not read yet, and referral discounts are ignored.",
-              "Settle: the onchain outcome. A winning share pays 1 USDT, less 0.01 USDT for the redeem transaction. A void market returns the stake.",
+              "Settle: the onchain outcome. A share on the side that happened pays 1 USDT, less 0.01 USDT for the redeem transaction. A void market returns the stake.",
               "Uncertainty: the profile shows a 90% bootstrap range for the return, resampling whole rounds, because questions that settle the same day (Bitcoin, Ethereum and BNB) tend to move together. It needs at least 2 rounds with trades; below 20 settled trades it says the sample is too small to judge."
             ]
           },
@@ -892,7 +892,7 @@
     "roi": "Return on stake",
     "range": "90% range",
     "trades": "Trades",
-    "tradesN": "{n} settled, {w} won, {o} open",
+    "tradesN": "{n} settled, {w} correct, {o} open",
     "tooFew": "Fewer than {n} settled trades: too few to judge. Luck still dominates numbers this small.",
     "col": {
       "question": "Question",
@@ -907,7 +907,7 @@
       "edge": "Your odds minus the best available price for that side, in points. Below the threshold there is no trade.",
       "fill": "Average price paid after walking the saved order book level by level. Partial means the book ran out of shares.",
       "fee": "Predict.fun taker fee: {b} bps × min(price, 1 minus price) × shares, taken in shares. {b} bps is the rate in Predict.fun's published example, the top of their range.",
-      "pnl": "Payout minus stake. A winning share pays 1 USDT, less about 0.01 USDT of gas to redeem."
+      "pnl": "Payout minus stake. A share on the side that happened pays 1 USDT, less about 0.01 USDT of gas to redeem."
     },
     "buy": "Buy {s}",
     "edgeN": "{p} pts",

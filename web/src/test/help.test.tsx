@@ -8,7 +8,7 @@ describe('docs guided path', () => {
     const out = renderToStaticMarkup(<DocPage slug="scoring" />);
     expect(out).toContain('href="#/docs/how" rel="prev"');
     expect(out).toMatch(/rel="prev"[^>]*>.*Previous.*How it works/);
-    expect(out).toMatch(/rel="next"[^>]*>.*Next.*Safety and owner permissions/);
+    expect(out).toMatch(/rel="next"[^>]*>.*Next.*Paper trades/);
   });
   it('first and last pages have one direction only', () => {
     expect(renderToStaticMarkup(<DocPage slug="how" />)).not.toContain('rel="prev"');
