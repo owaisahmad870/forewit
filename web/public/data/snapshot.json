@@ -1,8 +1,8 @@
 {
   "network": 56,
   "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
-  "builtAt": "2026-11-27T03:57:17.379Z",
-  "headBlock": "135970393",
+  "builtAt": "2026-11-27T09:29:34.645Z",
+  "headBlock": "136014719",
   "metrics": {
     "distinctCommitters": 1,
     "rounds": 4,
@@ -380,7 +380,7 @@
     }
   ],
   "start": {
-    "headBlock": "135970483",
+    "headBlock": "136014777",
     "contract": "0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A",
     "count": 6,
     "players": [
