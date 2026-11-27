@@ -56,3 +56,20 @@ test('summary totals, seeded bootstrap range, and the judging threshold', () => 
   assert.equal(s.enough, false);
   assert.equal(PAPER.MIN_TRADES_TO_JUDGE, 20);
 });
+
+test('the walk never pays more than your chance minus the edge threshold', () => {
+  const deep = { bids: [], asks: [[0.5, 4], [0.6, 100], [0.7, 100]] };
+  const t = paperTrade({ youBps: 6600, book: deep, outcome: 'Yes' }); // cap 0.61: takes 0.50 and 0.60, never 0.70
+  assert.equal(t.spent, 10);
+  assert.ok(t.avgPrice <= 0.61);
+  const capped = paperTrade({ youBps: 5600, book: deep, outcome: 'Yes' }); // cap 0.51: only the 2 USDT at 0.50
+  assert.equal(capped.spent, 2);
+  assert.equal(capped.partial, true);
+});
+
+test('the range resamples whole rounds: one round gives no range', () => {
+  const one = summarize([{ side: 'Yes', spent: 10, pnl: 5, round: '1' }, { side: 'No', spent: 10, pnl: -10, round: '1' }]);
+  assert.equal(one.roiLow, null);
+  const two = summarize([{ side: 'Yes', spent: 10, pnl: 5, round: '1' }, { side: 'No', spent: 10, pnl: -10, round: '2' }]);
+  assert.ok(two.roiLow <= two.roi && two.roi <= two.roiHigh);
+});

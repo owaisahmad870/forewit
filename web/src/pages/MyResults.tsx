@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, DateLine, NextLinks, useNow } from '../components';
 import { useT } from '../i18n';
 import { upcoming, walletResults, type Dataset, type WalletPrediction, type WalletRound } from '../lib/data';
+import { PaperTrades } from './Paper';
 
 const KEY = 'forewit.wallet';
 export const isAddr = (a: string) => /^0x[0-9a-fA-F]{40}$/.test(a);
@@ -123,6 +124,7 @@ export function MyResults({ data }: { data: Dataset }) {
           <p><a href={`#/profile/${w.addr}`} className="inline-flex min-h-11 items-center text-accent underline underline-offset-4">{t('me.profileLink')}</a></p>
         </Card>
       )}
+      {w && <PaperTrades data={data} addr={w.addr} />}
       {w && w.predictions.length > 0 && <Predictions list={w.predictions} />}
       <NextRound data={data} />
       <NextLinks to={['start', 'scoring', 'rounds']} />

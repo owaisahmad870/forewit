@@ -45,7 +45,7 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
           const bps = unpack(packed, n);
           const trades = r.questions.map((q, i) => (q.yesSlot === 0 && books[i]?.raw ? paperTrade({ youBps: bps[i], book: books[i].raw, outcome: r.outcomes?.[i] ?? 'Unresolved' }) : null));
           ((paper.rounds[r.roundId] ??= {})[who] = trades);
-          (paper.byWho[who] ??= []).push(...trades);
+          (paper.byWho[who] ??= []).push(...trades.map((t) => (t ? { ...t, round: r.roundId } : t)));
         }
       } catch (e) {
         console.error(`paper trades skipped for round ${r.roundId}: ${e.message}`);

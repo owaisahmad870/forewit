@@ -3,10 +3,11 @@
 //  * Entry: the keeper's order book snapshot, taken in the 5 minutes before the commit deadline (full depth).
 //  * Signal: buy Yes when your chance beats the best Yes ask by MIN_EDGE or more; buy No when your No chance
 //    beats the best No ask (1 minus the best Yes bid) by MIN_EDGE or more; otherwise no trade.
-//  * Fill: a STAKE_USDT market buy walks the book level by level (average price and price impact are real);
-//    a thin book fills partly; under MIN_ORDER_USDT filled means no trade.
+//  * Fill: a STAKE_USDT buy walks the book level by level (average price and price impact are real), never paying
+//    more than your chance minus MIN_EDGE for a share; a thin book fills partly; under MIN_ORDER_USDT means no trade.
 //  * Fee: Predict.fun taker fee, FEE_BPS / 10000 x min(p, 1 minus p) x shares, taken in shares (dev.predict.fun/trading/fees).
-//    FEE_BPS is the highest published schedule, so the estimate is conservative; referral discounts are ignored.
+//    FEE_BPS is the rate in Predict.fun's published example (2%, the top of their 0.018% to 2% range); per market
+//    rates are not read yet; referral discounts are ignored.
 //  * Settle: the onchain outcome. A winning share pays 1 USDT, less REDEEM_GAS_USDT once per winning trade.
 export const PAPER = {
   method: 'paper v1',
@@ -18,11 +19,12 @@ export const PAPER = {
   MIN_TRADES_TO_JUDGE: 20,
 };
 
-/** Walks ascending ask levels [[price, shares], ...] with a USDT budget. */
-export function walkBuy(levels, usdt) {
+/** Walks ascending ask levels [[price, shares], ...] with a USDT budget, skipping levels above maxPrice. */
+export function walkBuy(levels, usdt, maxPrice = 1) {
   let left = usdt, shares = 0;
   for (const [price, size] of levels) {
     if (left <= 1e-9) break;
+    if (price > maxPrice + 1e-9) break;
     if (!(price > 0 && price < 1) || !(size > 0)) continue;
     const take = Math.min(size, left / price);
     shares += take;
@@ -51,7 +53,7 @@ export function paperTrade({ youBps, book, outcome, p = PAPER }) {
   const edgeNo = noAsks.length ? (1 - you) - noAsks[0][0] : -1;
   const side = edgeYes >= p.MIN_EDGE - 1e-9 && edgeYes >= edgeNo ? 'Yes' : edgeNo >= p.MIN_EDGE - 1e-9 ? 'No' : null;
   if (!side) return { side: null, reason: 'no_edge' };
-  const fill = walkBuy(side === 'Yes' ? yesAsks : noAsks, p.STAKE_USDT);
+  const fill = walkBuy(side === 'Yes' ? yesAsks : noAsks, p.STAKE_USDT, (side === 'Yes' ? you : 1 - you) - p.MIN_EDGE);
   if (fill.spent < p.MIN_ORDER_USDT) return { side, reason: 'too_thin' };
   const feeShares = (p.FEE_BPS / 10000) * Math.min(fill.avgPrice, 1 - fill.avgPrice) * fill.shares / fill.avgPrice;
   const netShares = fill.shares - feeShares;
@@ -76,18 +78,20 @@ export function paperTrade({ youBps, book, outcome, p = PAPER }) {
   return t;
 }
 
-/** Totals for one forecaster with a 90% bootstrap range of ROI (seeded, so every rebuild shows the same range). */
+/** Totals for one forecaster with a 90% bootstrap range of ROI (seeded, so every rebuild shows the same range).
+ * Resamples whole rounds (trades tagged with `round`), because questions settled the same day tend to move together. */
 export function summarize(trades, p = PAPER) {
   const done = trades.filter((t) => t && t.side && typeof t.pnl === 'number');
   const staked = done.reduce((s, t) => s + t.spent, 0);
   const pnl = done.reduce((s, t) => s + t.pnl, 0);
   const out = { trades: done.length, open: trades.filter((t) => t && t.side && typeof t.pnl !== 'number' && t.reason == null).length, staked: round2(staked), pnl: round2(pnl), roi: staked ? round4(pnl / staked) : null, wins: done.filter((t) => t.pnl > 0).length, roiLow: null, roiHigh: null, enough: done.length >= p.MIN_TRADES_TO_JUDGE };
-  if (done.length >= 2) {
+  const groups = Object.values(done.reduce((g, t, i) => { const k = t.round ?? `t${i}`; (g[k] ??= { pnl: 0, spent: 0 }); g[k].pnl += t.pnl; g[k].spent += t.spent; return g; }, {}));
+  if (groups.length >= 2) {
     const rnd = mulberry32(done.length * 7919 + Math.round(staked * 100));
     const rois = [];
     for (let b = 0; b < 2000; b++) {
       let s = 0, n = 0;
-      for (let i = 0; i < done.length; i++) { const t = done[Math.floor(rnd() * done.length)]; s += t.pnl; n += t.spent; }
+      for (let i = 0; i < groups.length; i++) { const g = groups[Math.floor(rnd() * groups.length)]; s += g.pnl; n += g.spent; }
       rois.push(n ? s / n : 0);
     }
     rois.sort((a, b) => a - b);

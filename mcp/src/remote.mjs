@@ -404,6 +404,8 @@ ${REPLY_STYLE}` });
         predictions: z.array(z.object({ market_id: z.string(), outcome: z.number().int(), status: z.string(), your_chance_pct: z.number().nullable(), says: z.string(), points: z.number().nullable(), your_miss: z.number().nullable(), market_miss: z.number().nullable() }))
           .describe('Open forecasts (v2) on any Predict.fun market, newest first; your forecast is null while sealed.'),
       }),
+      paper: z.object({ method: z.string(), trades: z.number().int(), open: z.number().int(), wins: z.number().int(), staked_usdt: z.number(), pnl_usdt: z.number(), roi: z.number().nullable(), roi_90_low: z.number().nullable(), roi_90_high: z.number().nullable(), enough_to_judge: z.boolean(), note: z.string() }).nullable()
+        .describe('Paper trades: simulated Predict.fun trades on the saved order books (forewit.xyz/#/docs/paper). Never real money, never a promise of returns.'),
       next_cursor: z.string().nullable(),
     },
   }, async ({ address: addr, ...page }) => {
@@ -439,9 +441,17 @@ ${REPLY_STYLE}` });
       history,
       leaderboard: publicRows(d.snapshot).rows.find((r) => r.address === a) ?? null,
       results: resultsCard(d.snapshot, a),
+      paper: paperOf(d.snapshot, a),
       next_cursor,
     });
   });
+
+  // simulated only; the numbers come from indexer/lib/paper.mjs through the published snapshot
+  function paperOf(snap, a) {
+    const s = snap.paper?.totals?.[a];
+    if (!s) return null;
+    return { method: snap.paper.method, trades: s.trades, open: s.open, wins: s.wins, staked_usdt: s.staked, pnl_usdt: s.pnl, roi: s.roi, roi_90_low: s.roiLow, roi_90_high: s.roiHigh, enough_to_judge: s.enough, note: 'Simulated from saved order books, not real trades. Past results are not a promise of returns.' };
+  }
 
   tool('get_upcoming', {
     title: 'Upcoming rounds',
