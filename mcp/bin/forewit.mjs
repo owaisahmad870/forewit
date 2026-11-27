@@ -32,7 +32,7 @@ if (cmd === 'mcp' && sub === 'remote') {
     process.exitCode = 1;
   }
 } else if (cmd === 'results' || cmd === 'upcoming') {
-  const { loadDataset, resultsCard, DEFAULT_DATA } = await import('../src/remote.mjs');
+  const { loadDataset, resultsCard, paperOf, DEFAULT_DATA } = await import('../src/remote.mjs');
   const { upcoming } = await import('../vendor/web/data.mjs');
   try {
     const d = await loadDataset(process.env.FOREWIT_DATA || DEFAULT_DATA);
@@ -48,6 +48,8 @@ if (cmd === 'mcp' && sub === 'remote') {
       console.log(card.summary);
       for (const r of card.rounds) console.log(`  Round ${r.round_id}: ${r.says}`);
       console.log('Miss score: how far your forecasts were from what happened, 0 (perfect) to 100 (fully wrong), per question.');
+      const paper = paperOf(d.snapshot, addr.toLowerCase());
+      if (paper) console.log(`${paper.says} ${paper.note} Rules: https://forewit.xyz/#/docs/paper`);
     }
   } catch (err) {
     console.error(`forewit: ${err.message}`);

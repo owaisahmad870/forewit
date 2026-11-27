@@ -2,6 +2,7 @@ import { Badge, Card, ColHelp, DateLine, Explain, Histogram, NextLinks, Question
 import { useT } from '../i18n';
 import { phase, type Dataset, type Round } from '../lib/data';
 import { fmtShare, fmtUtc } from '../lib/format';
+import { RoundPaper } from './Paper';
 
 export function Rounds({ data }: { data: Dataset }) {
   const { t, lang } = useT();
@@ -117,6 +118,7 @@ export function RoundPage({ data, id }: { data: Dataset; id: number }) {
           </ol>
         </details>
       )}
+      {ph !== 'commit' && <RoundPaper data={data} roundId={r.id} />}
       <Explain terms={['forecast', 'market', 'baseline', 'crowd', 'histogram', 'void']} summary="help.whatTerms" />
       <NextLinks to={['start', 'scoring', 'rounds']} />
     </div>

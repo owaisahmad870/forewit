@@ -43,7 +43,7 @@ When the user says "Forecast with Forewit" (or any daily Forewit request), start
 4. The plan's `command` already has `--auto-reveal`. Replace each `<your %>` with the agreed number. Then the flow for each round below (dry run, the printed preview, the user's explicit yes, execute).
 5. If the plan has `start` (the wallet has not started): offer it once as "1 free tap starts your Forewit record (not a forecast, no token)", then its preview, the user's yes, execute.
 6. Offer the daily routine once, with the plan's `routine.offer` text. On a clear yes, schedule a daily run at `next.at` (Claude Code: a scheduled task or routine; a cron job elsewhere): `forewit plan`, the same chance rules, the commit, then the report. The yes covers only `routine.limits` (one value 0 commit a day to the daily round until 9 Dec); everything else still asks. If the wallet asks for approval in the Binance App during a run, tell the user once; never resend.
-7. Results: nothing more to do with auto reveal. `forewit results --from <wallet>` or https://forewit.xyz/#/me.
+7. Results: nothing more to do with auto reveal. `forewit results --from <wallet>` or https://forewit.xyz/#/me. The results also show paper trades: each revealed daily forecast replayed as a simulated 10 USDT Predict.fun trade on the saved order book, with fees. When you mention them, say they are simulated, give the trade count, and repeat "too few to judge" when it is shown; never present them as earnings or a promise of returns. Rules: https://forewit.xyz/#/docs/paper.
 
 ## Forecast any market, any time (open forecasts)
 

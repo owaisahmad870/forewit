@@ -64,3 +64,51 @@ export function PaperTrades({ data, addr }: { data: Dataset; addr: string }) {
     </Card>
   );
 }
+
+// Round page: one row per forecaster with a simulated trade in this round; names only for public profiles.
+export function RoundPaper({ data, roundId }: { data: Dataset; roundId: number }) {
+  const { t } = useT();
+  const p = data.snapshot.paper;
+  const byWho = p?.rounds[String(roundId)];
+  if (!p || !byWho) return null;
+  const profiles = data.snapshot.profiles ?? {};
+  const rows = Object.entries(byWho).map(([who, ts]) => {
+    const taken = ts.filter((x) => x?.side && x.spent != null);
+    const settled = taken.filter((x) => x!.pnl != null);
+    return { who, n: taken.length, open: taken.length - settled.length, staked: taken.reduce((s, x) => s + x!.spent!, 0), pnl: settled.length ? settled.reduce((s, x) => s + x!.pnl!, 0) : null };
+  }).filter((r) => r.n > 0).sort((a, b) => (b.pnl ?? -1e9) - (a.pnl ?? -1e9));
+  if (!rows.length) return null;
+  const th = 'px-2 py-2 text-left text-xs font-medium tracking-wide whitespace-nowrap text-muted uppercase sm:px-3';
+  const num = 'px-2 py-3 text-right tabular-nums whitespace-nowrap sm:px-3';
+  const nameOf = (a: string) => { const pr = Object.entries(profiles).find(([k]) => k.toLowerCase() === a)?.[1]; return pr?.isPublic && pr.name ? pr.name : `${a.slice(0, 6)}…${a.slice(-4)}`; };
+  return (
+    <Card>
+      <h2 className="text-lg font-semibold">{t('paper.roundTitle')}</h2>
+      <p className="mt-1 max-w-[68ch] text-sm text-muted">{t('paper.roundLead', { s: p.STAKE_USDT, e: Math.round(p.MIN_EDGE * 100) })}</p>
+      <div className="-mx-1 mt-3 overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <caption className="sr-only">{t('paper.roundTitle')}</caption>
+          <thead>
+            <tr className="border-b border-line">
+              <th scope="col" className={th}>{t('paper.col.who')}</th>
+              <th scope="col" className={`${th} text-right`}>{t('paper.trades')}</th>
+              <th scope="col" className={`${th} hidden text-right sm:table-cell`}>{t('paper.col.staked')}</th>
+              <th scope="col" className={`${th} text-right`}>{t('paper.col.pnl')}<ColHelp text={t('paper.tip.pnl')} /></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.who} className="border-b border-line last:border-0">
+                <th scope="row" className="px-2 py-3 text-left font-normal sm:px-3"><a href={`#/profile/${r.who}`} className="text-accent underline underline-offset-4">{nameOf(r.who)}</a></th>
+                <td className={num}>{r.open ? t('paper.roundN', { n: r.n, o: r.open }) : r.n}</td>
+                <td className={`${num} hidden sm:table-cell`}>{r.staked.toFixed(2)}</td>
+                <td className={`${num} font-semibold ${tone(r.pnl)}`}>{r.pnl == null ? <span className="font-normal text-muted">{t('paper.open')}</span> : usdt(r.pnl)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-sm text-muted">{t('paper.disclaimer')} <a href="#/docs/paper" className="text-accent underline underline-offset-4">{t('paper.method')}</a></p>
+    </Card>
+  );
+}

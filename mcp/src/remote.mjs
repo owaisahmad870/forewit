@@ -280,6 +280,16 @@ function flattenBlocks(blocks) {
 }
 
 /** One McpServer with the eleven read only tools. `data` is an https base URL or a local folder of published JSON. */
+// Paper trades (simulated only): totals from indexer/lib/paper.mjs through the published snapshot, plus one plain line.
+export function paperOf(snap, a) {
+  const s = snap.paper?.totals?.[a];
+  if (!s) return null;
+  const sign = (x) => (x > 0 ? '+' : x < 0 ? '-' : '');
+  const says = s.trades + s.open === 0 ? 'No paper trades yet: none of your revealed odds beat the best price by 5 points.'
+    : `Paper trades (simulated, 10 USDT each): ${s.trades} settled, ${s.wins} correct, ${s.open} open; P&L ${sign(s.pnl)}${Math.abs(s.pnl).toFixed(2)} USDT${s.roi == null ? '' : ` (${sign(s.roi)}${Math.abs(s.roi * 100).toFixed(0)}% of stake)`}.${s.enough ? '' : ' Too few to judge.'}`;
+  return { method: snap.paper.method, trades: s.trades, open: s.open, wins: s.wins, staked_usdt: s.staked, pnl_usdt: s.pnl, roi: s.roi, roi_90_low: s.roiLow, roi_90_high: s.roiHigh, enough_to_judge: s.enough, says, note: 'Simulated from saved order books, not real trades. Past results are not a promise of returns.' };
+}
+
 export function createRemoteServer({ data = process.env.FOREWIT_DATA || DEFAULT_DATA } = {}) {
   const server = new McpServer({ name: 'forewit', version: VERSION, title: 'Forewit (read only)' }, { instructions: `Read only Forewit data: rounds, results, leaderboard, crowd, markets. To forecast, the person needs the Forewit CLI or the local MCP (npx -y forewit@latest plan --from <wallet>); get_started explains it.
 ${REPLY_STYLE}` });
@@ -404,7 +414,7 @@ ${REPLY_STYLE}` });
         predictions: z.array(z.object({ market_id: z.string(), outcome: z.number().int(), status: z.string(), your_chance_pct: z.number().nullable(), says: z.string(), points: z.number().nullable(), your_miss: z.number().nullable(), market_miss: z.number().nullable() }))
           .describe('Open forecasts (v2) on any Predict.fun market, newest first; your forecast is null while sealed.'),
       }),
-      paper: z.object({ method: z.string(), trades: z.number().int(), open: z.number().int(), wins: z.number().int(), staked_usdt: z.number(), pnl_usdt: z.number(), roi: z.number().nullable(), roi_90_low: z.number().nullable(), roi_90_high: z.number().nullable(), enough_to_judge: z.boolean(), note: z.string() }).nullable()
+      paper: z.object({ method: z.string(), trades: z.number().int(), open: z.number().int(), wins: z.number().int(), staked_usdt: z.number(), pnl_usdt: z.number(), roi: z.number().nullable(), roi_90_low: z.number().nullable(), roi_90_high: z.number().nullable(), enough_to_judge: z.boolean(), says: z.string(), note: z.string() }).nullable()
         .describe('Paper trades: simulated Predict.fun trades on the saved order books (forewit.xyz/#/docs/paper). Never real money, never a promise of returns.'),
       next_cursor: z.string().nullable(),
     },
@@ -445,13 +455,6 @@ ${REPLY_STYLE}` });
       next_cursor,
     });
   });
-
-  // simulated only; the numbers come from indexer/lib/paper.mjs through the published snapshot
-  function paperOf(snap, a) {
-    const s = snap.paper?.totals?.[a];
-    if (!s) return null;
-    return { method: snap.paper.method, trades: s.trades, open: s.open, wins: s.wins, staked_usdt: s.staked, pnl_usdt: s.pnl, roi: s.roi, roi_90_low: s.roiLow, roi_90_high: s.roiHigh, enough_to_judge: s.enough, note: 'Simulated from saved order books, not real trades. Past results are not a promise of returns.' };
-  }
 
   tool('get_upcoming', {
     title: 'Upcoming rounds',

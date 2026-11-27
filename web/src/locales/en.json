@@ -900,7 +900,9 @@
       "edge": "Edge",
       "fill": "Avg price",
       "fee": "Fee",
-      "pnl": "P&L (USDT)"
+      "pnl": "P&L (USDT)",
+      "who": "Forecaster",
+      "staked": "Staked (USDT)"
     },
     "tip": {
       "side": "The side your odds favoured: Yes if you were above the market, No if below.",
@@ -915,6 +917,9 @@
     "open": "Open",
     "disclaimer": "Simulated from saved order books, not real trades. Past results are not a promise of returns.",
     "method": "How paper trades work",
-    "rangeN": "{a} to {b}"
+    "rangeN": "{a} to {b}",
+    "roundTitle": "Paper trades this round (simulated)",
+    "roundLead": "Each revealed forecast replayed as a {s} USDT Predict.fun trade where the odds beat the best price by {e} points or more.",
+    "roundN": "{n} ({o} open)"
   }
 }
