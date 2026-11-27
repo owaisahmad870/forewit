@@ -73,3 +73,10 @@ test('the range resamples whole rounds: one round gives no range', () => {
   const two = summarize([{ side: 'Yes', spent: 10, pnl: 5, round: '1' }, { side: 'No', spent: 10, pnl: -10, round: '2' }]);
   assert.ok(two.roiLow <= two.roi && two.roi <= two.roiHigh);
 });
+
+test('v1.1: a market fee rate overrides the fallback and is recorded on the trade', () => {
+  const t = paperTrade({ youBps: 7500, book, outcome: 'Yes', p: { ...PAPER, FEE_BPS: 100 } });
+  assert.equal(t.feeBps, 100);
+  assert.equal(t.feeUsdt, 0.05); // half of the 200 bps fee (0.1077)
+  assert.equal(paperTrade({ youBps: 7500, book, outcome: 'Yes' }).feeBps, 200);
+});

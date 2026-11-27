@@ -514,7 +514,7 @@
               "Entry: the full order book the keeper saved in the 5 minutes before the commit deadline, the same snapshot that sets the market price you are scored against.",
               "Signal: buy Yes when your chance beats the best Yes price by 5 points or more; buy No when your No chance beats the best No price by 5 points or more. Otherwise no trade.",
               "Size: 10 USDT per trade, walked through the book level by level, so the average price includes the spread and price impact. It never pays more than your chance minus 5 points for a share, so a thin book fills partly; under 1 USDT filled is no trade, matching the Predict.fun minimum order.",
-              "Fee: the Predict.fun taker fee, 200 bps × min(price, 1 minus price) × shares, taken in shares on a buy. 200 bps is the rate in Predict.fun's own fee example and the top of their published 0.018% to 2% range; each market's own rate is not read yet, and referral discounts are ignored.",
+              "Fee: the Predict.fun taker fee at each market's own rate (feeRateBps from the Predict.fun API, read when the data is published): rate × min(price, 1 minus price) × shares, taken in shares on a buy. If the API gives no rate, 200 bps is used, the rate in Predict.fun's own fee example and the top of their 0.018% to 2% range. Referral discounts are ignored.",
               "Settle: the onchain outcome. A share on the side that happened pays 1 USDT, less 0.01 USDT for the redeem transaction. A void market returns the stake.",
               "Uncertainty: the profile shows a 90% bootstrap range for the return, resampling whole rounds, because questions that settle the same day (Bitcoin, Ethereum and BNB) tend to move together. It needs at least 2 rounds with trades; below 20 settled trades it says the sample is too small to judge."
             ]
@@ -527,7 +527,8 @@
               "The book is from just before the deadline, not from the moment you forecast.",
               "Other traders could react to a real order; the simulation assumes the book stays put while you fill.",
               "Open forecasts are not included yet: only the price at send time is saved for them, not the full book.",
-              "Rounds 1 to 3 were replayed after the fact, when paper trades launched on 27 Nov 2026. From round 4 on, the rules were fixed before the round opened."
+              "Rounds 1 to 3 were replayed after the fact, when paper trades launched on 27 Nov 2026. From round 4 on, the rules were fixed before the round opened.",
+              "Version: paper v1.1 (27 Nov 2026) reads each market's own fee rate; v1 used 200 bps for every market. The rate is the one Predict.fun lists when the data is published, which can differ from the rate at the moment of a past trade."
             ]
           },
           {
@@ -908,7 +909,7 @@
       "side": "The side your odds favoured: Yes if you were above the market, No if below.",
       "edge": "Your odds minus the best available price for that side, in points. Below the threshold there is no trade.",
       "fill": "Average price paid after walking the saved order book level by level. Partial means the book ran out of shares.",
-      "fee": "Predict.fun taker fee: {b} bps × min(price, 1 minus price) × shares, taken in shares. {b} bps is the rate in Predict.fun's published example, the top of their range.",
+      "fee": "Predict.fun taker fee at that market's own rate (hover the number to see it): rate × min(price, 1 minus price) × shares, taken in shares.",
       "pnl": "Payout minus stake. A share on the side that happened pays 1 USDT, less about 0.01 USDT of gas to redeem."
     },
     "buy": "Buy {s}",

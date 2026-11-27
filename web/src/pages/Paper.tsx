@@ -52,7 +52,7 @@ export function PaperTrades({ data, addr }: { data: Dataset; addr: string }) {
                   <td className="px-2 py-3 whitespace-nowrap sm:px-3">{t('paper.buy', { s: t(`outcome.${tr!.side}`) })}</td>
                   <td className={num}>{t('paper.edgeN', { p: tr!.edgePts ?? 0 })}</td>
                   <td className={`${num} hidden sm:table-cell`}>{tr!.avgPrice!.toFixed(3)}{tr!.partial ? ` ${t('paper.partial')}` : ''}</td>
-                  <td className={`${num} hidden text-muted sm:table-cell`}>{tr!.feeUsdt!.toFixed(2)}</td>
+                  <td className={`${num} hidden text-muted sm:table-cell`} title={tr!.feeBps != null ? `${tr!.feeBps} bps` : undefined}>{tr!.feeUsdt!.toFixed(2)}</td>
                   <td className={`${num} font-semibold ${tone(tr!.pnl)}`}>{tr!.pnl == null ? <span className="font-normal text-muted">{t('paper.open')}</span> : usdt(tr!.pnl)}</td>
                 </tr>
               ))}

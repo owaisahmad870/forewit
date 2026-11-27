@@ -6,11 +6,11 @@
 //  * Fill: a STAKE_USDT buy walks the book level by level (average price and price impact are real), never paying
 //    more than your chance minus MIN_EDGE for a share; a thin book fills partly; under MIN_ORDER_USDT means no trade.
 //  * Fee: Predict.fun taker fee, FEE_BPS / 10000 x min(p, 1 minus p) x shares, taken in shares (dev.predict.fun/trading/fees).
-//    FEE_BPS is the rate in Predict.fun's published example (2%, the top of their 0.018% to 2% range); per market
-//    rates are not read yet; referral discounts are ignored.
+//    v1.1: each market's own feeRateBps from the Predict.fun API, read when the data is published; FEE_BPS (the rate in
+//    Predict.fun's published example, the top of their range) only when the API gives none. Referral discounts are ignored.
 //  * Settle: the onchain outcome. A winning share pays 1 USDT, less REDEEM_GAS_USDT once per winning trade.
 export const PAPER = {
-  method: 'paper v1',
+  method: 'paper v1.1',
   STAKE_USDT: 10,
   MIN_EDGE: 0.05,
   FEE_BPS: 200,
@@ -65,6 +65,7 @@ export function paperTrade({ youBps, book, outcome, p = PAPER }) {
     bestPrice: round4((side === 'Yes' ? yesAsks : noAsks)[0][0]),
     shares: round2(netShares),
     feeUsdt: round2(feeShares * fill.avgPrice),
+    feeBps: p.FEE_BPS,
     partial: fill.spent < p.STAKE_USDT - 1e-6,
   };
   if (outcome === 'Yes' || outcome === 'No') {

@@ -46,6 +46,8 @@ jobs:
           # v2 open forecasts: publish.mjs adds the "open" section only once both are set
           OPEN_LEDGER: ${{ vars.OPEN_MAINNET }}
           OPEN_FROM_BLOCK: ${{ vars.OPEN_FROM_BLOCK_MAINNET }}
+          # paper trades v1.1: each market's own taker fee rate (read only market lookups, never printed)
+          PREDICT_API_KEY: ${{ secrets.PREDICT_API_KEY }}
         run: |
           [ -n "$LEDGER" ] && [ -n "$FROM" ] || exit 0
           node indexer/publish.mjs --network mainnet --ledger "$LEDGER" --from-block "$FROM" ${RPC:+--rpc "$RPC"}

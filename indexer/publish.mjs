@@ -10,6 +10,15 @@ import { meanMovePts } from './lib/flags.mjs';
 import { marketsView } from './lib/markets.mjs';
 import { paperTrade, summarize, PAPER } from './lib/paper.mjs';
 
+// v1.1: each market's own taker fee rate from Predict.fun (PREDICT_API_KEY in CI); null keeps the published fallback
+const feeCache = new Map();
+async function marketFeeBps(id) {
+  const key = process.env.PREDICT_API_KEY;
+  if (!key || !/^\d+$/.test(String(id))) return null;
+  if (!feeCache.has(id)) feeCache.set(id, fetch(`https://api.predict.fun/v1/markets/${id}`, { headers: { 'x-api-key': key }, signal: AbortSignal.timeout(10_000) })
+    .then((r) => (r.ok ? r.json() : null)).then((j) => { const v = Number(j?.data?.feeRateBps); return Number.isInteger(v) && v >= 0 && v <= 1000 ? v : null; }).catch(() => null));
+  return feeCache.get(id);
+}
 const unpack = (packed, n) => Array.from({ length: n }, (_, i) => Number((BigInt(packed) >> BigInt(16 * i)) & 0xffffn));
 
 export async function publish({ network = 'testnet', ledger, fromBlock, abiPath, rpc, outDir = 'web/public/data' }) {
@@ -41,9 +50,10 @@ export async function publish({ network = 'testnet', ledger, fromBlock, abiPath,
       try {
         const books = JSON.parse(readFileSync(booksFile, 'utf8'));
         const n = r.questions.length;
+        const fees = await Promise.all(r.questions.map((q) => marketFeeBps(q.marketId)));
         for (const [who, packed] of Object.entries(r.forecasts ?? {})) {
           const bps = unpack(packed, n);
-          const trades = r.questions.map((q, i) => (q.yesSlot === 0 && books[i]?.raw ? paperTrade({ youBps: bps[i], book: books[i].raw, outcome: r.outcomes?.[i] ?? 'Unresolved' }) : null));
+          const trades = r.questions.map((q, i) => (q.yesSlot === 0 && books[i]?.raw ? paperTrade({ youBps: bps[i], book: books[i].raw, outcome: r.outcomes?.[i] ?? 'Unresolved', p: { ...PAPER, FEE_BPS: fees[i] ?? PAPER.FEE_BPS } }) : null));
           ((paper.rounds[r.roundId] ??= {})[who] = trades);
           (paper.byWho[who] ??= []).push(...trades.map((t) => (t ? { ...t, round: r.roundId } : t)));
         }

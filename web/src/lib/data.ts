@@ -38,7 +38,7 @@ export interface Snapshot {
 }
 
 // Paper trading v1: one entry per daily question (null when the question has no saved book); simulated, never real.
-export interface PaperTrade { side: 'Yes' | 'No' | null; reason?: 'no_edge' | 'too_thin'; edgePts?: number; spent?: number; avgPrice?: number; bestPrice?: number; shares?: number; feeUsdt?: number; partial?: boolean; payout?: number; pnl?: number }
+export interface PaperTrade { side: 'Yes' | 'No' | null; reason?: 'no_edge' | 'too_thin'; edgePts?: number; spent?: number; avgPrice?: number; bestPrice?: number; shares?: number; feeUsdt?: number; feeBps?: number; partial?: boolean; payout?: number; pnl?: number }
 export interface PaperTotals { trades: number; open: number; staked: number; pnl: number; roi: number | null; wins: number; roiLow: number | null; roiHigh: number | null; enough: boolean }
 export interface PaperData { method: string; STAKE_USDT: number; MIN_EDGE: number; FEE_BPS: number; MIN_ORDER_USDT: number; REDEEM_GAS_USDT: number; MIN_TRADES_TO_JUDGE: number; rounds: Record<string, Record<string, (PaperTrade | null)[]>>; totals: Record<string, PaperTotals> }
 
