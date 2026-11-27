@@ -1,0 +1,38 @@
+[
+  {
+    "marketId": "4812155",
+    "bps": 4350,
+    "source": "mid",
+    "takenAt": 1795734022334
+  },
+  {
+    "marketId": "4812156",
+    "bps": 4850,
+    "source": "mid",
+    "takenAt": 1795734022480
+  },
+  {
+    "marketId": "4812157",
+    "bps": 5300,
+    "source": "mid",
+    "takenAt": 1795734022626
+  },
+  {
+    "marketId": "4799005",
+    "bps": 3200,
+    "source": "mid",
+    "takenAt": 1795734022799
+  },
+  {
+    "marketId": "4799618",
+    "bps": 1500,
+    "source": "mid",
+    "takenAt": 1795734022945
+  },
+  {
+    "marketId": "4799602",
+    "bps": 600,
+    "source": "last_trade",
+    "takenAt": 1795734023090
+  }
+]

@@ -1,0 +1,88 @@
+{
+  "network": 56,
+  "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
+  "roundId": "4",
+  "kind": "daily",
+  "board": "scored",
+  "featured": true,
+  "topic": null,
+  "horizon": null,
+  "optional": false,
+  "funnel": {
+    "open": 14106,
+    "binary": 9183,
+    "notSports": 5357,
+    "liquid": 116,
+    "notPolitics": 84,
+    "inWindow": 4,
+    "events": 4,
+    "chosen": 4
+  },
+  "rule": "QUESTION_SELECTION v3.1",
+  "commitDeadline": "2026-11-27T23:00:00.000Z",
+  "revealDeadline": "2026-11-28T23:00:00.000Z",
+  "resolutionWaitSeconds": "604800",
+  "questions": [
+    {
+      "index": 0,
+      "marketId": "4833772",
+      "conditionId": "0xeb8ed8113b4ccf7741bd983bf24ad4c278c4731a34990382f1bca371c2d9cefd",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "Bitcoin Up or Down on November 28?",
+      "label": "Bitcoin Up or Down on November 28?",
+      "marketQuestion": "Bitcoin Up or Down on November 28?",
+      "endsAt": "2026-11-28T17:00:00.000Z",
+      "tags": [
+        "Crypto",
+        "BTC",
+        "Up/Down",
+        "Daily"
+      ]
+    },
+    {
+      "index": 1,
+      "marketId": "4833773",
+      "conditionId": "0x676fba68050a65127710e4a9b961e3bac8cea43becb3c61bddc6e75e1f05c39b",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "Ethereum Up or Down on November 28?",
+      "label": "Ethereum Up or Down on November 28?",
+      "marketQuestion": "Ethereum Up or Down on November 28?",
+      "endsAt": "2026-11-28T17:00:00.000Z",
+      "tags": [
+        "Crypto",
+        "ETH",
+        "Up/Down",
+        "Daily"
+      ]
+    },
+    {
+      "index": 2,
+      "marketId": "4833774",
+      "conditionId": "0xf911e3e52a4d0aea71aa582e76b79c731d172a4be02541e91d47fbe4a83de32e",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "BNB Up or Down on November 28?",
+      "label": "BNB Up or Down on November 28?",
+      "marketQuestion": "BNB Up or Down on November 28?",
+      "endsAt": "2026-11-28T17:00:00.000Z",
+      "tags": [
+        "Crypto",
+        "Up/Down",
+        "Daily",
+        "BNB"
+      ]
+    },
+    {
+      "index": 3,
+      "marketId": "4825722",
+      "conditionId": "0x3e49670ed7bdf146875083cb16ede0f13b8026d225f1a4fe2130f3fe90995473",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "Highest temperature in Paris on November 28?",
+      "label": "6°C",
+      "marketQuestion": "Will the highest temperature in Paris be 6°C on November 28?",
+      "endsAt": "2026-11-28T12:00:00.000Z",
+      "tags": [
+        "Weather"
+      ]
+    }
+  ]
+}
