@@ -1,8 +1,8 @@
 {
   "network": 56,
   "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
-  "builtAt": "2026-11-27T15:00:24.677Z",
-  "headBlock": "136058815",
+  "builtAt": "2026-11-27T20:31:28.785Z",
+  "headBlock": "136102948",
   "metrics": {
     "distinctCommitters": 1,
     "rounds": 4,
@@ -251,7 +251,14 @@
       },
       "scored": {},
       "forfeited": {},
-      "outcomes": {},
+      "outcomes": {
+        "0": "No",
+        "1": "No",
+        "2": "No",
+        "3": "No",
+        "4": "No",
+        "5": "No"
+      },
       "baseline": "725383162827854796518199650",
       "commitDeadline": "1795734000",
       "revealDeadline": "1795820400",
@@ -379,8 +386,154 @@
       "by": "0x6732027e7f908e274bf4360ce19cc182f82d008c"
     }
   ],
+  "paper": {
+    "method": "paper v1.1",
+    "STAKE_USDT": 10,
+    "MIN_EDGE": 0.05,
+    "FEE_BPS": 200,
+    "MIN_ORDER_USDT": 1,
+    "REDEEM_GAS_USDT": 0.01,
+    "MIN_TRADES_TO_JUDGE": 20,
+    "rounds": {
+      "1": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": [
+          {
+            "side": "No",
+            "edgePts": 8,
+            "spent": 10,
+            "avgPrice": 0.37,
+            "bestPrice": 0.37,
+            "shares": 26.49,
+            "feeUsdt": 0.2,
+            "feeBps": 200,
+            "partial": false,
+            "payout": 26.48,
+            "pnl": 16.48
+          },
+          {
+            "side": "No",
+            "edgePts": 8,
+            "spent": 10,
+            "avgPrice": 0.37,
+            "bestPrice": 0.37,
+            "shares": 26.49,
+            "feeUsdt": 0.2,
+            "feeBps": 200,
+            "partial": false,
+            "payout": 26.48,
+            "pnl": 16.48
+          },
+          {
+            "side": "No",
+            "edgePts": 19,
+            "spent": 10,
+            "avgPrice": 0.3184,
+            "bestPrice": 0.31,
+            "shares": 30.78,
+            "feeUsdt": 0.2,
+            "feeBps": 200,
+            "partial": false,
+            "payout": 30.77,
+            "pnl": 20.77
+          },
+          {
+            "side": "Yes",
+            "edgePts": 12,
+            "spent": 10,
+            "avgPrice": 0.18,
+            "bestPrice": 0.18,
+            "shares": 54.44,
+            "feeUsdt": 0.2,
+            "feeBps": 200,
+            "partial": false,
+            "payout": 0,
+            "pnl": -10
+          }
+        ]
+      },
+      "2": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": [
+          {
+            "side": null,
+            "reason": "no_edge"
+          },
+          {
+            "side": null,
+            "reason": "no_edge"
+          },
+          {
+            "side": null,
+            "reason": "no_edge"
+          },
+          {
+            "side": null,
+            "reason": "no_edge"
+          }
+        ]
+      },
+      "3": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": [
+          {
+            "side": null,
+            "reason": "no_edge"
+          },
+          {
+            "side": null,
+            "reason": "no_edge"
+          },
+          {
+            "side": "No",
+            "edgePts": 8,
+            "spent": 10,
+            "avgPrice": 0.41,
+            "bestPrice": 0.41,
+            "shares": 23.9,
+            "feeUsdt": 0.2,
+            "feeBps": 200,
+            "partial": false,
+            "payout": 23.89,
+            "pnl": 13.89
+          },
+          {
+            "side": null,
+            "reason": "no_edge"
+          },
+          {
+            "side": null,
+            "reason": "no_edge"
+          },
+          {
+            "side": "Yes",
+            "edgePts": 8,
+            "spent": 10,
+            "avgPrice": 0.07,
+            "bestPrice": 0.07,
+            "shares": 140,
+            "feeUsdt": 0.2,
+            "feeBps": 200,
+            "partial": false,
+            "payout": 0,
+            "pnl": -10
+          }
+        ]
+      }
+    },
+    "totals": {
+      "0x4db416baf0127adca78e7571038b763868ff282c": {
+        "trades": 6,
+        "open": 0,
+        "staked": 60,
+        "pnl": 47.62,
+        "roi": 0.7937,
+        "wins": 4,
+        "roiLow": 0.1945,
+        "roiHigh": 1.0933,
+        "enough": false
+      }
+    }
+  },
   "start": {
-    "headBlock": "136058869",
+    "headBlock": "136102993",
     "contract": "0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A",
     "count": 6,
     "players": [
