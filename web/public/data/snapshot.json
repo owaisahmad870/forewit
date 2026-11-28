@@ -1,8 +1,8 @@
 {
   "network": 56,
   "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
-  "builtAt": "2026-11-27T20:31:28.785Z",
-  "headBlock": "136102948",
+  "builtAt": "2026-11-28T02:02:07.306Z",
+  "headBlock": "136147020",
   "metrics": {
     "distinctCommitters": 1,
     "rounds": 4,
@@ -18,11 +18,15 @@
       "2026-11-26": {
         "commits": 1,
         "reveals": 1
+      },
+      "2026-11-27": {
+        "commits": 1,
+        "reveals": 1
       }
     },
     "windowMove": {
-      "rounds": 3,
-      "avgPts": 1.1944444444444444,
+      "rounds": 4,
+      "avgPts": 1.0520833333333335,
       "thresholdPts": 0.5,
       "active": false
     }
@@ -249,7 +253,16 @@
       "forecasts": {
         "0x4db416baf0127adca78e7571038b763868ff282c": "1813405332476794423784247500"
       },
-      "scored": {},
+      "scored": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": {
+          "questions": "6",
+          "brier": "81900000",
+          "baseline": "94540000",
+          "skill": "12640000",
+          "baselineUsed": true,
+          "at": 1795821368
+        }
+      },
       "forfeited": {},
       "outcomes": {
         "0": "No",
@@ -323,22 +336,49 @@
           "marketId": "4825722"
         }
       ],
-      "committers": [],
-      "revealed": [],
-      "forecasts": {},
+      "committers": [
+        "0x4db416baf0127adca78e7571038b763868ff282c"
+      ],
+      "revealed": [
+        "0x4db416baf0127adca78e7571038b763868ff282c"
+      ],
+      "forecasts": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": "422234369687556600"
+      },
       "scored": {},
       "forfeited": {},
       "outcomes": {},
-      "baseline": null,
+      "baseline": "703711493832708450",
       "commitDeadline": "1795820400",
       "revealDeadline": "1795906800",
       "resolutionWait": "604800",
       "createdBlock": "135963350",
-      "crowd": null,
+      "baselineAt": 1795820101,
+      "crowd": {
+        "method": "crowd v1: log odds pooling, equal weight below 3 resolved rounds, then 0.1 + skill/mean skill, no extremizing",
+        "bps": [
+          4600,
+          4400,
+          5100,
+          1500
+        ],
+        "simpleBps": [
+          4600,
+          4400,
+          5100,
+          1500
+        ]
+      },
       "flags": [],
-      "commitTiming": {},
-      "commitCount": 0,
-      "revealRate": null
+      "commitTiming": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": {
+          "at": 1795818201,
+          "afterBaseline": false,
+          "gapSec": -1900
+        }
+      },
+      "commitCount": 1,
+      "revealRate": 1
     }
   ],
   "profiles": {
@@ -516,12 +556,46 @@
             "pnl": -10
           }
         ]
+      },
+      "4": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": [
+          {
+            "side": null,
+            "reason": "no_edge"
+          },
+          {
+            "side": "Yes",
+            "edgePts": 7,
+            "spent": 10,
+            "avgPrice": 0.37,
+            "bestPrice": 0.37,
+            "shares": 26.49,
+            "feeUsdt": 0.2,
+            "feeBps": 200,
+            "partial": false
+          },
+          {
+            "side": null,
+            "reason": "no_edge"
+          },
+          {
+            "side": "No",
+            "edgePts": 8,
+            "spent": 10,
+            "avgPrice": 0.77,
+            "bestPrice": 0.77,
+            "shares": 12.91,
+            "feeUsdt": 0.06,
+            "feeBps": 200,
+            "partial": false
+          }
+        ]
       }
     },
     "totals": {
       "0x4db416baf0127adca78e7571038b763868ff282c": {
         "trades": 6,
-        "open": 0,
+        "open": 2,
         "staked": 60,
         "pnl": 47.62,
         "roi": 0.7937,
@@ -533,7 +607,7 @@
     }
   },
   "start": {
-    "headBlock": "136102993",
+    "headBlock": "136147065",
     "contract": "0xD22e00037A2b7791Ab9AEf84111563F15Bd1C83A",
     "count": 6,
     "players": [
@@ -587,6 +661,13 @@
       "epoch": "2",
       "roundId": "2",
       "root": "0x61c542fd04c94ca9992c2fbe805a13b888c6328dddd971de612104882259e9c3",
+      "leafCount": 1,
+      "tx": null
+    },
+    {
+      "epoch": "3",
+      "roundId": "3",
+      "root": "0x58262fb2e4912c3ca6ceb737658505b3e05fedffe13a475728854c67b1979118",
       "leafCount": 1,
       "tx": null
     }

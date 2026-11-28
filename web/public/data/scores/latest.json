@@ -3,18 +3,18 @@
   "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
   "scores": "0xb668BCC3cC103538d5B8e8c3F18B6E36a7dB0Fdc",
   "agentId": "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F",
-  "epoch": "2",
-  "roundId": "2",
-  "snapshotBlock": "135933167",
+  "epoch": "3",
+  "roundId": "3",
+  "snapshotBlock": "136124992",
   "method": "forewit scores v1: skill = sumSkill / (baselineQuestions + 20), truncated toward zero",
-  "root": "0x61c542fd04c94ca9992c2fbe805a13b888c6328dddd971de612104882259e9c3",
+  "root": "0x58262fb2e4912c3ca6ceb737658505b3e05fedffe13a475728854c67b1979118",
   "leafCount": 1,
   "leaves": [
     {
       "tokenId": "8714532155627087049726098321881204377524823650388691062448483179398876756705",
       "forecaster": "0x4db416baf0127adca78e7571038b763868ff282c",
-      "skill": "1453214",
-      "n": "8",
+      "skill": "1568529",
+      "n": "14",
       "proof": []
     }
   ],

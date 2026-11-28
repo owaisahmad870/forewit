@@ -1,8 +1,8 @@
 {
   "network": 56,
   "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
-  "builtAt": "2026-11-27T20:31:28.785Z",
-  "headBlock": "136102948",
+  "builtAt": "2026-11-28T02:02:07.306Z",
+  "headBlock": "136147020",
   "metrics": {
     "distinctCommitters": 1,
     "rounds": 4,
@@ -16,6 +16,10 @@
         "reveals": 2
       },
       "2026-11-26": {
+        "commits": 1,
+        "reveals": 1
+      },
+      "2026-11-27": {
         "commits": 1,
         "reveals": 1
       }
@@ -243,7 +247,16 @@
       "forecasts": {
         "0x4db416baf0127adca78e7571038b763868ff282c": "1813405332476794423784247500"
       },
-      "scored": {},
+      "scored": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": {
+          "questions": "6",
+          "brier": "81900000",
+          "baseline": "94540000",
+          "skill": "12640000",
+          "baselineUsed": true,
+          "at": 1795821368
+        }
+      },
       "forfeited": {},
       "outcomes": {
         "0": "No",
@@ -317,22 +330,49 @@
           "marketId": "4825722"
         }
       ],
-      "committers": [],
-      "revealed": [],
-      "forecasts": {},
+      "committers": [
+        "0x4db416baf0127adca78e7571038b763868ff282c"
+      ],
+      "revealed": [
+        "0x4db416baf0127adca78e7571038b763868ff282c"
+      ],
+      "forecasts": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": "422234369687556600"
+      },
       "scored": {},
       "forfeited": {},
       "outcomes": {},
-      "baseline": null,
+      "baseline": "703711493832708450",
       "commitDeadline": "1795820400",
       "revealDeadline": "1795906800",
       "resolutionWait": "604800",
       "createdBlock": "135963350",
-      "crowd": null,
+      "baselineAt": 1795820101,
+      "crowd": {
+        "method": "crowd v1: log odds pooling, equal weight below 3 resolved rounds, then 0.1 + skill/mean skill, no extremizing",
+        "bps": [
+          4600,
+          4400,
+          5100,
+          1500
+        ],
+        "simpleBps": [
+          4600,
+          4400,
+          5100,
+          1500
+        ]
+      },
       "flags": [],
-      "commitTiming": {},
-      "commitCount": 0,
-      "revealRate": null
+      "commitTiming": {
+        "0x4db416baf0127adca78e7571038b763868ff282c": {
+          "at": 1795818201,
+          "afterBaseline": false,
+          "gapSec": -1900
+        }
+      },
+      "commitCount": 1,
+      "revealRate": 1
     }
   ],
   "profiles": {

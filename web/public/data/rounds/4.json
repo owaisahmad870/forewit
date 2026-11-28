@@ -37,7 +37,8 @@
         "BTC",
         "Up/Down",
         "Daily"
-      ]
+      ],
+      "marketPrice": 0.445
     },
     {
       "index": 1,
@@ -53,7 +54,8 @@
         "ETH",
         "Up/Down",
         "Daily"
-      ]
+      ],
+      "marketPrice": 0.365
     },
     {
       "index": 2,
@@ -69,7 +71,8 @@
         "Up/Down",
         "Daily",
         "BNB"
-      ]
+      ],
+      "marketPrice": 0.56
     },
     {
       "index": 3,
@@ -82,7 +85,10 @@
       "endsAt": "2026-11-28T12:00:00.000Z",
       "tags": [
         "Weather"
-      ]
+      ],
+      "marketPrice": 0.25
     }
-  ]
+  ],
+  "marketPriceAt": "2026-11-27T22:55:00.961Z",
+  "windowMovePts": 0.625
 }
