@@ -1,0 +1,119 @@
+{
+  "network": 56,
+  "ledger": "0xd11e67ff70ACD42E01d79130f280162b00Bb09B6",
+  "roundId": "5",
+  "kind": "daily",
+  "board": "scored",
+  "featured": true,
+  "topic": null,
+  "horizon": null,
+  "optional": false,
+  "funnel": {
+    "open": 14364,
+    "binary": 9455,
+    "notSports": 5594,
+    "liquid": 127,
+    "notPolitics": 96,
+    "inWindow": 6,
+    "events": 6,
+    "chosen": 6
+  },
+  "rule": "QUESTION_SELECTION v3.1",
+  "commitDeadline": "2026-11-28T23:00:00.000Z",
+  "revealDeadline": "2026-11-29T23:00:00.000Z",
+  "resolutionWaitSeconds": "604800",
+  "questions": [
+    {
+      "index": 0,
+      "marketId": "4858467",
+      "conditionId": "0x653ee5cc88134e8795c4aa0816698d7fd335d0ccb74c848353dcca0368622fff",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "BNB Up or Down on November 29?",
+      "label": "BNB Up or Down on November 29?",
+      "marketQuestion": "BNB Up or Down on November 29?",
+      "endsAt": "2026-11-29T17:00:00.000Z",
+      "tags": [
+        "Crypto",
+        "Up/Down",
+        "Daily",
+        "BNB"
+      ]
+    },
+    {
+      "index": 1,
+      "marketId": "4858465",
+      "conditionId": "0x6d679902d071b0d4064b5f7fcd2f82869b68766fc23270d65f23761bf13c8b59",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "Bitcoin Up or Down on November 29?",
+      "label": "Bitcoin Up or Down on November 29?",
+      "marketQuestion": "Bitcoin Up or Down on November 29?",
+      "endsAt": "2026-11-29T17:00:00.000Z",
+      "tags": [
+        "Crypto",
+        "BTC",
+        "Up/Down",
+        "Daily"
+      ]
+    },
+    {
+      "index": 2,
+      "marketId": "4858466",
+      "conditionId": "0x3eb7482c4aa5969c886d1e97964382481d608e8a0d061940fae999c152aa393e",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "Ethereum Up or Down on November 29?",
+      "label": "Ethereum Up or Down on November 29?",
+      "marketQuestion": "Ethereum Up or Down on November 29?",
+      "endsAt": "2026-11-29T17:00:00.000Z",
+      "tags": [
+        "Crypto",
+        "ETH",
+        "Up/Down",
+        "Daily"
+      ]
+    },
+    {
+      "index": 3,
+      "marketId": "4849557",
+      "conditionId": "0xd5ca4798bea22ff09e7a44d07e4f7719edd49ab67fc12e6f5f79ddec3712226a",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "SSE Composite Index (上证指数) Up or Down on November 30, 2026?",
+      "label": "SSE Composite Index (上证指数) Up or Down on November 30, 2026?",
+      "marketQuestion": "SSE Composite Index (上证指数) Up or Down on November 30, 2026?",
+      "endsAt": "2026-11-30T07:00:00.000Z",
+      "tags": [
+        "Finance",
+        "Stocks",
+        "Daily Up/Down"
+      ]
+    },
+    {
+      "index": 4,
+      "marketId": "2383529",
+      "conditionId": "0xb5c551e76c3df907ecf05e9f46124a05b2f4129573c72af090369831823e92a3",
+      "ctf": "0xF64b0b318AAf83BD9071110af24D24445719A07F",
+      "eventQuestion": "Which company has the best AI model end of November?",
+      "label": "OpenAI",
+      "marketQuestion": "Will OpenAI have the best AI model at the end of November 2026?",
+      "endsAt": "2026-12-01T04:59:00.000Z",
+      "tags": [
+        "Tech",
+        "AI"
+      ]
+    },
+    {
+      "index": 5,
+      "marketId": "4849981",
+      "conditionId": "0x02fcd77bd5589574ae4a2d3af5028208214450e1d09ba61deb88572d461680ca",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "eventQuestion": "SHEIN (希音) Up or Down on November 30, 2026?",
+      "label": "SHEIN (希音) Up or Down on November 30, 2026?",
+      "marketQuestion": "SHEIN (希音) Up or Down on November 30, 2026?",
+      "endsAt": "2026-11-30T08:10:00.000Z",
+      "tags": [
+        "Finance",
+        "Stocks",
+        "Daily Up/Down"
+      ]
+    }
+  ]
+}

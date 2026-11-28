@@ -1,0 +1,129 @@
+{
+  "rule": "QUESTION_SELECTION v3.1",
+  "kind": "daily",
+  "commitDeadline": "2026-11-28T23:00:00.000Z",
+  "resolutionDays": 7,
+  "eligible": 6,
+  "chosen": [
+    {
+      "marketId": 4858467,
+      "conditionId": "0x653ee5cc88134e8795c4aa0816698d7fd335d0ccb74c848353dcca0368622fff",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "bnb-up-or-down-on-november-29-2026",
+      "endsAt": "2026-11-29T17:00:00.000Z",
+      "eventQuestion": "BNB Up or Down on November 29?",
+      "label": "BNB Up or Down on November 29?",
+      "marketQuestion": "BNB Up or Down on November 29?",
+      "tags": [
+        "Crypto",
+        "Up/Down",
+        "Daily",
+        "BNB"
+      ],
+      "title": "BNB Up or Down on November 29?",
+      "dailyCrypto": true,
+      "vol24h": 1.96
+    },
+    {
+      "marketId": 4858465,
+      "conditionId": "0x6d679902d071b0d4064b5f7fcd2f82869b68766fc23270d65f23761bf13c8b59",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "bitcoin-up-or-down-on-november-29-2026",
+      "endsAt": "2026-11-29T17:00:00.000Z",
+      "eventQuestion": "Bitcoin Up or Down on November 29?",
+      "label": "Bitcoin Up or Down on November 29?",
+      "marketQuestion": "Bitcoin Up or Down on November 29?",
+      "tags": [
+        "Crypto",
+        "BTC",
+        "Up/Down",
+        "Daily"
+      ],
+      "title": "Bitcoin Up or Down on November 29?",
+      "dailyCrypto": true,
+      "vol24h": 0
+    },
+    {
+      "marketId": 4858466,
+      "conditionId": "0x3eb7482c4aa5969c886d1e97964382481d608e8a0d061940fae999c152aa393e",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "ethereum-up-or-down-on-november-29-2026",
+      "endsAt": "2026-11-29T17:00:00.000Z",
+      "eventQuestion": "Ethereum Up or Down on November 29?",
+      "label": "Ethereum Up or Down on November 29?",
+      "marketQuestion": "Ethereum Up or Down on November 29?",
+      "tags": [
+        "Crypto",
+        "ETH",
+        "Up/Down",
+        "Daily"
+      ],
+      "title": "Ethereum Up or Down on November 29?",
+      "dailyCrypto": true,
+      "vol24h": 0
+    },
+    {
+      "marketId": 4849557,
+      "conditionId": "0xd5ca4798bea22ff09e7a44d07e4f7719edd49ab67fc12e6f5f79ddec3712226a",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "sse-composite-index-up-or-down-on-november-30-2026",
+      "endsAt": "2026-11-30T07:00:00.000Z",
+      "eventQuestion": "SSE Composite Index (上证指数) Up or Down on November 30, 2026?",
+      "label": "SSE Composite Index (上证指数) Up or Down on November 30, 2026?",
+      "marketQuestion": "SSE Composite Index (上证指数) Up or Down on November 30, 2026?",
+      "tags": [
+        "Finance",
+        "Stocks",
+        "Daily Up/Down"
+      ],
+      "title": "SSE Composite Index (上证指数) Up or Down on November 30, 2026?",
+      "dailyCrypto": false,
+      "vol24h": 626.86
+    },
+    {
+      "marketId": 2383529,
+      "conditionId": "0xb5c551e76c3df907ecf05e9f46124a05b2f4129573c72af090369831823e92a3",
+      "ctf": "0xF64b0b318AAf83BD9071110af24D24445719A07F",
+      "category": "which-company-has-the-best-ai-model-end-of-november",
+      "endsAt": "2026-12-01T04:59:00.000Z",
+      "eventQuestion": "Which company has the best AI model end of November?",
+      "label": "OpenAI",
+      "marketQuestion": "Will OpenAI have the best AI model at the end of November 2026?",
+      "tags": [
+        "Tech",
+        "AI"
+      ],
+      "title": "OpenAI",
+      "dailyCrypto": false,
+      "vol24h": 142.91
+    },
+    {
+      "marketId": 4849981,
+      "conditionId": "0x02fcd77bd5589574ae4a2d3af5028208214450e1d09ba61deb88572d461680ca",
+      "ctf": "0x22DA1810B194ca018378464a58f6Ac2B10C9d244",
+      "category": "shein-up-or-down-on-november-30-2026",
+      "endsAt": "2026-11-30T08:10:00.000Z",
+      "eventQuestion": "SHEIN (希音) Up or Down on November 30, 2026?",
+      "label": "SHEIN (希音) Up or Down on November 30, 2026?",
+      "marketQuestion": "SHEIN (希音) Up or Down on November 30, 2026?",
+      "tags": [
+        "Finance",
+        "Stocks",
+        "Daily Up/Down"
+      ],
+      "title": "SHEIN (希音) Up or Down on November 30, 2026?",
+      "dailyCrypto": false,
+      "vol24h": 100
+    }
+  ],
+  "funnel": {
+    "open": 14364,
+    "binary": 9455,
+    "notSports": 5594,
+    "liquid": 127,
+    "notPolitics": 96,
+    "inWindow": 6,
+    "events": 6,
+    "chosen": 6
+  }
+}
